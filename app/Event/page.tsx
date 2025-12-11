@@ -10,8 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Calendar, Clock, MapPin, Video, FileText, Users, CheckCircle2, AlertCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { API_BASE_URL } from '@/lib/api-config'
-import { getCookie } from "cookies-next";
-
+import { getFrappeCSRF } from "@/lib/csrf"
 
 interface Interviewer {
   name: string
@@ -217,7 +216,7 @@ function EventPageContent() {
       //   credentials: "include"
       // });
       // await new Promise(res => setTimeout(res, 50));
-      const csrfToken = (getCookie("csrf_token") as string) || "";
+      const csrfToken = await getFrappeCSRF();
       const response = await fetch(
         `${API_BASE_URL}/api/resource/Interview`,
         {

@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { FRAPPE_BASE_URL } from "@/lib/api-config"
 
-const FRAPPE_BASE_URL = "http://172.23.88.43:8000/"
 
 function LoginPage() {
     const [email, setEmail] = useState("")

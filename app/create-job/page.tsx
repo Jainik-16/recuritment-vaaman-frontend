@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import { getCookie } from "cookies-next";
+import { getFrappeCSRF } from "@/lib/csrf"
 
 import {
   ArrowLeft,
@@ -460,7 +460,7 @@ export default function CreateJobOpeningForm() {
     }
 
     try {
-      const csrfToken = (getCookie("csrf_token") as string) || "";
+      const csrfToken = await getFrappeCSRF()
       const res = await fetch(
         `${API_BASE_URL}/api/method/resume.api.job_opening.create_job_opening`,
         {

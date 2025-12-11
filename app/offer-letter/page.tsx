@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, FileText, Mail, Calendar, Briefcase, Building2, Plus, Trash2, User, CheckCircle2, AlertCircle } from "lucide-react"
-import { getCookie } from "cookies-next";
+import { getFrappeCSRF } from "@/lib/csrf"
 
 
 const API_MODULE_PATH = "resume.api.offer_letter"
@@ -265,7 +265,7 @@ export default function JobOfferPage() {
       }
 
       console.log("Submitting job offer with data:", Object.fromEntries(formData))
-      const csrfToken = (getCookie("csrf_token") as string) || "";
+      const csrfToken = await getFrappeCSRF();
       const response = await fetch(
         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.create_job_offer`,
         {

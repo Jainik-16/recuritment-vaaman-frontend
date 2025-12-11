@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getCookie } from "cookies-next";
+
 
 
 
@@ -30,6 +30,7 @@ import {
   Briefcase
 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getFrappeCSRF } from "@/lib/csrf"
 
 
 interface AcceptedCandidate {
@@ -103,7 +104,7 @@ export default function AppointmentPage() {
     photos: false,
   })
 
-  const API_BASE_URL = "http://172.23.88.43:8000/api/method/resume.api.appointment_letter"
+  const API_BASE_URL = "https://ats.octavision.in/api/method/resume.api.appointment_letter"
 
   useEffect(() => {
     fetchAcceptedOffers()
@@ -344,7 +345,7 @@ export default function AppointmentPage() {
 
     setLoading(true)
     try {
-      const csrfToken = (getCookie("csrf_token") as string) || "";
+      const csrfToken = await getFrappeCSRF()
       const res = await fetch(`${API_BASE_URL}.create_appointment_letter`,
         {
           method: "POST",

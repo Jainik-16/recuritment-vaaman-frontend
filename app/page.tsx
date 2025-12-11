@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { useState, useEffect } from "react"
 import type React from "react"
 import { useRouter } from "next/navigation"
@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { getFrappeCSRF } from "@/lib/csrf"
 import {
   Briefcase,
   Upload,
@@ -27,8 +28,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { API_BASE_URL } from '@/lib/api-config'
-import { csrfToken } from '@/lib/csrf-cookies';
-import { deleteCookie } from "cookies-next";
+
 
 interface WorkflowStep {
   id: string
@@ -48,18 +48,21 @@ export default function RecruitmentDashboard() {
 
   const handleLogout = async () => {
     const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`;
-
-
+    const csrfToken = await getFrappeCSRF()
     const response = await fetch(LOGOUT_URL, {
       method: 'POST',
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        // 'X-Frappe-CSRF-Token': csrfToken,
-      },
-
+        "X-Frappe-CSRF-Token": csrfToken
+      }
     });
-    response.ok && router.push("/Login");
-  }
+
+    if (response.ok) {
+      router.push("/Login");
+    } else {
+      console.error("Logout failed", await response.text());
+    }
+  };
 
   const workflowSteps: WorkflowStep[] = [
     {
@@ -165,6 +168,7 @@ export default function RecruitmentDashboard() {
         return "bg-gray-300"
     }
   }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
