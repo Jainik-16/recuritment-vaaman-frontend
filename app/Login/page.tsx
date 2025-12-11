@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
-import { csrfToken } from '@/lib/csrf-cookies';
 
 const FRAPPE_BASE_URL = "http://172.23.88.43:8000/"
 
@@ -29,7 +28,6 @@ function LoginPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    'X-Frappe-CSRF-Token': csrfToken,
                 },
                 body: new URLSearchParams({
                     usr: email,

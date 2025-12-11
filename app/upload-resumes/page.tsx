@@ -31,6 +31,8 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { API_BASE_URL } from '@/lib/api-config'
+import { getCookie } from "cookies-next";
+
 
 interface JobOpening {
   name: string
@@ -291,12 +293,16 @@ export default function ResumeUploader() {
           const formData = new FormData()
           formData.append("files", file)
           formData.append("job_opening", selectedJobId)
-
+          const csrfToken = (getCookie("csrf_token") as string) || "";
           const res = await fetch(
             `${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`,
             {
               method: 'POST',
               credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                "X-Frappe-CSRF-Token": csrfToken
+              },
               body: formData,
               // Note: Don't set Content-Type header for FormData, browser sets it automatically with boundary
             }

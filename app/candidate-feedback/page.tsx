@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import { getCookie } from "cookies-next";
+
+
 // import { Settings, Star, Trash2, Copy, ArrowLeft, Plus, RefreshCw, Eye } from "lucide-react"
 import {
   Settings,
@@ -679,14 +682,17 @@ function CandidateFeedbackForm() {
 
       console.log("📤 Complete form data being sent:", Object.fromEntries(formData))
       console.log("📤 Candidate name in form:", feedbackForm.candidate_name)
-
+      const csrfToken = (getCookie("csrf_token") as string) || "";
       const response = await fetch(
         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.create_interview_feedback`,
         {
           method: 'POST',
           credentials: 'include',
+
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
+            ,
+            "X-Frappe-CSRF-Token": csrfToken
           },
           body: formData
         }

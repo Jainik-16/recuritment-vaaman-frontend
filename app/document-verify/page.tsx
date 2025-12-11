@@ -617,6 +617,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Upload, X, Check, FileText, User, Briefcase, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { API_BASE_URL } from '@/lib/api-config'
+import { getCookie } from "cookies-next";
 
 
 interface JobApplicant {
@@ -892,10 +893,16 @@ export default function DocumentVerifyPage() {
             formData.append("docname", existingDocumentId || documentForm.applicantName)
             formData.append("fieldname", filename)
             formData.append("filename", file.name)
-
+            const csrfToken = (getCookie("csrf_token") as string) || "";
             const response = await fetch(`${API_BASE_URL}/api/method/upload_file`, {
                 method: "POST",
                 credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // "X-Frappe-CSRF-Token": getCookie("csrf_token")
+                    "X-Frappe-CSRF-Token": csrfToken
+
+                },
                 body: formData,
             })
 
@@ -1031,7 +1038,7 @@ export default function DocumentVerifyPage() {
             }
 
             console.log("Document data to save:", docData)
-
+            const csrfToken = (getCookie("csrf_token") as string) || "";
             let response
             if (existingDocumentId) {
                 console.log("Updating existing document:", existingDocumentId)
@@ -1041,7 +1048,9 @@ export default function DocumentVerifyPage() {
                         method: "PUT",
                         credentials: 'include',
                         headers: {
-                            "Content-Type": "application/json",
+                            'Content-Type': 'application/json',
+                            // "X-Frappe-CSRF-Token": getCookie("csrf_token")
+                            "X-Frappe-CSRF-Token": csrfToken
                         },
                         body: JSON.stringify(docData),
                     }
@@ -1051,8 +1060,11 @@ export default function DocumentVerifyPage() {
                 response = await fetch(`${API_BASE_URL}/api/resource/Applicant Document`, {
                     method: "POST",
                     credentials: 'include',
+
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
+                        // "X-Frappe-CSRF-Token": getCookie("csrf_token")
+                        "X-Frappe-CSRF-Token": csrfToken
                     },
                     body: JSON.stringify(docData),
                 })

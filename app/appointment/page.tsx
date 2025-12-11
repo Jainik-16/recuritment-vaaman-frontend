@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
+import { getCookie } from "cookies-next";
+
+
+
 // import { UserCheck, Send, Download, ArrowLeft, Calendar, FileText, Plus, Trash2, AlertCircle } from "lucide-react"
 import {
   UserCheck,
@@ -340,24 +344,19 @@ export default function AppointmentPage() {
 
     setLoading(true)
     try {
-      const csrfMatch = document.cookie.match(/csrf_token=([^;]+)/)
-      const csrfToken = csrfMatch ? decodeURIComponent(csrfMatch[1]) : ''
+      const csrfToken = (getCookie("csrf_token") as string) || "";
+      const res = await fetch(`${API_BASE_URL}.create_appointment_letter`,
+        {
+          method: "POST",
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            // "X-Frappe-CSRF-Token": getCookie("csrf_token")
+            "X-Frappe-CSRF-Token": csrfToken
 
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-
-      if (csrfToken) {
-        headers["X-Frappe-CSRF-Token"] = csrfToken
-      }
-
-      const res = await fetch(`${API_BASE_URL}.create_appointment_letter`, {
-        method: "POST",
-        credentials: 'include',
-        headers: headers,
-        body: JSON.stringify({ data: appointmentDetails })
-      })
+          },
+          body: JSON.stringify({ data: appointmentDetails })
+        })
 
       if (!res.ok) {
         if (res.status === 403) {

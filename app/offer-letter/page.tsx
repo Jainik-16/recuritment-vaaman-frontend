@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from "next/navigation"
-import { axiosConfig } from '@/lib/axios-config'
 import { ArrowLeft, FileText, Mail, Calendar, Briefcase, Building2, Plus, Trash2, User, CheckCircle2, AlertCircle } from "lucide-react"
+import { getCookie } from "cookies-next";
+
 
 const API_MODULE_PATH = "resume.api.offer_letter"
 const API_BASE_URL = "http://172.23.88.43:8000"
@@ -264,14 +265,16 @@ export default function JobOfferPage() {
       }
 
       console.log("Submitting job offer with data:", Object.fromEntries(formData))
-
+      const csrfToken = (getCookie("csrf_token") as string) || "";
       const response = await fetch(
         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.create_job_offer`,
         {
           method: 'POST',
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            // "X-Frappe-CSRF-Token": getCookie("csrf_token")
+            "X-Frappe-CSRF-Token": csrfToken
           },
           body: formData
         }

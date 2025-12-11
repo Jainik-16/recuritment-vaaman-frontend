@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import type React from "react"
-import axios from "axios"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import { getCookie } from "cookies-next";
+
 import {
   ArrowLeft,
   Briefcase,
@@ -29,9 +30,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import Link from "next/link"
-import { axiosConfig } from '@/lib/axios-config'
 import { API_BASE_URL } from '@/lib/api-config'
-import { csrfToken } from '@/lib/csrf-cookies';
 
 // export const API_AUTH = {
 //   headers: {
@@ -461,6 +460,7 @@ export default function CreateJobOpeningForm() {
     }
 
     try {
+      const csrfToken = (getCookie("csrf_token") as string) || "";
       const res = await fetch(
         `${API_BASE_URL}/api/method/resume.api.job_opening.create_job_opening`,
         {
@@ -468,7 +468,7 @@ export default function CreateJobOpeningForm() {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "X-Frappe-CSRF-Token": csrfToken
           },
           body: JSON.stringify(payload),
         }
