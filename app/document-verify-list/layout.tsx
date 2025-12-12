@@ -1,13 +1,13 @@
 
 'use client'
 import type React from "react"
-import { Loader2 } from "lucide-react";
+
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkAuth } from "@/lib/checkAuth";
 
-
+import { Loader2 } from "lucide-react";
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -36,6 +36,7 @@ export default function RootLayout({
         authenticate();
     }, [router]);
 
+
     if (isAuthenticated === null) {
 
         return <div className="bg-blue-50 w-full h-screen border border-blue-200 rounded-lg p-4 flex items-center justify-center gap-3">
@@ -43,7 +44,6 @@ export default function RootLayout({
             <span className="text-sm font-medium text-blue-800">Checking Authentication...</span>
         </div>
     }
-
     if (isAuthenticated === true) {
         return <>{children}</>;
     }

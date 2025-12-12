@@ -1,12 +1,9 @@
-
 'use client'
 import type React from "react"
-import { Loader2 } from "lucide-react";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkAuth } from "@/lib/checkAuth";
-
+import { Loader2 } from "lucide-react";
 
 export default function RootLayout({
     children,
@@ -19,16 +16,11 @@ export default function RootLayout({
     useEffect(() => {
         async function authenticate() {
             const auth = await checkAuth();
+            console.log('hello2 (Login check)', auth);
 
-
-            console.log('hello2', auth);
-
-            if (!auth) {
-
-                setIsAuthenticated(false);
-                router.push("/Login");
+            if (auth) {
+                router.push("/home");
             } else {
-
                 setIsAuthenticated(true);
             }
         }
@@ -47,7 +39,5 @@ export default function RootLayout({
     if (isAuthenticated === true) {
         return <>{children}</>;
     }
-
-
     return null;
 }

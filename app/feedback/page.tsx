@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Star, MessageSquare, User, Calendar, ArrowLeft, Filter, Loader2, MapPin, Briefcase, Mail, Globe, FileText, Building2, Clock, UserCheck, Award, AlertCircle, TrendingUp } from "lucide-react"
 
-const API_BASE_URL = "http://172.23.88.43:8000"
+import { API_BASE_URL } from "@/lib/api-config"
 const API_MODULE_PATH = "resume.api.candidate_feedback"
 // const API_AUTH = {
 //   headers: {

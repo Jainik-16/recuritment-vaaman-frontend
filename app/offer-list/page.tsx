@@ -247,7 +247,7 @@ export default function OfferListPage() {
                                                             size="sm"
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
-                                                                window.location.href = '/appointment'
+                                                                window.location.href = '/letter-appointment'
                                                             }}
                                                             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                                         >
@@ -462,7 +462,7 @@ export default function OfferListPage() {
                                 <div className="pt-4">
                                     <Button
                                         size="lg"
-                                        onClick={() => window.location.href = '/appointment'}
+                                        onClick={() => window.location.href = '/letter-appointment'}
                                         className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                     >
                                         <FileCheck className="h-5 w-5 mr-2" />

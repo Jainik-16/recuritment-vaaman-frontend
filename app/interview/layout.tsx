@@ -36,6 +36,7 @@ export default function RootLayout({
         authenticate();
     }, [router]);
 
+
     if (isAuthenticated === null) {
 
         return <div className="bg-blue-50 w-full h-screen border border-blue-200 rounded-lg p-4 flex items-center justify-center gap-3">

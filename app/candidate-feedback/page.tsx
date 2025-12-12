@@ -31,10 +31,10 @@ import {
   Mail
 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-
+import { API_BASE_URL } from "@/lib/api-config"
 
 const API_MODULE_PATH = "resume.api.interview_feedback"
-const API_BASE_URL = "http://172.23.88.43:8000"
+
 // const API_AUTH = {
 //   headers: {
 //     Authorization: `token 09481bf19b467f7:39bb84748d00090`,

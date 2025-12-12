@@ -20,9 +20,6 @@ export default function RootLayout({
         async function authenticate() {
             const auth = await checkAuth();
 
-
-            console.log('hello2', auth);
-
             if (!auth) {
 
                 setIsAuthenticated(false);
@@ -43,11 +40,9 @@ export default function RootLayout({
             <span className="text-sm font-medium text-blue-800">Checking Authentication...</span>
         </div>
     }
-
     if (isAuthenticated === true) {
         return <>{children}</>;
     }
-
 
     return null;
 }

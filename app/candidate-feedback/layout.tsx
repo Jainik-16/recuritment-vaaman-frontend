@@ -28,13 +28,13 @@ export default function RootLayout({
                 setIsAuthenticated(false);
                 router.push("/Login");
             } else {
-
                 setIsAuthenticated(true);
             }
         }
 
         authenticate();
     }, [router]);
+
 
     if (isAuthenticated === null) {
 

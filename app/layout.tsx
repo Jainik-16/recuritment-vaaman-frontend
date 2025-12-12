@@ -5,7 +5,6 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "Resume",
   description: "Resume",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({

@@ -1,8 +1,8 @@
 
 'use client'
 import type React from "react"
-import { Loader2 } from "lucide-react";
 
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkAuth } from "@/lib/checkAuth";
@@ -35,6 +35,7 @@ export default function RootLayout({
 
         authenticate();
     }, [router]);
+
 
     if (isAuthenticated === null) {
 
