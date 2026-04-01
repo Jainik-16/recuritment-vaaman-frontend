@@ -1,8 +1,5 @@
-import { redirect } from 'next/navigation'
-import React from 'react'
+import { redirect } from "next/navigation"
 
-const page = async () => {
-    redirect('/home')
+export default function Page() {
+  redirect('/home')
 }
-
-export default page
