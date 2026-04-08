@@ -794,7 +794,7 @@ import { useRouter } from "next/navigation"
 import {
   Briefcase, Upload, MessageSquare, FileText,
   UserCheck, Plus, ArrowRight, Calendar,
-  Users, Zap, LogOut, ChevronRight, Home, Menu, X,
+  Users, Zap, LogOut, ChevronRight, Home, Menu, X, Bot
 } from "lucide-react"
 import Link from "next/link"
 import { API_BASE_URL } from '@/lib/api-config'
@@ -1159,6 +1159,7 @@ export default function RecruitmentDashboard() {
     { id: "salary-annexure-list", title: "Salary Annexure List", description: "View all salary annexures", icon: <FileText className="h-4 w-4" />, status: "pending", route: "/salary-annexure-list", color: "" },
     { id: "offer", title: "Offer Letter", description: "Generate and send offers", icon: <Zap className="h-4 w-4" />, status: "pending", route: "/offer-list", color: "" },
     { id: "appointment", title: "Appointment Letter", description: "Final appointment process", icon: <UserCheck className="h-4 w-4" />, status: "pending", route: "/letter-appointment", color: "" },
+    { id: "assistant", title: "Assistant", description: "Resume Intelligence AI", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/chat", color: "" },
   ]
 
   const pipeline = workflowSteps.slice(0, 4)
