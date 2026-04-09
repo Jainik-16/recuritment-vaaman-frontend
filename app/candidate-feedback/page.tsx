@@ -2056,6 +2056,9 @@ function CandidateFeedbackForm() {
   ])
 
   // Add these two NEW lines right after the state declarations:
+  // const showNotShortlistedSection = feedbackForm.final_score_recommendation.includes("Not Shortlisted")
+  // const showWithdrawnSection = feedbackForm.final_score_recommendation.includes("Candidature Withdrawn")
+
   const showNotShortlistedSection = feedbackForm.final_score_recommendation.includes("Not Shortlisted")
   const showWithdrawnSection = feedbackForm.final_score_recommendation.includes("Candidature Withdrawn")
   // Calculate total score from all skill ratings
@@ -2169,23 +2172,37 @@ function CandidateFeedbackForm() {
 
   useEffect(() => { document.title = 'Candidate Feedback' }, [])
 
+  // useEffect(() => {
+  //   const totalScore = calculateTotalScore()
+  //   let recommendation = ""; let autoCheckOffered = false
+  //   if (totalScore >= 10 && totalScore <= 13) recommendation = "Average (10 to 13)"
+  //   else if (totalScore >= 14 && totalScore <= 18) recommendation = "Good (14 to 18)"
+  //   else if (totalScore >= 19 && totalScore <= 21) recommendation = "Excellent (19 to 21)"
+  //   else if (totalScore > 21) autoCheckOffered = true
+  //   const filteredRecommendations = feedbackForm.final_score_recommendation.filter(
+  //     item => !["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)", "To be Offered"].includes(item)
+  //   )
+  //   let newRecommendations = [...filteredRecommendations]
+  //   if (recommendation) newRecommendations.push(recommendation)
+  //   if (autoCheckOffered) newRecommendations.push("To be Offered")
+  //   const currentSet = new Set(feedbackForm.final_score_recommendation)
+  //   const newSet = new Set(newRecommendations)
+  //   const hasChanged = currentSet.size !== newSet.size || [...currentSet].some(item => !newSet.has(item))
+  //   if (hasChanged) setFeedbackForm(prev => ({ ...prev, final_score_recommendation: newRecommendations }))
+  // }, [skillAssessments])
+
   useEffect(() => {
     const totalScore = calculateTotalScore()
-    let recommendation = ""; let autoCheckOffered = false
+    let recommendation = ""
     if (totalScore >= 10 && totalScore <= 13) recommendation = "Average (10 to 13)"
     else if (totalScore >= 14 && totalScore <= 18) recommendation = "Good (14 to 18)"
     else if (totalScore >= 19 && totalScore <= 21) recommendation = "Excellent (19 to 21)"
-    else if (totalScore > 21) autoCheckOffered = true
-    const filteredRecommendations = feedbackForm.final_score_recommendation.filter(
-      item => !["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)", "To be Offered"].includes(item)
-    )
-    let newRecommendations = [...filteredRecommendations]
-    if (recommendation) newRecommendations.push(recommendation)
-    if (autoCheckOffered) newRecommendations.push("To be Offered")
-    const currentSet = new Set(feedbackForm.final_score_recommendation)
-    const newSet = new Set(newRecommendations)
-    const hasChanged = currentSet.size !== newSet.size || [...currentSet].some(item => !newSet.has(item))
-    if (hasChanged) setFeedbackForm(prev => ({ ...prev, final_score_recommendation: newRecommendations }))
+    else if (totalScore > 21) recommendation = "To be Offered"
+
+    setFeedbackForm(prev => ({
+      ...prev,
+      final_score_recommendation: recommendation ? [recommendation] : []
+    }))
   }, [skillAssessments])
 
   const fetchInterviews = async () => {
@@ -2925,7 +2942,7 @@ function CandidateFeedbackForm() {
                       <span className="cf-score-label">Total Score:</span>
                       <span className="cf-score-value">{calculateTotalScore()} / 35</span>
                     </div>
-                    <div className="cf-check-grid">
+                    {/* <div className="cf-check-grid">
                       {["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)"].map(option => (
                         <label key={option} className="cf-check-row">
                           <input
@@ -2987,6 +3004,51 @@ function CandidateFeedbackForm() {
                         />
                         <span className="cf-check-label">Candidature Withdrawn</span>
                       </label>
+                    </div> */}
+
+                    {/* <div className="cf-check-grid">
+                      {["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)", "To be Offered", "Not Shortlisted", "Candidature Withdrawn"].map(option => (
+                        <label key={option} className="cf-check-row">
+                          <input
+                            type="checkbox"
+                            className="cf-check"
+                            checked={feedbackForm.final_score_recommendation.includes(option)}
+                            disabled={isFormDisabled}
+                            onChange={e => {
+                              setFeedbackForm(prev => ({
+                                ...prev,
+                                // If checking — replace all with just this one
+                                // If unchecking — clear all
+                                final_score_recommendation: e.target.checked ? [option] : []
+                              }))
+                            }}
+                          />
+                          <span className="cf-check-label">{option}</span>
+                        </label>
+                      ))}
+                    </div> */}
+
+                    <div className="cf-check-grid">
+                      {["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)", "To be Offered", "Not Shortlisted", "Candidature Withdrawn"].map(option => (
+                        <label key={option} className="cf-check-row">
+                          <input
+                            type="checkbox"
+                            className="cf-check"
+                            checked={feedbackForm.final_score_recommendation.includes(option)}
+                            disabled={isFormDisabled || ["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)"].includes(option)}
+                            onChange={e => {
+                              if (!["To be Offered", "Not Shortlisted", "Candidature Withdrawn"].includes(option)) return
+                              setFeedbackForm(prev => ({
+                                ...prev,
+                                final_score_recommendation: e.target.checked
+                                  ? [...prev.final_score_recommendation, option]
+                                  : prev.final_score_recommendation.filter(i => i !== option)
+                              }))
+                            }}
+                          />
+                          <span className="cf-check-label">{option}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </div>

@@ -1315,8 +1315,11 @@ export default function ResumeUploader() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation(); setDragActive(false)
     const droppedFiles = Array.from(e.dataTransfer.files)
-    const pdfFiles = droppedFiles.filter(f => f.type === "application/pdf")
-    const nonPdfFiles = droppedFiles.filter(f => f.type !== "application/pdf")
+    // const pdfFiles = droppedFiles.filter(f => f.type === "application/pdf")
+    // const nonPdfFiles = droppedFiles.filter(f => f.type !== "application/pdf")
+    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+    const pdfFiles = droppedFiles.filter(f => allowedTypes.includes(f.type))
+    const nonPdfFiles = droppedFiles.filter(f => !allowedTypes.includes(f.type))
     if (nonPdfFiles.length > 0) toast({ variant: "destructive", title: "Invalid File Types", description: `${nonPdfFiles.length} file(s) were skipped. Only PDF files are allowed.`, duration: 4000 })
     if (pdfFiles.length > 0) { setFiles(prev => [...prev, ...pdfFiles]); toast({ title: "Files Added", description: `${pdfFiles.length} PDF file(s) added successfully.`, duration: 3000 }) }
   }
@@ -1324,8 +1327,11 @@ export default function ResumeUploader() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files)
-      const pdfFiles = selectedFiles.filter(f => f.type === "application/pdf")
-      const nonPdfFiles = selectedFiles.filter(f => f.type !== "application/pdf")
+      // const pdfFiles = selectedFiles.filter(f => f.type === "application/pdf")
+      // const nonPdfFiles = selectedFiles.filter(f => f.type !== "application/pdf")
+      const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+      const pdfFiles = selectedFiles.filter(f => allowedTypes.includes(f.type))
+      const nonPdfFiles = selectedFiles.filter(f => !allowedTypes.includes(f.type))
       if (nonPdfFiles.length > 0) toast({ variant: "destructive", title: "Invalid File Types", description: `${nonPdfFiles.length} file(s) were skipped. Only PDF files are allowed.`, duration: 4000 })
       if (pdfFiles.length > 0) { setFiles(prev => [...prev, ...pdfFiles]); toast({ title: "Files Selected", description: `${pdfFiles.length} PDF file(s) selected for upload.`, duration: 3000 }) }
     }
@@ -1656,14 +1662,17 @@ export default function ResumeUploader() {
                         onDragOver={handleDrag}
                         onDrop={handleDrop}
                       >
-                        <input type="file" multiple accept="application/pdf" onChange={handleFileSelect} />
+                        {/* <input type="file" multiple accept="application/pdf" onChange={handleFileSelect} /> */}
+                        <input type="file" multiple accept="application/pdf,.doc,.docx" onChange={handleFileSelect} />
+
                         <div className="ru-dropzone-icon">
                           <Cloud size={24} />
                         </div>
                         <div className="ru-dropzone-title">Drop your resume files here</div>
                         <div className="ru-dropzone-sub">or click to browse your computer</div>
                         <div className="ru-dropzone-chips">
-                          <div className="ru-chip"><FileText size={12} />PDF only</div>
+                          {/* <div className="ru-chip"><FileText size={12} />PDF only</div> */}
+                          <div className="ru-chip"><FileText size={12} />PDF, DOC, DOCX</div>
                           <div className="ru-chip"><Upload size={12} />Multiple files</div>
                         </div>
                       </div>

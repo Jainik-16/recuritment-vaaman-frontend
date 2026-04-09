@@ -5,13 +5,23 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip for static / login
+  // STRICT PUBLIC CHECK: 
+  // - Allows exactly "/Login"
+  // - Allows "/document-verify/anything" (because of the trailing slash)
+  // - BLOCKS "/document-verify" (no trailing slash)
+  // - BLOCKS "/document-verify-list"
+  const isPublicRoute =
+    pathname === "/Login" ||
+    pathname.startsWith("/document-verify/");
+
+  // Skip for static, API, and public paths
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/internal") ||
     pathname === "/favicon.ico" ||
-    pathname === "/Login" ||
-    pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js)$/)
+      isPublicRoute ||
+      pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js)$/)
   ) {
     return NextResponse.next();
   }
@@ -90,4 +100,3 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
-
