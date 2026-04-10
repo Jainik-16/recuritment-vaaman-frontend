@@ -1160,6 +1160,7 @@ export default function RecruitmentDashboard() {
     { id: "offer", title: "Offer Letter", description: "Generate and send offers", icon: <Zap className="h-4 w-4" />, status: "pending", route: "/offer-list", color: "" },
     { id: "appointment", title: "Appointment Letter", description: "Final appointment process", icon: <UserCheck className="h-4 w-4" />, status: "pending", route: "/letter-appointment", color: "" },
     { id: "assistant", title: "Assistant", description: "Resume Intelligence AI", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/chat", color: "" },
+    { id: "resume_filters", title: "Resume Filters", description: "Resume Filters with skills", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/resume_filters", color: "" },
   ]
 
   const pipeline = workflowSteps.slice(0, 4)
