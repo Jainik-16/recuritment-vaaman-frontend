@@ -218,7 +218,7 @@ export default function ResumeChat() {
           </div>
         </div>}
 
-        {/* <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2"> */}
+        <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2">
           <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2 custom-scrollbar">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">Recent Chats</p>
 
@@ -272,7 +272,7 @@ export default function ResumeChat() {
               </div>
             ))}
           </div>
-        {/* </div> */}
+        </div>
 
         {/* <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2 custom-scrollbar">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">Recent Chats</p>

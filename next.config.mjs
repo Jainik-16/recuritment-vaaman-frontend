@@ -10,14 +10,13 @@ const nextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    return [
-      {
-        // Whenever the frontend calls /api/..., forward it to Frappe
-        source: '/api/:path*',
-        destination: 'https://ats.octavision.in/api/:path*',
-      },
-    ];
-  },
+  return [
+    {
+      source: "/api/:path*",
+      destination: "http://127.0.0.1:8002/api/:path*",
+    },
+  ];
+}
 }
 
 export default nextConfig
