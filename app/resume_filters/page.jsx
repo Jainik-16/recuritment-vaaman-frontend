@@ -13,20 +13,50 @@ export default function CandidatesPage() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // const search = async () => {
+    //     setLoading(true);
+
+    //     try {
+    //         const res = await fetch(
+    //             "/api/method/resume_ai.api.resume_filters.candidates.search_candidates",
+    //             {
+    //                 method: "POST",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                     "X-Frappe-CSRF-Token": typeof window !== 'undefined' ? window.csrf_token : ""
+    //                 },
+    //                 body: JSON.stringify({
+    //                     filters: filters
+    //                 })
+    //             }
+    //         );
+
+    //         const data = await res.json();
+    //         setResults(Array.isArray(data.message) ? data.message : []);
+    //     } catch (error) {
+    //         console.error("Failed to fetch candidates", error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
     const search = async () => {
         setLoading(true);
 
         try {
+            // Convert filters object to a URL-encoded string
+            const queryParams = new URLSearchParams({
+                filters: JSON.stringify(filters)
+            }).toString();
+
             const res = await fetch(
-                "/api/method/resume_ai.api.resume_filters.candidates.search_candidates",
+                `/api/method/resume_ai.api.resume_filters.candidates.search_candidates?${queryParams}`,
                 {
-                    method: "POST",
+                    method: "GET", // ✅ Changed to GET
                     headers: {
                         "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        filters: filters
-                    })
+                    }
+                    // ❌ Removed the body completely
                 }
             );
 
@@ -48,7 +78,7 @@ export default function CandidatesPage() {
     return (
         <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-7xl mx-auto">
-                
+
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Candidate Directory</h1>
@@ -149,7 +179,7 @@ export default function CandidatesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {results?.map((c) => (
                         <div key={c.name} className="bg-white rounded-2xl shadow-sm hover:shadow-lg border border-slate-200 p-6 flex flex-col transition-all duration-300 group">
-                            
+
                             {/* Card Header (Avatar + Identity) */}
                             <div className="flex items-start gap-4 mb-4">
                                 <div className="h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg flex-shrink-0">
@@ -197,6 +227,26 @@ export default function CandidatesPage() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* ✅ NEW: Download/View Resume Button */}
+                            {c.resume_file && (
+                                <div className="mt-2 pt-4 border-t border-slate-100">
+                                    
+                                    <a
+                                        // href={c.resume_path}
+                                        href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${c.resume_file}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center w-full bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-sm"
+                                        download
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        View Resume
+                                    </a>
+                                </div>
+                            )}
 
                         </div>
                     ))}
