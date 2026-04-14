@@ -5,40 +5,14 @@ export default function CandidatesPage() {
     const [filters, setFilters] = useState({
         skills: [],
         min_exp: 0,
-        max_exp: 10,
+        max_exp: 100,
         degree: "",
+        location: "",
         role: ""
     });
 
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
-
-    // const search = async () => {
-    //     setLoading(true);
-
-    //     try {
-    //         const res = await fetch(
-    //             "/api/method/resume_ai.api.resume_filters.candidates.search_candidates",
-    //             {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                     "X-Frappe-CSRF-Token": typeof window !== 'undefined' ? window.csrf_token : ""
-    //                 },
-    //                 body: JSON.stringify({
-    //                     filters: filters
-    //                 })
-    //             }
-    //         );
-
-    //         const data = await res.json();
-    //         setResults(Array.isArray(data.message) ? data.message : []);
-    //     } catch (error) {
-    //         console.error("Failed to fetch candidates", error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     const search = async () => {
         setLoading(true);
@@ -50,7 +24,7 @@ export default function CandidatesPage() {
             }).toString();
 
             const res = await fetch(
-                `/api/method/resume_ai.api.resume_filters.candidates.search_candidates?${queryParams}`,
+                `/api/method/resume_ai.api.data_bank.data_bank.search_candidates?${queryParams}`,
                 {
                     method: "GET", // ✅ Changed to GET
                     headers: {
@@ -81,7 +55,7 @@ export default function CandidatesPage() {
 
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Candidate Directory</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">DATA BANK</h1>
                     <p className="text-slate-500 mt-2 text-sm">Search and filter through potential candidates based on skills, experience, and education.</p>
                 </div>
 
@@ -98,7 +72,7 @@ export default function CandidatesPage() {
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Degree</label>
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Qualification</label>
                             <input
                                 placeholder="e.g. B.Tech"
                                 onChange={(e) => setFilters({ ...filters, degree: e.target.value })}
@@ -120,7 +94,7 @@ export default function CandidatesPage() {
                         <div className="flex flex-col">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Max Exp (Yrs)</label>
                             <input
-                                placeholder="10"
+                                // placeholder="10"
                                 type="number"
                                 min="0"
                                 onChange={(e) => setFilters({ ...filters, max_exp: Number(e.target.value) })}
@@ -138,6 +112,15 @@ export default function CandidatesPage() {
                                         skills: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
                                     })
                                 }
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 transition-colors"
+                            />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Location</label>
+                            <input
+                                placeholder="e.g. city"
+                                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 transition-colors"
                             />
                         </div>
@@ -201,11 +184,15 @@ export default function CandidatesPage() {
                                 </div>
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
-                                    <span>{c.degree || "Degree Not Specified"}</span>
+                                    <span>{c.degree || "Qualification Not Specified"}</span>
                                 </div>
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     <span><strong className="text-slate-800">{c.experience_years || 0}</strong> years experience</span>
+                                </div>
+                                <div className="flex items-center text-slate-600 text-sm">
+                                    <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
+                                    <span>{c.location || "Location Not Specified"}</span>
                                 </div>
                             </div>
 
@@ -243,7 +230,7 @@ export default function CandidatesPage() {
                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
-                                        View Resume
+                                        Download/View Resume
                                     </a>
                                 </div>
                             )}
