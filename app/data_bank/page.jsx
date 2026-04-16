@@ -166,11 +166,11 @@ export default function CandidatesPage() {
                             {/* Card Header (Avatar + Identity) */}
                             <div className="flex items-start gap-4 mb-4">
                                 <div className="h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg flex-shrink-0">
-                                    {getInitials(c.candidate_name)}
+                                    {getInitials(c.applicant_name)}
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
-                                        {c.candidate_name}
+                                        {c.applicant_name}
                                     </h2>
                                     <p className="text-xs font-mono text-slate-400 mt-0.5 uppercase tracking-wider">{c.name}</p>
                                 </div>
@@ -180,19 +180,19 @@ export default function CandidatesPage() {
                             <div className="flex flex-col gap-2 mb-6">
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                    <span className="font-medium text-slate-800">{c.current_role || "Role Not Specified"}</span>
+                                    <span className="font-medium text-slate-800">{c.custom_current_role || "Role Not Specified"}</span>
                                 </div>
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
-                                    <span>{c.degree || "Qualification Not Specified"}</span>
+                                    <span>{c.custom_degree || "Qualification Not Specified"}</span>
                                 </div>
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <span><strong className="text-slate-800">{c.experience_years || 0}</strong> years experience</span>
+                                    <span><strong className="text-slate-800">{c.custom_experience_years || 0}</strong> years experience</span>
                                 </div>
                                 <div className="flex items-center text-slate-600 text-sm">
                                     <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
-                                    <span>{c.location || "Location Not Specified"}</span>
+                                    <span>{c.custom_location || "Location Not Specified"}</span>
                                 </div>
                             </div>
 
@@ -200,8 +200,8 @@ export default function CandidatesPage() {
                             <div className="mt-auto">
                                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 border-b border-slate-100 pb-2">Skills</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {typeof c.skills === "string" && c.skills ? (
-                                        c.skills.split(",").map((s, i) => (
+                                    {typeof c.custom_skills === "string" && c.custom_skills ? (
+                                        c.custom_skills.split(",").map((s, i) => (
                                             <span
                                                 key={i}
                                                 className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs font-medium rounded-md"
@@ -216,12 +216,12 @@ export default function CandidatesPage() {
                             </div>
 
                             {/* ✅ NEW: Download/View Resume Button */}
-                            {c.resume_file && (
+                            {c.resume_attachment && (
                                 <div className="mt-2 pt-4 border-t border-slate-100">
                                     
                                     <a
                                         // href={c.resume_path}
-                                        href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${c.resume_file}`}
+                                        href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${c.resume_attachment}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center w-full bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-sm"
