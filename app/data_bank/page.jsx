@@ -8,7 +8,8 @@ export default function CandidatesPage() {
         max_exp: 100,
         degree: "",
         location: "",
-        role: ""
+        role: "",
+        applicant_name: ""
     });
 
     const [results, setResults] = useState([]);
@@ -121,6 +122,15 @@ export default function CandidatesPage() {
                             <input
                                 placeholder="e.g. city"
                                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 transition-colors"
+                            />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Applicant Name</label>
+                            <input
+                                placeholder="e.g. John Doe"
+                                onChange={(e) => setFilters({ ...filters, applicant_name: e.target.value })}
                                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 transition-colors"
                             />
                         </div>
