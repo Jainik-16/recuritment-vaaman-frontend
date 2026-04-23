@@ -305,7 +305,7 @@ export default function ResumeChat() {
                         <Menu size={20} />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-slate-800">Resume Intel</h1>
+                        <h1 className="text-lg font-bold text-slate-800">Resume Intelligence AI</h1>
                         <p className="text-xs text-emerald-500 flex items-center gap-1.5 font-medium">
                             <span className="w-2 h-2 bg-emerald-500 rounded-full"></span> System Active
                         </p>
