@@ -14,6 +14,7 @@ export default function CandidatesPage() {
 
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedCandidate, setSelectedCandidate] = useState(null);
 
     const search = async () => {
         setLoading(true);
@@ -225,31 +226,16 @@ export default function CandidatesPage() {
                                 </div>
                             </div>
 
-                            {/* ✅ NEW: Download/View Resume Button */}
-                            {c.resume_attachment && (
-                                <div className="mt-2 pt-4 border-t border-slate-100">
-                                    
-                                    <a
-                                        // href={c.resume_path}
-                                        href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${c.resume_attachment}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center w-full bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors text-sm"
-                                        download
-                                    >
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Download/View Resume
-                                    </a>
-                                </div>
-                            )}
-
+                            {/* ✅ NEW BUTTON */}
+                            <div className="mt-2 pt-4 border-t border-slate-100">
+                                {c.resumes?.length > 0 && (<button onClick={() => setSelectedCandidate(c)} className="w-full bg-black text-white py-2 rounded" > View Resumes ({c.resumes.length}) </button>)}
+                            </div>
                         </div>
                     ))}
                 </div>
 
             </div>
+            {/* ✅ MODAL */} {selectedCandidate && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"> <div className="bg-white rounded-xl p-6 w-full max-w-lg"> <h2 className="text-lg font-bold mb-4"> {selectedCandidate.applicant_name} - Resumes </h2> <div className="flex flex-col gap-3 max-h-80 overflow-y-auto"> {selectedCandidate.resumes?.sort((a, b) => new Date(b.creation) - new Date(a.creation)).map((r, i) => (<a key={i} href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${r.resume_attachment}`} target="_blank" className="bg-gray-100 p-3 rounded flex justify-between" > Resume {i + 1} <span className="text-xs text-gray-500"> {new Date(r.creation).toLocaleString()} </span> </a>))} </div> <button onClick={() => setSelectedCandidate(null)} className="mt-4 w-full bg-red-500 text-white py-2 rounded" > Close </button> </div> </div>)}
         </div>
     );
 }
