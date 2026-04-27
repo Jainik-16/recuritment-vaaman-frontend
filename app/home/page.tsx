@@ -1160,7 +1160,7 @@ export default function RecruitmentDashboard() {
     { id: "salary-annexure-list", title: "Salary Annexure List", description: "View all salary annexures", icon: <FileText className="h-4 w-4" />, status: "pending", route: "/salary-annexure-list", color: "" },
     { id: "offer", title: "Offer Letter", description: "Generate and send offers", icon: <Zap className="h-4 w-4" />, status: "pending", route: "/offer-list", color: "" },
     { id: "appointment", title: "Appointment Letter", description: "Final appointment process", icon: <UserCheck className="h-4 w-4" />, status: "pending", route: "/letter-appointment", color: "" },
-    { id: "assistant", title: "Assistant", description: "Resume Intelligence AI", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/chat", color: "" },
+    // { id: "assistant", title: "Assistant", description: "Resume Intelligence AI", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/chat", color: "" },
     { id: "data_bank", title: "Data Bank", description: "Search Resume with multiple Filters", icon: <Database className="h-4 w-4" />, status: "pending", route: "/data_bank", color: "" },
   ]
 
