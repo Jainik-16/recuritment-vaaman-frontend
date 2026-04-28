@@ -239,9 +239,9 @@ export default function CandidatesPage() {
             {selectedCandidate && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"> <div className="bg-white rounded-xl p-6 w-full max-w-lg"> <h2 className="text-lg font-bold mb-4"> {selectedCandidate.applicant_name} - Resumes </h2> <div className="flex flex-col gap-3 max-h-80 overflow-y-auto"> {selectedCandidate.resumes
                 ?.sort((a, b) => new Date(b.creation) - new Date(a.creation))
                 .map((r, i) => {
-                    const fileName = decodeURIComponent(
-                        r.resume_attachment.split("/").pop().split("_").pop()
-                    );
+                    // const fileName = decodeURIComponent(
+                    //     r.resume_attachment.split("/").pop().split("_").pop()
+                    // );
 
                     return (
                         <a
@@ -251,7 +251,7 @@ export default function CandidatesPage() {
                             className="bg-gray-100 p-3 rounded flex justify-between items-center"
                         >
                             <span className="truncate max-w-[70%]">
-                                {fileName}
+                                {r.file_name || "Unnamed Resume"}
                             </span>
 
                             <span className="text-xs text-gray-500">
