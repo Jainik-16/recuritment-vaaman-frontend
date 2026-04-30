@@ -560,6 +560,10 @@ export default function SalaryAnnexureListPage() {
                         </div>
                         <nav className="sl-nav">
                             <Link href="/create-job" className="sl-nav-cta"><Plus size={14} /> New Job Opening</Link>
+                            <div className="sl-nav-lbl">General</div>
+                            <Link href="/home" className="sl-nav-link">
+                                <Home size={15} /> Home
+                            </Link>
                             <div className="sl-nav-lbl">Pipeline</div>
                             <Link href="/job-opening" className="sl-nav-link"><Briefcase size={15} /> Job Opening</Link>
                             <Link href="/upload-resumes" className="sl-nav-link"><Upload size={15} /> Resume Collection</Link>

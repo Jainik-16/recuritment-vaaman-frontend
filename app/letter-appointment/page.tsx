@@ -2034,6 +2034,10 @@ export default function AppointmentPage() {
             </div>
             <nav className="al-nav">
               <Link href="/create-job" className="al-nav-cta"><Plus size={14} /> New Job Opening</Link>
+              <div className="al-nav-lbl">General</div>
+              <Link href="/home" className="al-nav-link">
+                <Home size={15} /> Home
+              </Link>
               <div className="al-nav-lbl">Pipeline</div>
               <Link href="/job-opening" className="al-nav-link"><Briefcase size={15} /> Job Opening</Link>
               <Link href="/upload-resumes" className="al-nav-link"><Upload size={15} /> Resume Collection</Link>

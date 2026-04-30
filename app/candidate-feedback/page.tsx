@@ -1314,7 +1314,7 @@
 //                     <SelectValue placeholder={
 //                       loading.resultOptions ? "Loading..." :
 //                         resultOptions.length === 0 ? "No options available" :
-//                           "Select result"
+//                           "Select Result"
 //                     } />
 //                   </SelectTrigger>
 //                   <SelectContent>
@@ -1797,6 +1797,7 @@ import {
   Menu, X, Home, LogOut, Upload, Users, ChevronRight,
   Zap, UserCheck
 } from "lucide-react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { API_BASE_URL } from "@/lib/api-config"
 import { axiosConfig } from '@/lib/axios-config'
@@ -2699,6 +2700,10 @@ function CandidateFeedbackForm() {
             </div>
             <nav className="cf-nav">
               <a href="/create-job" className="cf-nav-cta"><Plus size={14} /> New Job Opening</a>
+              <div className="cf-nav-lbl">General</div>
+              <Link href="/home" className="cf-nav-link">
+                <Home size={15} /> Home
+              </Link>
               <div className="cf-nav-lbl">Pipeline</div>
               {sidebarPipeline.map(s => (
                 <a key={s.href} href={s.href} className="cf-nav-link">{s.icon} {s.title}</a>
@@ -2824,7 +2829,7 @@ function CandidateFeedbackForm() {
                       <label className="cf-label"><CheckCircle2 size={12} /> Result <span className="cf-req">*</span></label>
                       <div className="cf-select-wrap">
                         <select className="cf-select" value={feedbackForm.result} onChange={e => setFeedbackForm({ ...feedbackForm, result: e.target.value })} disabled={loading.resultOptions || isFormDisabled}>
-                          <option value="">{loading.resultOptions ? "Loading..." : resultOptions.length === 0 ? "No options available" : "Select result"}</option>
+                          <option value="">{loading.resultOptions ? "Loading..." : resultOptions.length === 0 ? "No options available" : "Select Result"}</option>
                           {resultOptions.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                         <ChevronRight size={13} className="cf-select-arrow" />
@@ -3036,12 +3041,26 @@ function CandidateFeedbackForm() {
                             className="cf-check"
                             checked={feedbackForm.final_score_recommendation.includes(option)}
                             disabled={isFormDisabled || ["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)"].includes(option)}
+                            // onChange={e => {
+                            //   if (!["To be Offered", "Not Shortlisted", "Candidature Withdrawn"].includes(option)) return
+                            //   setFeedbackForm(prev => ({
+                            //     ...prev,
+                            //     final_score_recommendation: e.target.checked
+                            //       ? [...prev.final_score_recommendation, option]
+                            //       : prev.final_score_recommendation.filter(i => i !== option)
+                            //   }))
+                            // }}
                             onChange={e => {
                               if (!["To be Offered", "Not Shortlisted", "Candidature Withdrawn"].includes(option)) return
+                              const scoreOptions = ["Average (10 to 13)", "Good (14 to 18)", "Excellent (19 to 21)"]
                               setFeedbackForm(prev => ({
                                 ...prev,
                                 final_score_recommendation: e.target.checked
-                                  ? [...prev.final_score_recommendation, option]
+                                  ? [
+                                    // Keep only the auto-checked score options, replace any previous recommendation
+                                    ...prev.final_score_recommendation.filter(i => scoreOptions.includes(i)),
+                                    option
+                                  ]
                                   : prev.final_score_recommendation.filter(i => i !== option)
                               }))
                             }}

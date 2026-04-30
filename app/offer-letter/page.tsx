@@ -1985,6 +1985,10 @@ export default function JobOfferPage() {
             </div>
             <nav className="ol-nav">
               <Link href="/create-job" className="ol-nav-cta"><Plus size={14} /> New Job Opening</Link>
+              <div className="ol-nav-lbl">General</div>
+              <Link href="/home" className="ol-nav-link">
+                <Home size={15} /> Home
+              </Link>
               <div className="ol-nav-lbl">Pipeline</div>
               <Link href="/job-opening" className="ol-nav-link"><Briefcase size={15} /> Job Opening</Link>
               <Link href="/upload-resumes" className="ol-nav-link"><Upload size={15} /> Resume Collection</Link>

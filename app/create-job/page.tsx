@@ -1674,7 +1674,7 @@ export default function CreateJobOpeningForm() {
           fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Employment Type?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Designation?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Location?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Cost Center?fields=["name"]&filters=[["Cost Center","is_group","=",0]]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/DocType/Job Opening`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Currency?fields=["name"]&limit_page_length=999`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
         ])

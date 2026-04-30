@@ -3,7 +3,7 @@ const BASE_URL = 'https://ats.octavision.in';
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
-        
+
         const res = await fetch(`${BASE_URL}/api/method/upload_file`, {
             method: 'POST',
             headers: {
@@ -19,3 +19,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
     }
 }
+

@@ -740,6 +740,7 @@ import {
   CheckCircle2, AlertCircle, Menu, X, Home, LogOut, Upload,
   Briefcase, MessageSquare, Zap, UserCheck, ChevronRight, Plus,
 } from "lucide-react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { API_BASE_URL } from '@/lib/api-config'
 import { getFrappeCSRF } from "@/lib/csrf"
@@ -910,6 +911,9 @@ function EventPageContent() {
   const applicantId = searchParams.get('applicantId')
   const applicantName = searchParams.get('applicantName')
   const applicantEmail = searchParams.get('applicantEmail')
+  const jobOpening = searchParams.get('jobOpening') || ""
+  const clearedRoundsParam = searchParams.get('clearedRounds') || ""
+  const clearedRounds = clearedRoundsParam ? clearedRoundsParam.split(",") : []
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
@@ -939,6 +943,7 @@ function EventPageContent() {
   const [interviewLinks, setInterviewLinks] = useState<InterviewLink[]>([])
   const [isSaving, setIsSaving] = useState(false)
 
+
   const statusOptions = ["Pending", "Under Review", "Cleared", "Rejected"]
 
   useEffect(() => {
@@ -965,10 +970,21 @@ function EventPageContent() {
     } catch (error) { console.error("Error fetching interview links:", error) }
   }
 
+  // const fetchLocations = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${API_BASE_URL}/api/resource/Location?fields=["name"]&limit_page_length=100`,
+  //       { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+  //     )
+  //     const data = await response.json()
+  //     if (data && data.data) { setLocations(data.data); console.log("Fetched locations:", data.data) }
+  //   } catch (error) { console.error("Error fetching locations:", error) }
+  // }
+
   const fetchLocations = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/resource/Location?fields=["name"]&limit_page_length=100`,
+        `${API_BASE_URL}/api/resource/Cost Center?fields=["name"]&filters=[["Cost Center","is_group","=",0]]&limit_page_length=0`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
       const data = await response.json()
@@ -1113,8 +1129,47 @@ function EventPageContent() {
       const toTime = new Date(`2000-01-01T${eventForm.toTime}`)
       if (fromTime >= toTime) { alert("To Time must be later than From Time"); return }
     }
+
+    // REPLACE the duplicate check block with this:
+    try {
+      const existingRes = await fetch(
+        `${API_BASE_URL}/api/resource/Interview?` +
+        `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["interview_round","=","${eventForm.interviewRound}"],["status","=","Cleared"]]` +
+        `&fields=["name","status","interview_round"]&limit_page_length=1`,
+        {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+      const existingData = await existingRes.json()
+      console.log("Cleared round check:", existingData)
+
+      if (existingData.data && existingData.data.length > 0) {
+        alert(`"${eventForm.interviewRound}" is already Cleared for this candidate. You cannot schedule the same round again. Please select a different round.`)
+        return
+      }
+    } catch (err) {
+      console.error("Round validation failed:", err)
+    }
+
     setIsSaving(true)
     try {
+      // const interviewData = {
+      //   doctype: "Interview",
+      //   interview_round: eventForm.interviewRound,
+      //   job_applicant: eventForm.jobApplicant,
+      //   resume_link: eventForm.resumeLink || '',
+      //   custom_meeting_link: eventForm.meetingLink || '',
+      //   custom_location: eventForm.location || '',
+      //   status: eventForm.status,
+      //   scheduled_on: eventForm.scheduledOn,
+      //   from_time: eventForm.fromTime,
+      //   to_time: eventForm.toTime,
+      //   interview_details: eventForm.interviewers.map((interviewer) => ({
+      //     doctype: "Interview Detail",
+      //     interviewer,
+      //   }))
+      // }
       const interviewData = {
         doctype: "Interview",
         interview_round: eventForm.interviewRound,
@@ -1126,6 +1181,7 @@ function EventPageContent() {
         scheduled_on: eventForm.scheduledOn,
         from_time: eventForm.fromTime,
         to_time: eventForm.toTime,
+        job_title: null,
         interview_details: eventForm.interviewers.map((interviewer) => ({
           doctype: "Interview Detail",
           interviewer,
@@ -1133,6 +1189,21 @@ function EventPageContent() {
       }
       console.log("Creating interview:", JSON.stringify(interviewData, null, 2))
       const csrfToken = await getFrappeCSRF()
+      // Clear bad job_title from applicant before creating interview
+      try {
+        const csrfToken2 = await getFrappeCSRF()
+        await fetch(`${API_BASE_URL}/api/method/frappe.client.set_value`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrfToken2 },
+          body: JSON.stringify({
+            doctype: 'Job Applicant',
+            name: eventForm.jobApplicant,
+            fieldname: 'job_title',
+            value: ''
+          })
+        })
+      } catch (e) { console.log('Could not clear job_title', e) }
       const response = await fetch(`${API_BASE_URL}/api/resource/Interview`, {
         method: 'POST',
         credentials: 'include',
@@ -1186,6 +1257,10 @@ function EventPageContent() {
             </div>
             <nav className="ev-nav">
               <a href="/create-job" className="ev-nav-cta"><Plus size={14} /> New Job Opening</a>
+              <div className="ev-nav-lbl">General</div>
+              <Link href="/home" className="ev-nav-link">
+                <Home size={15} /> Home
+              </Link>
               <div className="ev-nav-lbl">Pipeline</div>
               {sidebarPipeline.map(s => (
                 <a key={s.href} href={s.href} className={`ev-nav-link${s.href === "/interview" ? " active" : ""}`}>

@@ -1513,6 +1513,10 @@ export default function OfferListPage() {
                         </div>
                         <nav className="ofl-nav">
                             <Link href="/create-job" className="ofl-nav-cta"><Plus size={14} /> New Job Opening</Link>
+                            <div className="ofl-nav-lbl">General</div>
+                            <Link href="/home" className="ofl-nav-link">
+                                <Home size={15} /> Home
+                            </Link>
                             <div className="ofl-nav-lbl">Pipeline</div>
                             <Link href="/job-opening" className="ofl-nav-link"><Briefcase size={15} /> Job Opening</Link>
                             <Link href="/upload-resumes" className="ofl-nav-link"><Upload size={15} /> Resume Collection</Link>

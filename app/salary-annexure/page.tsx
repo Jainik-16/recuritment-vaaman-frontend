@@ -1362,17 +1362,29 @@ const css = `
   }
 
   /* ══ TOTALS GRID ══ */
-  .sa-totals-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; padding: 20px 24px;
-    background: linear-gradient(135deg, #f8fbff, #eef7ff); border-top: 1px solid var(--border-s);
-  }
-  .sa-total-item { display: flex; flex-direction: column; gap: 4px; }
-  .sa-total-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--t3); }
-  .sa-total-val { font-size: 15px; font-weight: 700; color: var(--t1); display: flex; align-items: center; gap: 4px; }
-  .sa-total-val.accent { color: var(--accent); }
-  .sa-total-val.green { color: var(--green); }
-  .sa-total-val.purple { color: var(--purple); }
-  .sa-total-divider { grid-column: 1 / -1; height: 1px; background: var(--border-s); margin: 4px 0; }
+ .sa-totals-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 0;
+    background: linear-gradient(135deg, #f8fbff, #eef7ff);
+    border-top: 1px solid var(--border-s);
+}
+.sa-total-item {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border-s);
+    border-right: 1px solid var(--border-s);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.sa-total-item:nth-child(3n) { border-right: none; }
+.sa-total-item.no-border { border-bottom: none; }
+.sa-total-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--t3); }
+.sa-total-val { font-size: 15px; font-weight: 700; color: var(--t1); display: flex; align-items: center; gap: 4px; }
+.sa-total-val.accent { color: var(--accent); }
+.sa-total-val.green { color: var(--green); }
+.sa-total-val.purple { color: var(--purple); }
+.sa-total-divider { display: none; }
 
   /* ══ CONDITIONS ══ */
   .sa-cond-list { display: flex; flex-direction: column; gap: 0; }
@@ -1861,6 +1873,10 @@ export default function SalaryAnnexurePage() {
                         </div>
                         <nav className="sa-nav">
                             <Link href="/create-job" className="sa-nav-cta"><Plus size={14} /> New Job Opening</Link>
+                            <div className="sa-nav-lbl">General</div>
+                            <Link href="/home" className="sa-nav-link">
+                                <Home size={15} /> Home
+                            </Link>
                             <div className="sa-nav-lbl">Pipeline</div>
                             <Link href="/job-opening" className="sa-nav-link"><Briefcase size={15} /> Job Opening</Link>
                             <Link href="/upload-resumes" className="sa-nav-link"><Upload size={15} /> Resume Collection</Link>
@@ -2207,6 +2223,7 @@ export default function SalaryAnnexurePage() {
 
                                             {/* Totals */}
                                             <div className="sa-totals-grid">
+                                                {/* Row 1 */}
                                                 <div className="sa-total-item">
                                                     <div className="sa-total-lbl">Sub Total (A) Monthly</div>
                                                     <div className="sa-total-val accent">₹ {formatCurrency(totals.subA_monthly)}</div>
@@ -2215,27 +2232,24 @@ export default function SalaryAnnexurePage() {
                                                     <div className="sa-total-lbl">Sub Total (A) Annualized</div>
                                                     <div className="sa-total-val accent">₹ {formatCurrency(totals.subA_annual)}</div>
                                                 </div>
-                                                <div className="sa-total-item" />
-                                                <div className="sa-total-divider" />
                                                 <div className="sa-total-item">
                                                     <div className="sa-total-lbl">Sub Total (B) Monthly</div>
                                                     <div className="sa-total-val purple">₹ {formatCurrency(totals.subB_monthly)}</div>
                                                 </div>
-                                                <div className="sa-total-item">
+
+                                                {/* Row 2 */}
+                                                <div className="sa-total-item no-border">
                                                     <div className="sa-total-lbl">Sub Total (B) Annualized</div>
                                                     <div className="sa-total-val purple">₹ {formatCurrency(totals.subB_annual)}</div>
                                                 </div>
-                                                <div className="sa-total-item" />
-                                                <div className="sa-total-divider" />
-                                                <div className="sa-total-item">
+                                                <div className="sa-total-item no-border">
                                                     <div className="sa-total-lbl">Total A + B Monthly</div>
                                                     <div className="sa-total-val green">₹ {formatCurrency(totals.total_monthly)}</div>
                                                 </div>
-                                                <div className="sa-total-item">
+                                                <div className="sa-total-item no-border">
                                                     <div className="sa-total-lbl">Total A + B Annualized</div>
                                                     <div className="sa-total-val green">₹ {formatCurrency(totals.total_annual)}</div>
                                                 </div>
-                                                <div className="sa-total-item" />
                                             </div>
                                         </>
                                     )}

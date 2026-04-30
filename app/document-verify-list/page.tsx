@@ -1449,6 +1449,11 @@ export default function DocumentVerifyListPage() {
                         </div>
                         <nav className="dvl-nav">
                             <Link href="/create-job" className="dvl-nav-cta"><Plus size={14} /> New Job Opening</Link>
+                            <div className="dvl-nav-lbl">General</div>
+                            <Link href="/home" className="dvl-nav-link">
+                                <Home size={15} /> Home
+                            </Link>
+
                             <div className="dvl-nav-lbl">Pipeline</div>
                             <Link href="/job-opening" className="dvl-nav-link"><Briefcase size={15} /> Job Opening</Link>
                             <Link href="/upload-resumes" className="dvl-nav-link"><Upload size={15} /> Resume Collection</Link>

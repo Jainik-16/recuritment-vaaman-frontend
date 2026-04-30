@@ -795,6 +795,8 @@ import {
   Briefcase, Upload, MessageSquare, FileText,
   UserCheck, Plus, ArrowRight, Calendar,
   Users, Zap, LogOut, ChevronRight, Home, Menu, X,
+  Database,
+  Bot,
 } from "lucide-react"
 import Link from "next/link"
 import { API_BASE_URL } from '@/lib/api-config'
@@ -1159,6 +1161,8 @@ export default function RecruitmentDashboard() {
     { id: "salary-annexure-list", title: "Salary Annexure List", description: "View all salary annexures", icon: <FileText className="h-4 w-4" />, status: "pending", route: "/salary-annexure-list", color: "" },
     { id: "offer", title: "Offer Letter", description: "Generate and send offers", icon: <Zap className="h-4 w-4" />, status: "pending", route: "/offer-list", color: "" },
     { id: "appointment", title: "Appointment Letter", description: "Final appointment process", icon: <UserCheck className="h-4 w-4" />, status: "pending", route: "/letter-appointment", color: "" },
+    // { id: "assistant", title: "Assistant", description: "Resume Intelligence AI", icon: <Bot className="h-4 w-4" />, status: "pending", route: "/chat", color: "" },
+    { id: "data_bank", title: "Data Bank", description: "Search Resume with multiple Filters", icon: <Database className="h-4 w-4" />, status: "pending", route: "/data_bank", color: "" },
   ]
 
   const pipeline = workflowSteps.slice(0, 4)
@@ -1194,6 +1198,10 @@ export default function RecruitmentDashboard() {
             <nav className="v1-nav">
               <Link href="/create-job" className="v1-nav-cta">
                 <Plus size={14} /> New Job Opening
+              </Link>
+              <div className="v1-nav-lbl">General</div>
+              <Link href="/home" className="v1-nav-link">
+                <Home size={15} /> Home
               </Link>
 
               <div className="v1-nav-lbl">Pipeline</div>
@@ -1231,9 +1239,16 @@ export default function RecruitmentDashboard() {
               </button>
               <div className="v1-hdr-sep" />
 
-              <div className="v1-crumb">
+              {/* <div className="v1-crumb">
                 <Home size={13} />
                 Home
+                <ChevronRight size={13} />
+                <strong>Dashboard</strong>
+              </div> */}
+              <div className="v1-crumb">
+                <Link href="/home" style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--t3)", textDecoration: "none" }}>
+                  <Home size={13} /> Home
+                </Link>
                 <ChevronRight size={13} />
                 <strong>Dashboard</strong>
               </div>

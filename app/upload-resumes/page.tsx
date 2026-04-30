@@ -1265,6 +1265,7 @@ export default function ResumeUploader() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const [isDataBank, setIsDataBank] = useState(false)
 
   // ── ALL ORIGINAL LOGIC UNCHANGED ──────────────────────────
   useEffect(() => {
@@ -1353,12 +1354,25 @@ export default function ResumeUploader() {
     const job = jobs.find(j => j.name === jobId)
     setSelectedJob(job || null)
     if (job) toast({ title: "Job Selected", description: `Selected "${job.job_title}" for resume uploads.`, duration: 3000 })
+
+    // ✅ Auto disable databank
+    if (jobId) {
+      setIsDataBank(false)
+    }
+
+    if (job) {
+      toast({
+        title: "Job Selected",
+        description: `Selected "${job.job_title}" for resume uploads.`,
+        duration: 3000,
+      })
+    }
   }
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
     if (files.length === 0) { toast({ variant: "destructive", title: "No Files Selected", description: "Please select at least one PDF resume file to upload.", duration: 4000 }); return }
-    if (!selectedJobId) { toast({ variant: "destructive", title: "No Job Selected", description: "Please select a job opening before uploading resumes.", duration: 4000 }); return }
+    if (!selectedJobId && !isDataBank) { toast({ variant: "destructive", title: "No Job Selected", description: "Please select a job opening before uploading resumes.", duration: 4000 }); return }
 
     setIsLoading(true); setUploadProgress(0); setProcessedFiles([])
     toast({ title: "🚀 Starting Upload Process", description: `Processing ${files.length} resume(s) with AI analysis...`, duration: 3000 })
@@ -1372,7 +1386,14 @@ export default function ResumeUploader() {
         try {
           const formData = new FormData()
           formData.append("files", file)
-          formData.append("job_opening", selectedJobId)
+          // formData.append("job_opening", selectedJobId)
+          // ✅ conditionally send job
+          if (!isDataBank) {
+            formData.append("job_opening", selectedJobId)
+          }
+
+          // ✅ send databank flag
+          formData.append("is_data_bank", isDataBank ? "1" : "0")
           const csrfToken = await getFrappeCSRF()
           const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
             method: 'POST', credentials: 'include',
@@ -1467,6 +1488,10 @@ export default function ResumeUploader() {
             <nav className="ru-nav">
               <Link href="/create-job" className="ru-nav-cta">
                 <Plus size={14} /> New Job Opening
+              </Link>
+              <div className="ru-nav-lbl">General</div>
+              <Link href="/home" className="ru-nav-link">
+                <Home size={15} /> Home
               </Link>
               <div className="ru-nav-lbl">Pipeline</div>
               {sidebarPipeline.map(s => (
@@ -1568,6 +1593,7 @@ export default function ResumeUploader() {
                         <div className="ru-panel-sub">Choose the position you're hiring for</div>
                       </div>
                     </div>
+
                     <div className="ru-panel-body">
                       <div className="ru-select-wrap">
                         <select
@@ -1613,8 +1639,32 @@ export default function ResumeUploader() {
                           )}
                         </div>
                       )}
+                      <div style={{ marginTop: "12px" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={isDataBank}
+                            onChange={(e) => {
+                              const checked = e.target.checked
+                              setIsDataBank(checked)
+
+                              if (checked) {
+                                // ❌ remove job selection
+                                setSelectedJobId("")
+                                setSelectedJob(null)
+                              }
+                            }}
+                          />
+                          <span style={{ fontSize: "13px", fontWeight: 500 }}>Data Bank Mode</span>
+                        </label>
+
+                        <p style={{ fontSize: "11px", color: "#6a9cb8", marginTop: "4px" }}>
+                          Upload resumes without job mapping
+                        </p>
+                      </div>
                     </div>
                   </div>
+
 
                   {/* Progress Panel */}
                   {isLoading && (
@@ -1709,7 +1759,8 @@ export default function ResumeUploader() {
                       <button
                         type="submit"
                         className="ru-submit"
-                        disabled={isLoading || files.length === 0 || !selectedJobId}
+                        // disabled={isLoading || files.length === 0 || !selectedJobId}
+                        disabled={isLoading || files.length === 0 || (!selectedJobId && !isDataBank)}
                       >
                         {isLoading ? (
                           <>

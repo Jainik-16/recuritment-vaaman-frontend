@@ -657,6 +657,10 @@ export default function DocumentVerifyPage() {
                         </div>
                         <nav className="dv-nav">
                             <Link href="/create-job" className="dv-nav-cta"><Plus size={14} /> New Job Opening</Link>
+                            <div className="dv-nav-lbl">General</div>
+                            <Link href="/home" className="dv-nav-link">
+                                <Home size={15} /> Home
+                            </Link>
                             <div className="dv-nav-lbl">Pipeline</div>
                             <Link href="/job-opening" className="dv-nav-link"><Briefcase size={15} /> Job Opening</Link>
                             <Link href="/upload-resumes" className="dv-nav-link"><Upload size={15} /> Resume Collection</Link>
@@ -677,6 +681,8 @@ export default function DocumentVerifyPage() {
                         <header className="dv-header">
                             <button className="dv-toggle" onClick={() => setSidebarOpen(o => !o)}><Menu size={16} /></button>
                             <div className="dv-hdr-sep" />
+                            <button className="dv-back-btn" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
+                            <div className="dv-hdr-sep" />
                             <div className="dv-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} />
                                 Document Verification <ChevronRight size={13} />
@@ -687,12 +693,17 @@ export default function DocumentVerifyPage() {
                         <div className="dv-page-outer">
                             <div className="dv-page">
 
-                                <div className="dv-toolbar">
+                                {/* <div className="dv-toolbar">
                                     <button className="dv-back-btn" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
                                     <div>
                                         <h1 className="dv-page-title">{existingDocumentId ? "Update Documents" : "Applicant Documents"}</h1>
                                         <p className="dv-page-sub">{existingDocumentId ? "Update or add missing applicant documents" : "Verify and upload applicant documents"}</p>
                                     </div>
+                                </div> */}
+
+                                <div>
+                                    <h1 className="dv-page-title">{existingDocumentId ? "Update Documents" : "Applicant Documents"}</h1>
+                                    <p className="dv-page-sub">{existingDocumentId ? "Update or add missing applicant documents" : "Verify and upload applicant documents"}</p>
                                 </div>
 
                                 {/* Basic Info */}

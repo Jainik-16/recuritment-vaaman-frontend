@@ -1283,6 +1283,10 @@ export default function FeedbackPage() {
             </div>
             <nav className="fl-nav">
               <Link href="/create-job" className="fl-nav-cta"><Plus size={14} /> New Job Opening</Link>
+              <div className="fl-nav-lbl">General</div>
+              <Link href="/home" className="fl-nav-link">
+                <Home size={15} /> Home
+              </Link>
               <div className="fl-nav-lbl">Pipeline</div>
               <Link href="/job-opening" className="fl-nav-link"><Briefcase size={15} /> Job Opening</Link>
               <Link href="/upload-resumes" className="fl-nav-link"><Upload size={15} /> Resume Collection</Link>
