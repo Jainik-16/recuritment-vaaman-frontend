@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./api-config";
 export async function getFrappeCSRF() {
-    const res = await fetch(`${API_BASE_URL}/api/method/hrms.api.get_csrf_token`, {
+    const res = await fetch(`${API_BASE_URL}/api/method/resume.api.csrf.get_csrf_token`, {
         method: "GET",
         credentials: "include",
     });
