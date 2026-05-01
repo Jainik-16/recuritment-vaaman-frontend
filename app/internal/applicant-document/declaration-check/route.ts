@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const BASE_URL = 'https://ats.octavision.in';
+const BASE_URL = 'https://ats.vaaman.in';
 const getAuthHeaders = () => ({
     'Authorization': `token ${process.env.FRAPPE_API_KEY}:${process.env.FRAPPE_API_SECRET}`,
     'Content-Type': 'application/json',

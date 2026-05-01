@@ -6,7 +6,7 @@ const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
 });
 
-const BASE_URL = 'https://ats.octavision.in';
+const BASE_URL = 'https://ats.vaaman.in';
 
 export async function POST(request: Request) {
     try {

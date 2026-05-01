@@ -57,8 +57,8 @@ export default function ResumeChat() {
     // const fetchSessions = async () => {
     //   try {
 
-    //     // const res = await fetch(`${API_BASE_URL}/api/method/resume_ai.api.resume.chat_api.get_chat_sessions`, {
-    //     const res = await fetch(`/api/method/resume_ai.api.resume.chat_api.get_chat_sessions`, {
+    //     // const res = await fetch(`${API_BASE_URL}/api/method/vaaman_ats_ai.api.resume.chat_api.get_chat_sessions`, {
+    //     const res = await fetch(`/api/method/vaaman_ats_ai.api.resume.chat_api.get_chat_sessions`, {
     //       method: 'GET',
     //       credentials: 'include' // <-- ADDS YOUR LOGIN COOKIE
     //     });
@@ -74,8 +74,8 @@ export default function ResumeChat() {
     // Update fetchSessions to include search
     const fetchSessions = async (search?: string) => {
         const url = search
-            ? `/api/method/resume_ai.api.resume.chat_api.get_chat_sessions?search_text=${search}`
-            : `/api/method/resume_ai.api.resume.chat_api.get_chat_sessions`;
+            ? `/api/method/vaaman_ats_ai.api.resume.chat_api.get_chat_sessions?search_text=${search}`
+            : `/api/method/vaaman_ats_ai.api.resume.chat_api.get_chat_sessions`;
 
         const res = await fetch(url, { method: 'GET', credentials: 'include' });
         const data = await res.json();
@@ -87,14 +87,14 @@ export default function ResumeChat() {
         setCurrentSessionId(sessionId);
         setIsLoading(true);
         try {
-            // const res = await fetch(`${API_BASE_URL}/api/method/resume_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
+            // const res = await fetch(`${API_BASE_URL}/api/method/vaaman_ats_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
             //   headers: {
             //     'Content-Type': 'application/json',
             //     ...getAuthHeaders()
             //   }
             // });
-            // const res = await fetch(`${API_BASE_URL}/api/method/resume_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
-            const res = await fetch(`/api/method/resume_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
+            // const res = await fetch(`${API_BASE_URL}/api/method/vaaman_ats_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
+            const res = await fetch(`/api/method/vaaman_ats_ai.api.resume.chat_api.get_session_history?session_id=${sessionId}`, {
                 method: 'GET',
                 credentials: 'include' // <-- ADDS YOUR LOGIN COOKIE
             });
@@ -131,8 +131,8 @@ export default function ResumeChat() {
 
         try {
             const csrfToken = await getFrappeCSRF();
-            //   const response = await fetch(`${API_BASE_URL}/api/method/resume_ai.api.resume.chat_api.chat_query`, {                  
-              const response = await fetch(`/api/method/resume_ai.api.resume.chat_api.chat_query`, {
+            //   const response = await fetch(`${API_BASE_URL}/api/method/vaaman_ats_ai.api.resume.chat_api.chat_query`, {                  
+              const response = await fetch(`/api/method/vaaman_ats_ai.api.resume.chat_api.chat_query`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -175,7 +175,7 @@ export default function ResumeChat() {
     const togglePin = async (e: React.MouseEvent, sessionId: string) => {
         e.stopPropagation(); // Prevent loading the chat
         const csrfToken = await getFrappeCSRF();
-        const res = await fetch(`/api/method/resume_ai.api.resume.chat_api.toggle_pin_session`, {
+        const res = await fetch(`/api/method/vaaman_ats_ai.api.resume.chat_api.toggle_pin_session`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
@@ -188,7 +188,7 @@ export default function ResumeChat() {
         e.stopPropagation();
         if (!confirm("Delete this chat?")) return;
         const csrfToken = await getFrappeCSRF();
-        const res = await fetch(`/api/method/resume_ai.api.resume.chat_api.delete_session`, {
+        const res = await fetch(`/api/method/vaaman_ats_ai.api.resume.chat_api.delete_session`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },

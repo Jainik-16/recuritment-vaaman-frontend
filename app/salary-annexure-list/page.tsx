@@ -11,7 +11,7 @@ import {
 import { getFrappeCSRF } from "@/lib/csrf"
 
 const API_MODULE_PATH = "resume.api.salary_annexure"
-const API_BASE_URL = "https://ats.octavision.in"
+const API_BASE_URL = "https://ats.vaaman.in"
 const PAGE_SIZE = 10
 
 const css = `

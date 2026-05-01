@@ -65,7 +65,7 @@
 
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://ats.octavision.in";
+const BASE_URL = "https://ats.vaaman.in";
 
 const headers = {
     Authorization:

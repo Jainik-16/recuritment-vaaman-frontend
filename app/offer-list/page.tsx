@@ -434,7 +434,7 @@ const css = `
   }
 `
 
-const API_BASE_URL = "https://ats.octavision.in/api/method/resume.api.offer_letter"
+const API_BASE_URL = "https://ats.vaaman.in/api/method/resume.api.offer_letter"
 
 export default function OfferListPage() {
     const router = useRouter()
@@ -736,7 +736,7 @@ export default function OfferListPage() {
                                                                                     onClick={e => {
                                                                                         e.stopPropagation()
                                                                                         e.preventDefault()
-                                                                                        const url = `https://ats.octavision.in/api/method/frappe.utils.print_format.download_pdf?doctype=Job%20Offer&name=${encodeURIComponent(offer.name)}&format=Offer%20Letter%20with%20Annexure&no_letterhead=0`
+                                                                                        const url = `https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Job%20Offer&name=${encodeURIComponent(offer.name)}&format=Offer%20Letter%20with%20Annexure&no_letterhead=0`
                                                                                         window.open(url, '_blank')
                                                                                     }}
                                                                                     onMouseDown={e => e.stopPropagation()}

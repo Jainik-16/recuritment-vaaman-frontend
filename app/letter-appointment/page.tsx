@@ -485,8 +485,8 @@ export default function AppointmentPage() {
     custom_employee: "", custom_salary_annexure: "", custom_staffworker: "",
   })
 
-  const API_BASE_URL = "https://ats.octavision.in/api/method/resume.api.appointment_letter"
-  const FRAPPE_BASE_URL = "https://ats.octavision.in"
+  const API_BASE_URL = "https://ats.vaaman.in/api/method/resume.api.appointment_letter"
+  const FRAPPE_BASE_URL = "https://ats.vaaman.in"
   const filteredCandidates = acceptedCandidates.filter(c =>
     c.applicant_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -779,25 +779,25 @@ export default function AppointmentPage() {
     <div className="al-dl-btns">
       {appt.custom_staffworker === "Worker" ? (
         <button className="al-dl-btn orange" onClick={() => {
-          window.open(`https://ats.octavision.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
         }}>
           <FileText size={15} /> Download - Worker To Staff
         </button>
       ) : appt.custom_staffworker === "Staff" ? (
         <button className="al-dl-btn blue" onClick={() => {
-          window.open(`https://ats.octavision.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
+          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
         }}>
           <FileText size={15} /> Download - Letter To Staff
         </button>
       ) : (
         <>
           <button className="al-dl-btn orange" onClick={() => {
-            window.open(`https://ats.octavision.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
           }}>
             <FileText size={15} /> Worker To Staff
           </button>
           <button className="al-dl-btn blue" onClick={() => {
-            window.open(`https://ats.octavision.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
+            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
           }}>
             <FileText size={15} /> Letter To Staff
           </button>

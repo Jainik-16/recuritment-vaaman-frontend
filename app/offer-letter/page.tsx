@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils"
 import { getFrappeCSRF } from "@/lib/csrf"
 
 const API_MODULE_PATH = "resume.api.offer_letter"
-const API_BASE_URL = "https://ats.octavision.in"
+const API_BASE_URL = "https://ats.vaaman.in"
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');

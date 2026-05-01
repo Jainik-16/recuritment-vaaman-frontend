@@ -26,7 +26,7 @@ export default function CandidatesPage() {
             }).toString();
 
             const res = await fetch(
-                `/api/method/resume_ai.api.data_bank.data_bank.search_candidates?${queryParams}`,
+                `/api/method/vaaman_ats_ai.api.data_bank.data_bank.search_candidates?${queryParams}`,
                 {
                     method: "GET", // ✅ Changed to GET
                     headers: {
