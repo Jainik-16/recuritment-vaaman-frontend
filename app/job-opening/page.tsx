@@ -1,3 +1,4 @@
+
 "use client"
 import { useEffect, useState } from "react"
 import {
@@ -28,6 +29,7 @@ import {
     Menu,
     Edit2,
     Check,
+    Globe,
 } from "lucide-react"
 import { API_BASE_URL } from '@/lib/api-config'
 import { Button } from "@/components/ui/button"
@@ -421,6 +423,35 @@ const css = `
   }
   .jol-edit-pencil:hover { color: var(--accent); background: var(--accent-lt); }
 
+  /* ── PUBLISH CHECKBOX STYLES ── */
+  .jol-publish-row {
+    display: flex; align-items: center; gap: 10px; padding-left: 20px;
+  }
+  .jol-publish-checkbox {
+    width: 17px; height: 17px; border-radius: 4px;
+    border: 2px solid var(--border); background: #fff;
+    cursor: pointer; appearance: none; -webkit-appearance: none;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0; position: relative;
+  }
+  .jol-publish-checkbox:checked {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .jol-publish-checkbox:checked::after {
+    content: ''; position: absolute;
+    width: 4px; height: 8px;
+    border: 2px solid #fff; border-top: none; border-left: none;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .jol-publish-checkbox:disabled { opacity: .5; cursor: not-allowed; }
+  .jol-publish-label {
+    font-size: 13px; font-weight: 500; color: var(--t1); cursor: pointer; user-select: none;
+  }
+  .jol-publish-saving {
+    font-size: 11.5px; color: var(--t3); font-style: italic;
+  }
+  /* ─────────────────────────── */
+
   .jol-detail-empty { padding: 48px 22px; text-align: center; }
   .jol-detail-empty-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px; background: var(--accent-lt); color: var(--accent); display: flex; align-items: center; justify-content: center; }
   .jol-detail-empty-title { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 5px; }
@@ -505,48 +536,29 @@ export default function JobOpeningList() {
     const [saving, setSaving] = useState(false)
     // ────────────────────────────────────────────────────────
 
+    // ── PUBLISH ON WEBSITE STATE ────────────────────────────
+    const [savingPublish, setSavingPublish] = useState(false)
+    // ────────────────────────────────────────────────────────
+
     const ITEMS_PER_PAGE = 10
     const [currentPage, setCurrentPage] = useState(1)
     const router = useRouter()
-
-    // const fetchJobOpenings = async () => {
-    //     setLoading(true)
-    //     try {
-    //         const response = await fetch(
-    //             `${API_BASE_URL}/api/resource/Job Opening?fields=["*"]&limit_page_length=999&order_by=creation desc`,
-    //             { method: "GET", credentials: "include", headers: { 'Content-Type': 'application/json' } }
-    //         )
-    //         const data = await response.json()
-    //         const jobs = data.data || []
-    //         console.log("Jobs loaded:", jobs.length)  // ADD THIS
-
-    //         setJobOpenings(jobs)
-    //         setFilteredJobs(jobs)
-
-    //         // Fetch applicant counts after jobs load
-    //         if (jobs.length > 0) {
-    //             fetchApplicantCounts(jobs)
-    //         }
-    //     } catch (error) {
-    //         console.error("Error fetching job openings:", error)
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
-
-    // ── FETCH APPLICANT COUNTS (FIXED) ───────────────────────
-
 
     const fetchJobOpenings = async () => {
         setLoading(true)
         try {
             const response = await fetch(
-                // `${API_BASE_URL}/api/resource/Job Opening?fields=["*"]&limit_page_length=999&order_by=creation desc`,
                 `${API_BASE_URL}/api/resource/Job Opening?fields=["*"]&limit_page_length=0&order_by=modified desc`,
                 { method: "GET", credentials: "include", headers: { 'Content-Type': 'application/json' } }
             )
             const data = await response.json()
-            const jobs = data.data || []
+            // const jobs = data.data || []
+            // setJobOpenings(jobs)
+            // setFilteredJobs(jobs)
+            const jobs = (data.data || []).map((job: any) => ({
+                ...job,
+                publish_on_website: job.publish ?? 0,
+            }))
             setJobOpenings(jobs)
             setFilteredJobs(jobs)
         } catch (error) {
@@ -555,7 +567,6 @@ export default function JobOpeningList() {
             setLoading(false)
         }
     }
-
 
     const fetchApplicantCounts = async (jobs: JobOpening[]) => {
         if (!jobs || jobs.length === 0) return
@@ -589,7 +600,6 @@ export default function JobOpeningList() {
             setCountsLoading(false)
         }
     }
-    // ────────────────────────────────────────────────────────
 
     const deleteJobOpening = async (jobName: string) => {
         setDeleting(true)
@@ -643,12 +653,6 @@ export default function JobOpeningList() {
             const result = await response.json()
             console.log("Save result:", result)
             if (result.data) {
-                // const updated = { ...selectedJob, ...payload }
-                // setSelectedJob(updated)
-                // // Move updated job to top of list
-                // setJobOpenings(prev => [updated, ...prev.filter(j => j.name !== updated.name)])
-                // setFilteredJobs(prev => [updated, ...prev.filter(j => j.name !== updated.name)])
-                // setEditingField(null)
                 const updated = { ...selectedJob, ...payload, modified: new Date().toISOString() }
                 setSelectedJob(updated)
                 setJobOpenings(prev => [updated, ...prev.filter(j => j.name !== updated.name)])
@@ -662,6 +666,70 @@ export default function JobOpeningList() {
             alert("Error saving change.")
         } finally {
             setSaving(false)
+        }
+    }
+    // ────────────────────────────────────────────────────────
+
+    // ── SAVE PUBLISH ON WEBSITE ──────────────────────────────
+    const savePublishOnWebsite = async (newVal: number) => {
+        if (!selectedJob) return
+        setSavingPublish(true)
+
+        // Optimistically update UI immediately so checkbox feels instant
+        const optimistic = { ...selectedJob, publish_on_website: newVal }
+        setSelectedJob(optimistic)
+        setJobOpenings(prev => prev.map(j => j.name === optimistic.name ? optimistic : j))
+        setFilteredJobs(prev => prev.map(j => j.name === optimistic.name ? optimistic : j))
+
+        try {
+            const csrfToken = await getFrappeCSRF()
+
+            // Call our custom Python endpoint that uses frappe.db.set_value
+            // + explicit commit — guaranteed to persist Check fields correctly
+            const formData = new URLSearchParams()
+            formData.append("name", selectedJob.name)
+            formData.append("publish_on_website", String(newVal))
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/method/resume.api.job_opening.update_publish_on_website`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Frappe-CSRF-Token': csrfToken,
+                    },
+                    body: formData.toString(),
+                }
+            )
+            const result = await response.json()
+            const msg = result.message
+
+            if (msg?.success) {
+                // Use the value the backend actually confirmed saving (from db read-back)
+                const confirmedVal = msg.publish_on_website ?? newVal
+                const confirmed = { ...selectedJob, publish_on_website: confirmedVal }
+                setSelectedJob(confirmed)
+                setJobOpenings(prev => prev.map(j => j.name === confirmed.name ? confirmed : j))
+                setFilteredJobs(prev => prev.map(j => j.name === confirmed.name ? confirmed : j))
+            } else {
+                // Revert optimistic update on failure
+                const reverted = { ...selectedJob, publish_on_website: newVal === 1 ? 0 : 1 }
+                setSelectedJob(reverted)
+                setJobOpenings(prev => prev.map(j => j.name === reverted.name ? reverted : j))
+                setFilteredJobs(prev => prev.map(j => j.name === reverted.name ? reverted : j))
+                alert(msg?.message || "Failed to update. Please try again.")
+            }
+        } catch (err) {
+            console.error(err)
+            // Revert optimistic update on network error
+            const reverted = { ...selectedJob, publish_on_website: newVal === 1 ? 0 : 1 }
+            setSelectedJob(reverted)
+            setJobOpenings(prev => prev.map(j => j.name === reverted.name ? reverted : j))
+            setFilteredJobs(prev => prev.map(j => j.name === reverted.name ? reverted : j))
+            alert("Network error. Please try again.")
+        } finally {
+            setSavingPublish(false)
         }
     }
     // ────────────────────────────────────────────────────────
@@ -687,7 +755,6 @@ export default function JobOpeningList() {
         }
     }
 
-    // useEffect(() => { fetchJobOpenings(); fetchStatusOptions() }, [])
     useEffect(() => {
         fetchJobOpenings()
         fetchStatusOptions()
@@ -1201,7 +1268,6 @@ export default function JobOpeningList() {
                                                                 }
                                                             }}
                                                         />
-
                                                         <button className="jol-edit-save" onClick={() => saveField("posted_on")} disabled={saving} title="Save"><Check size={14} /></button>
                                                         <button className="jol-edit-cancel" onClick={cancelEdit} title="Cancel"><X size={14} /></button>
                                                     </div>
@@ -1239,7 +1305,8 @@ export default function JobOpeningList() {
                                                                     setEditClosesOn("")
                                                                 }
                                                             }}
-                                                        />                                                     <button className="jol-edit-save" onClick={() => saveField("closes_on")} disabled={saving} title="Save"><Check size={14} /></button>
+                                                        />
+                                                        <button className="jol-edit-save" onClick={() => saveField("closes_on")} disabled={saving} title="Save"><Check size={14} /></button>
                                                         <button className="jol-edit-cancel" onClick={cancelEdit} title="Cancel"><X size={14} /></button>
                                                     </div>
                                                 ) : (
@@ -1249,6 +1316,30 @@ export default function JobOpeningList() {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* ── PUBLISH ON WEBSITE CHECKBOX ── */}
+                                            <div className="jol-detail-field">
+                                                <div className="jol-detail-field-label" style={{ color: '#0ea5e9' }}>
+                                                    <Globe size={13} /> Publish on Website
+                                                </div>
+                                                <div className="jol-publish-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="publish-on-website"
+                                                        className="jol-publish-checkbox"
+                                                        checked={selectedJob.publish_on_website === 1}
+                                                        disabled={savingPublish}
+                                                        onChange={e => savePublishOnWebsite(e.target.checked ? 1 : 0)}
+                                                    />
+                                                    <label htmlFor="publish-on-website" className="jol-publish-label">
+                                                        Publish on website
+                                                    </label>
+                                                    {savingPublish && (
+                                                        <span className="jol-publish-saving">Saving...</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {/* ─────────────────────────────────── */}
 
                                             {selectedJob.description && (
                                                 <>
