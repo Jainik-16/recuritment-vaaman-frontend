@@ -590,8 +590,15 @@ export default function SalaryAnnexureListPage() {
                                 <ArrowLeft size={13} /> Back
                             </Link>
                             <div className="sl-hdr-sep" />
-                            <div className="sl-crumb">
+                            {/* <div className="sl-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} />
+                                <strong>Salary Annexure</strong>
+                            </div> */}
+                            <div className="sl-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
                                 <strong>Salary Annexure</strong>
                             </div>
                         </header>

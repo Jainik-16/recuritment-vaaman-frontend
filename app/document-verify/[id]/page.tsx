@@ -1206,7 +1206,9 @@ interface ExistingDocument {
     custom_background_verification: string | null; custom_salary_slip: string | null; custom_additional_document: string | null;
 }
 interface EducationRow { education_level: string; name_of_institute: string; stream: string; class: string; year_passed: string; subjects: string }
-interface EmploymentRow { sr_no: string; name_of_employer: string; designation: string; reporting_to_name_contact_number_email_id: string; hr_details_of_company_name_email_id_contact_number: string; salary_drawn_per_year: string; reason_for_leaving: string }
+// interface EmploymentRow { sr_no: string; name_of_employer: string; designation: string; reporting_to_name_contact_number_email_id: string; hr_details_of_company_name_email_id_contact_number: string; salary_drawn_per_year: string; reason_for_leaving: string }
+interface EmploymentRow { sr_no: string; name_of_employer: string; designation: string; reporting_to_name_contact_number_email_id: string; hr_details_of_company_name_email_id_contact_number: string; salary_drawn_per_year: string; reason_for_leaving: string; duration_of_service: string; no_of_years__months: string }
+
 interface ReferenceRow { reference_name: string; organization_name: string; designation: string; is_current_organization: string; reference_email_id: string; landline_telephone_no: string; mobile_phone_no: string; known_period_monthsyears: string; relationship_with_applicant: string }
 
 const css = `
@@ -1326,7 +1328,9 @@ type AppFormKey = keyof {
     marital_status_are_you_married: string; wife__husband_name: string; his__her_place_of_work: string;
     children_if_any_name_1: string; child_1_age: string; children_if_any_name_2: string; child_2_age: string;
     health_details: string; hobbies: string; epfo_membership: string;
-    salary_expected: string; additional_information: string;
+    // salary_expected: string; additional_information: string;
+    salary_expected: string; additional_information: string; language_known: string;
+
     employee_name: string; employee_relationship: string; employee_contact_number: string;
     interviewed_for_which_position: string; interviewed_for_which_location: string;
     interview_date: string; candidate_name: string; signature: string;
@@ -1389,7 +1393,9 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
             marital_status_are_you_married: "", wife__husband_name: "", his__her_place_of_work: "",
             children_if_any_name_1: "", child_1_age: "", children_if_any_name_2: "", child_2_age: "",
             health_details: "", hobbies: "", epfo_membership: "YES",
-            salary_expected: "", additional_information: "",
+            // salary_expected: "", additional_information: "",
+            salary_expected: "", additional_information: "", language_known: "",
+
             employee_name: "", employee_relationship: "", employee_contact_number: "",
             interviewed_for_which_position: "", interviewed_for_which_location: "",
             interview_date: "", candidate_name: "",
@@ -2071,6 +2077,7 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                     <Inp field="child_2_age" label="Child 2 Age" value={appForm.child_2_age} onChange={handleAppFormChange} />
                 </div>
                 <Txt field="health_details" label="Health Details (any disability, illness or past operation)" value={appForm.health_details} onChange={handleAppFormChange} />
+                <Inp field="language_known" label="Language Known" value={appForm.language_known} onChange={handleAppFormChange} />
                 <div className="ob-grid-3">
                     <div className="ob-field">
                         <label className="ob-label">EPFO Membership</label>
@@ -2127,7 +2134,8 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                         <thead><tr>
                             <th>Sr.</th><th>Name of Employer</th><th>Designation</th>
                             <th>Reporting To (Name / Contact / Email)</th><th>HR Details (Name / Email / Contact)</th>
-                            <th>Salary Drawn Per Year</th><th>Reason for Leaving</th><th></th>
+                            <th>Salary Drawn Per Year</th><th>Reason for Leaving</th><th>Duration of Service (From–To)</th><th>No. of Years / Months</th><th></th>
+
                         </tr></thead>
                         <tbody>{employmentRows.map((row, i) => (
                             <tr key={i}>
@@ -2138,12 +2146,15 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                                 <td><input className="ob-table-input" value={row.hr_details_of_company_name_email_id_contact_number} onChange={e => { const r = [...employmentRows]; r[i].hr_details_of_company_name_email_id_contact_number = e.target.value; setEmploymentRows(r) }} /></td>
                                 <td><input className="ob-table-input" value={row.salary_drawn_per_year} onChange={e => { const r = [...employmentRows]; r[i].salary_drawn_per_year = e.target.value; setEmploymentRows(r) }} /></td>
                                 <td><input className="ob-table-input" value={row.reason_for_leaving} onChange={e => { const r = [...employmentRows]; r[i].reason_for_leaving = e.target.value; setEmploymentRows(r) }} /></td>
+                                <td><input className="ob-table-input" placeholder="e.g. Jan 2020 – Mar 2023" value={row.duration_of_service} onChange={e => { const r = [...employmentRows]; r[i].duration_of_service = e.target.value; setEmploymentRows(r) }} /></td>
+                                <td><input className="ob-table-input" placeholder="e.g. 3 Years 2 Months" value={row.no_of_years__months} onChange={e => { const r = [...employmentRows]; r[i].no_of_years__months = e.target.value; setEmploymentRows(r) }} /></td>
                                 <td><button className="ob-del-row" onClick={() => setEmploymentRows(employmentRows.filter((_, j) => j !== i))}><Trash2 size={13} /></button></td>
                             </tr>
                         ))}</tbody>
                     </table>
                 </div>
-                <button className="ob-add-row" onClick={() => setEmploymentRows([...employmentRows, { sr_no: String(employmentRows.length + 1), name_of_employer: "", designation: "", reporting_to_name_contact_number_email_id: "", hr_details_of_company_name_email_id_contact_number: "", salary_drawn_per_year: "", reason_for_leaving: "" }])}><Plus size={14} /> Add Row</button>                <div style={{ marginTop: 20 }} className="ob-grid-2">
+                <button className="ob-add-row" onClick={() => setEmploymentRows([...employmentRows, { sr_no: String(employmentRows.length + 1), name_of_employer: "", designation: "", reporting_to_name_contact_number_email_id: "", hr_details_of_company_name_email_id_contact_number: "", salary_drawn_per_year: "", reason_for_leaving: "", duration_of_service: "", no_of_years__months: "" }
+                ])}><Plus size={14} /> Add Row</button>                <div style={{ marginTop: 20 }} className="ob-grid-2">
                     <Inp field="salary_expected" label="Salary Expected" value={appForm.salary_expected} onChange={handleAppFormChange} />
                 </div>
                 <Txt field="additional_information" label="Additional Information" value={appForm.additional_information} onChange={handleAppFormChange} />

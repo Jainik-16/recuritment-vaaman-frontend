@@ -821,8 +821,17 @@ export default function CreateJobOpeningForm() {
               <div className="cj-hdr-sep" />
               <Link href="/" className="cj-btn-out"><ArrowLeft size={13} /> Back</Link>
               <div className="cj-hdr-sep" />
-              <div className="cj-crumb">
+              {/* <div className="cj-crumb">
                 <Home size={13} /> Home
+                <ChevronRight size={13} />
+                <Link href="/job-opening">Job Openings</Link>
+                <ChevronRight size={13} />
+                <strong>Create Job Opening</strong>
+              </div> */}
+              <div className="cj-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
                 <ChevronRight size={13} />
                 <Link href="/job-opening">Job Openings</Link>
                 <ChevronRight size={13} />

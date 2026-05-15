@@ -727,10 +727,19 @@ export default function JobOfferPage() {
                 <ArrowLeft size={13} /> Back
               </button>
               <div className="ol-hdr-sep" />
-              <div className="ol-crumb">
+              {/* <div className="ol-crumb">
                 <Home size={13} /> Home <ChevronRight size={13} />
                 <Link href="/offer-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Offer Letter</Link>
                 <ChevronRight size={13} /> <strong>Create Offer</strong>
+              </div> */}
+              <div className="ol-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <Link href="/offer-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Offer Letter</Link>
+                <ChevronRight size={13} />
+                <strong>Create Offer</strong>
               </div>
             </header>
 

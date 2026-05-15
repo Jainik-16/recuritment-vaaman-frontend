@@ -38,6 +38,7 @@ export async function POST(request: Request) {
             child_2_age: body.child_2_age || null,
             health_details: body.health_details || null,
             hobbies: body.hobbies || null,
+            language_known: body.language_known || null,
             epfo_membership: body.epfo_membership || 'YES',
             salary_expected: body.salary_expected || null,
             additional_information: body.additional_information || null,

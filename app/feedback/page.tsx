@@ -560,8 +560,15 @@ export default function FeedbackPage() {
                 <ArrowLeft size={13} /> Back
               </Link>
               <div className="fl-hdr-sep" />
-              <div className="fl-crumb">
+              {/* <div className="fl-crumb">
                 <Home size={13} /> Home <ChevronRight size={13} /> <strong>Candidate Feedback</strong>
+              </div> */}
+              <div className="fl-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <strong>Candidate Feedback</strong>
               </div>
             </header>
 

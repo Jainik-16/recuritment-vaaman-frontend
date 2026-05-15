@@ -941,8 +941,15 @@ export default function JobOpeningList() {
                                 <ArrowLeft size={13} /> Back
                             </Link>
                             <div className="jol-hdr-sep" />
-                            <div className="jol-crumb">
+                            {/* <div className="jol-crumb">
                                 <Home size={13} /> Home
+                                <ChevronRight size={13} />
+                                <strong>Job Openings</strong>
+                            </div> */}
+                            <div className="jol-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
                                 <ChevronRight size={13} />
                                 <strong>Job Openings</strong>
                             </div>

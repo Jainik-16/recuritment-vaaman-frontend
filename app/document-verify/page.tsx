@@ -683,9 +683,20 @@ export default function DocumentVerifyPage() {
                             <div className="dv-hdr-sep" />
                             <button className="dv-back-btn" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
                             <div className="dv-hdr-sep" />
-                            <div className="dv-crumb">
+                            {/* <div className="dv-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} />
                                 Document Verification <ChevronRight size={13} />
+                                <strong>{existingDocumentId ? "Update Documents" : "Applicant Documents"}</strong>
+                            </div> */}
+                            <div className="dv-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
+                                <Link href="/document-verify-list" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                    Document Verification
+                                </Link>
+                                <ChevronRight size={13} />
                                 <strong>{existingDocumentId ? "Update Documents" : "Applicant Documents"}</strong>
                             </div>
                         </header>

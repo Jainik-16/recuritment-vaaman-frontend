@@ -746,7 +746,14 @@ export default function InterviewPage() {
               <div className="ip-hdr-sep" />
               <Link href="/home" className="ip-btn-back"><ArrowLeft size={13} /> Back</Link>
               <div className="ip-hdr-sep" />
-              <div className="ip-crumb"><Home size={13} /> Home <ChevronRight size={13} /> <strong>Interview Management</strong></div>
+              {/* <div className="ip-crumb"><Home size={13} /> Home <ChevronRight size={13} /> <strong>Interview Management</strong></div> */}
+              <div className="ip-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <strong>Interview Management</strong>
+              </div>
             </header>
 
             <div className="ip-page">

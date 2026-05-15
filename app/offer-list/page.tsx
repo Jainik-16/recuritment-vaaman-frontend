@@ -664,8 +664,15 @@ export default function OfferListPage() {
                             <div className="ofl-hdr-sep" />
                             <Link href="/home" className="ofl-btn-back"><ArrowLeft size={13} /> Back</Link>
                             <div className="ofl-hdr-sep" />
-                            <div className="ofl-crumb">
+                            {/* <div className="ofl-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} /> <strong>Offer Letter</strong>
+                            </div> */}
+                            <div className="ofl-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
+                                <strong>Offer Letter</strong>
                             </div>
                             <div className="ofl-hdr-right">
                                 <div className="ofl-total-pill">

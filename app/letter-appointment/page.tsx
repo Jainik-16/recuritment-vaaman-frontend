@@ -866,8 +866,15 @@ export default function AppointmentPage() {
                 <ArrowLeft size={13} /> Back
               </Link>
               <div className="al-hdr-sep" />
-              <div className="al-crumb">
+              {/* <div className="al-crumb">
                 <Home size={13} /> Home <ChevronRight size={13} /> <strong>Appointment Letter</strong>
+              </div> */}
+              <div className="al-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <strong>Appointment Letter</strong>
               </div>
             </header>
 

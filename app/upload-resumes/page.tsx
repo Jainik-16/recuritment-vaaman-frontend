@@ -618,7 +618,7 @@ export default function ResumeUploader() {
           const csrfToken = await getFrappeCSRF()
           const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
             method: 'POST', credentials: 'include',
-            headers: { "X-Frappe-CSRF-Token": csrfToken },
+            headers: { "X-Frappe-CSRF-Token": csrfToken, },
             body: formData,
           })
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
@@ -751,16 +751,18 @@ export default function ResumeUploader() {
               </Link>
               <div className="ru-hdr-sep" />
               <div className="ru-crumb"></div>
-              <div className="ru-crumb">
+              {/* <div className="ru-crumb">
                 <Home size={13} /> Home
                 <ChevronRight size={13} />
                 <strong>Resume Collection</strong>
-              </div>
-              {/* <div className="ru-hdr-right">
-                <Link href="/" className="ru-btn-out">
-                  <ArrowLeft size={13} /> Back
-                </Link>
               </div> */}
+              <div className="ru-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <strong>Resume Collection</strong>
+              </div>
             </header>
 
             {/* Page */}

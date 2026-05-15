@@ -622,8 +622,15 @@ export default function DocumentVerifyListPage() {
                                 <ArrowLeft size={13} /> Back
                             </Link>
                             <div className="dvl-hdr-sep" />
-                            <div className="dvl-crumb">
+                            {/* <div className="dvl-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} /> <strong>Document Verification</strong>
+                            </div> */}
+                            <div className="dvl-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
+                                <strong>Document Verification</strong>
                             </div>
                             <div className="dvl-hdr-right">
                                 <button className="dvl-btn" onClick={() => router.push('/salary-annexure')}>

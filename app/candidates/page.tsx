@@ -578,6 +578,8 @@ function CandidatesInner() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const jobOpeningFilter = searchParams.get('jobOpening') || ""
+    const searchFromUrl = searchParams.get('search') || ""
+
 
     const [candidates, setCandidates] = useState<Candidate[]>([])
     const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([])
@@ -593,6 +595,7 @@ function CandidatesInner() {
     const [updatingJobTitle, setUpdatingJobTitle] = useState(false)
     const [jobTitleSaved, setJobTitleSaved] = useState(false)
     const [jobTitleMap, setJobTitleMap] = useState<Record<string, string>>({}) // id -> title
+    const [jobDesignationMap, setJobDesignationMap] = useState<Record<string, string>>({})
 
 
     const [savingComment, setSavingComment] = useState(false)
@@ -689,12 +692,41 @@ function CandidatesInner() {
                 })
             })
             const result = await res.json()
+            // if (result.message?.success) {
+            //     setSelectedCandidate(prev => prev ? { ...prev, job_title: newJobTitle } : prev)
+            //     setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, job_title: newJobTitle } : c))
+            //     setJobTitleSaved(true)
+            //     setTimeout(() => setJobTitleSaved(false), 2000)
+            // }
             if (result.message?.success) {
-                setSelectedCandidate(prev => prev ? { ...prev, job_title: newJobTitle } : prev)
-                setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, job_title: newJobTitle } : c))
+                const newDesignation = jobDesignationMap[newJobTitle] || ""
+                setSelectedCandidate(prev => prev ? {
+                    ...prev,
+                    job_title: newJobTitle,
+                    designation: newDesignation || prev.designation
+                } : prev)
+                setCandidates(prev => prev.map(c => c.id === candidateId ? {
+                    ...c,
+                    job_title: newJobTitle,
+                    designation: newDesignation || c.designation
+                } : c))
                 setJobTitleSaved(true)
                 setTimeout(() => setJobTitleSaved(false), 2000)
-            } else {
+
+                // Also persist designation to backend if we have one
+                if (newDesignation) {
+                    try {
+                        const csrfToken2 = await getFrappeCSRF()
+                        await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.update_candidate_field`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrfToken2 },
+                            body: JSON.stringify({ candidate_id: candidateId, fieldname: 'designation', value: newDesignation })
+                        })
+                    } catch (e) { console.error("Error updating designation:", e) }
+                }
+            }
+            else {
                 alert("Failed to update job title.")
             }
         } catch (e) { alert("Error updating job title.") }
@@ -805,21 +837,37 @@ function CandidatesInner() {
     const fetchJobTitles = async (): Promise<Record<string, string>> => {
         try {
             const res = await fetch(
-                `${API_BASE_URL}/api/resource/Job Opening?fields=["name","job_title"]&filters=[["Job Opening","status","=","Open"]]&limit_page_length=0`,
+                `${API_BASE_URL}/api/resource/Job Opening?fields=["name","job_title","designation"]&filters=[["Job Opening","status","=","Open"]]&limit_page_length=0`,
                 { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
             )
             if (res.ok) {
                 const data = await res.json()
+                // const map: Record<string, string> = {}
+                // const titles: string[] = []
+                //     ; (data?.data || []).forEach((j: any) => {
+                //         if (j.job_title) {
+                //             map[j.name] = j.job_title      // HR-OPN-2026-0106 -> Front Desk Executive
+                //             map[j.job_title] = j.job_title  // also map title -> title
+                //             titles.push(j.job_title)
+                //         }
+                //     })
+                // setJobTitleMap(map)
+                // setJobTitles(titles)
                 const map: Record<string, string> = {}
+                const designationMap: Record<string, string> = {}  // job_title → designation
                 const titles: string[] = []
                     ; (data?.data || []).forEach((j: any) => {
                         if (j.job_title) {
-                            map[j.name] = j.job_title      // HR-OPN-2026-0106 -> Front Desk Executive
-                            map[j.job_title] = j.job_title  // also map title -> title
+                            map[j.name] = j.job_title
+                            map[j.job_title] = j.job_title
                             titles.push(j.job_title)
+                            if (j.designation) {
+                                designationMap[j.job_title] = j.designation
+                            }
                         }
                     })
                 setJobTitleMap(map)
+                setJobDesignationMap(designationMap)
                 setJobTitles(titles)
             }
         } catch (e) { console.error("Error fetching job titles:", e) }
@@ -900,6 +948,11 @@ function CandidatesInner() {
         }
         init()
     }, [])
+
+    useEffect(() => {
+        if (searchFromUrl) setSearchTerm(searchFromUrl)
+    }, [searchFromUrl])
+
     useEffect(() => { document.title = 'Candidates' }, [])
     // useEffect(() => { if (selectedCandidate) { fetchComments(selectedCandidate.id); setNewComment(""); setLocationSaved(false) } else { setComments([]) } }, [selectedCandidate?.id])
     useEffect(() => { if (selectedCandidate) { fetchComments(selectedCandidate.id); setNewComment(""); setLocationSaved(false); setJobTitleSaved(false) } else { setComments([]) } }, [selectedCandidate?.id])
@@ -1014,8 +1067,16 @@ function CandidatesInner() {
                             <div className="cp-hdr-sep" />
                             <Link href="/home" className="cp-btn-back"><ArrowLeft size={13} /> Back</Link>
                             <div className="cp-hdr-sep" />
-                            <div className="cp-crumb">
+                            {/* <div className="cp-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} />
+                                {jobOpeningFilter && <><Link href="/job-opening" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Job Openings</Link><ChevronRight size={13} /></>}
+                                <strong>Candidates</strong>
+                            </div> */}
+                            <div className="cp-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
                                 {jobOpeningFilter && <><Link href="/job-opening" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Job Openings</Link><ChevronRight size={13} /></>}
                                 <strong>Candidates</strong>
                             </div>

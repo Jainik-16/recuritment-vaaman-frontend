@@ -938,10 +938,19 @@ function CandidateFeedbackForm() {
               <div className="cf-hdr-sep" />
               <button className="cf-btn-back" onClick={() => router.push("/home")}><ArrowLeft size={13} /> Back</button>
               <div className="cf-hdr-sep" />
-              <div className="cf-crumb">
+              {/* <div className="cf-crumb">
                 <Home size={13} /> Home <ChevronRight size={13} />
                 <a href="/feedback" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Candidate Feedback</a>
                 <ChevronRight size={13} /> <strong>New Feedback</strong>
+              </div> */}
+              <div className="cf-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <a href="/feedback" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Candidate Feedback</a>
+                <ChevronRight size={13} />
+                <strong>New Feedback</strong>
               </div>
             </header>
 

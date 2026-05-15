@@ -435,6 +435,7 @@ function EventPageContent() {
       //     interviewer,
       //   }))
       // }
+
       const interviewData = {
         doctype: "Interview",
         interview_round: eventForm.interviewRound,
@@ -446,29 +447,15 @@ function EventPageContent() {
         scheduled_on: eventForm.scheduledOn,
         from_time: eventForm.fromTime,
         to_time: eventForm.toTime,
-        job_title: null,
         interview_details: eventForm.interviewers.map((interviewer) => ({
           doctype: "Interview Detail",
           interviewer,
         }))
       }
+
       console.log("Creating interview:", JSON.stringify(interviewData, null, 2))
       const csrfToken = await getFrappeCSRF()
-      // Clear bad job_title from applicant before creating interview
-      try {
-        const csrfToken2 = await getFrappeCSRF()
-        await fetch(`${API_BASE_URL}/api/method/frappe.client.set_value`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrfToken2 },
-          body: JSON.stringify({
-            doctype: 'Job Applicant',
-            name: eventForm.jobApplicant,
-            fieldname: 'job_title',
-            value: ''
-          })
-        })
-      } catch (e) { console.log('Could not clear job_title', e) }
+
       const response = await fetch(`${API_BASE_URL}/api/resource/Interview`, {
         method: 'POST',
         credentials: 'include',
@@ -549,10 +536,19 @@ function EventPageContent() {
               <div className="ev-hdr-sep" />
               <button className="ev-btn-out" onClick={() => router.back()}><ArrowLeft size={13} /> Back</button>
               <div className="ev-hdr-sep" />
-              <div className="ev-crumb">
+              {/* <div className="ev-crumb">
                 <Home size={13} /> Home <ChevronRight size={13} />
                 <a href="/interview" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Interview Management</a>
                 <ChevronRight size={13} /> <strong>Schedule Interview</strong>
+              </div> */}
+              <div className="ev-crumb">
+                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                  <Home size={13} /> Home
+                </Link>
+                <ChevronRight size={13} />
+                <a href="/interview" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Interview Management</a>
+                <ChevronRight size={13} />
+                <strong>Schedule Interview</strong>
               </div>
             </header>
 

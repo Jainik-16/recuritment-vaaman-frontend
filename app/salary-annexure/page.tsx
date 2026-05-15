@@ -942,10 +942,19 @@ export default function SalaryAnnexurePage() {
                             <div className="sa-hdr-sep" />
                             <button className="sa-back-btn" onClick={() => router.back()}><ArrowLeft size={14} /> Back</button>
                             <div className="sa-hdr-sep" />
-                            <div className="sa-crumb">
+                            {/* <div className="sa-crumb">
                                 <Home size={13} /> Home <ChevronRight size={13} />
                                 <Link href="/salary-annexure-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Salary Annexure</Link>
                                 <ChevronRight size={13} /> <strong>Create Salary Annexure</strong>
+                            </div> */}
+                            <div className="sa-crumb">
+                                <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+                                    <Home size={13} /> Home
+                                </Link>
+                                <ChevronRight size={13} />
+                                <Link href="/salary-annexure-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Salary Annexure</Link>
+                                <ChevronRight size={13} />
+                                <strong>Create Salary Annexure</strong>
                             </div>
                         </header>
 
