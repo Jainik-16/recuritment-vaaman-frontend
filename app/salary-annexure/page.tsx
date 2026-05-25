@@ -850,6 +850,8 @@ export default function SalaryAnnexurePage() {
 
     const handleSave = async () => {
         if (!form.jobApplicant) { alert("Please select a Job Applicant"); return }
+        if (!form.salaryComponentTemplate) { alert("Please select a Salary Component Template"); return }
+        if (!form.conditionTemplate) { alert("Please select a Condition Template"); return }
         setIsSaving(true)
         try {
             const csrfToken = await getFrappeCSRF()
@@ -1027,7 +1029,8 @@ export default function SalaryAnnexurePage() {
 
                                             {/* Salary Component Template */}
                                             <div className="sa-field">
-                                                <label className="sa-label"><FileText size={13} /> Salary Component Template</label>
+                                                {/* <label className="sa-label"><FileText size={13} /> Salary Component Template</label> */}
+                                                <label className="sa-label"><FileText size={13} /> Salary Component Template <span className="sa-req">*</span></label>
                                                 <Popover open={openCompTemplate} onOpenChange={setOpenCompTemplate}>
                                                     <PopoverTrigger asChild>
                                                         <button
@@ -1321,7 +1324,8 @@ export default function SalaryAnnexurePage() {
                                     <div className="sa-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                         {/* Condition Template selector */}
                                         <div className="sa-field">
-                                            <label className="sa-label"><FileText size={13} /> Condition Template</label>
+                                            {/* <label className="sa-label"><FileText size={13} /> Condition Template</label> */}
+                                            <label className="sa-label"><FileText size={13} /> Condition Template <span className="sa-req">*</span></label>
                                             <Popover open={openCondTemplate} onOpenChange={setOpenCondTemplate}>
                                                 <PopoverTrigger asChild>
                                                     <button

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, Suspense, useRef } from "react"
 import {
   ArrowLeft, Calendar, Clock, MapPin, Video, FileText, Users,
   CheckCircle2, AlertCircle, Menu, X, Home, LogOut, Upload,
@@ -89,8 +89,8 @@ const css = `
   .ev-page-sub   { font-size: 13px; color: var(--t3); margin-top: 4px; }
 
   /* CARDS */
-  .ev-card { background: var(--card); border: 1px solid var(--border-s); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,158,247,.06); }
-  .ev-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border-s); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to right, #f8fcff, var(--accent-lt)); }
+  .ev-card { background: var(--card); border: 1px solid var(--border-s); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,158,247,.06); }
+  .ev-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border-s); display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 10px; background: linear-gradient(to right, #f8fcff, var(--accent-lt)); }
   .ev-card-title { font-size: 13.5px; font-weight: 700; color: var(--t1); display: flex; align-items: center; gap: 8px; }
   .ev-card-title svg { color: var(--accent); }
   .ev-card-body { padding: 22px; }
@@ -207,6 +207,9 @@ function EventPageContent() {
   const [locations, setLocations] = useState<Location[]>([])
   const [interviewLinks, setInterviewLinks] = useState<InterviewLink[]>([])
   const [isSaving, setIsSaving] = useState(false)
+
+  const [interviewerSearch, setInterviewerSearch] = useState("")
+
 
 
   const statusOptions = ["Pending", "Under Review", "Cleared", "Rejected"]
@@ -381,6 +384,14 @@ function EventPageContent() {
       alert("Please fill all required fields")
       return
     }
+    if (!eventForm.location) {
+      alert("Please select a location")
+      return
+    }
+    if (eventForm.interviewers.length === 0) {
+      alert("Please select at least one interviewer")
+      return
+    }
     const selectedDate = new Date(eventForm.scheduledOn)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -416,6 +427,50 @@ function EventPageContent() {
     } catch (err) {
       console.error("Round validation failed:", err)
     }
+
+    // BLOCK 2 — NEW: prevent scheduling next round if previous cleared round has no feedback
+    try {
+      const clearedRes = await fetch(
+        `${API_BASE_URL}/api/resource/Interview?` +
+        `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["status","=","Cleared"]]` +
+        `&fields=["name","interview_round","scheduled_on"]&order_by=scheduled_on desc&limit_page_length=1`,
+        {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+      const clearedData = await clearedRes.json()
+      console.log("Last cleared interview check:", clearedData)
+
+      if (clearedData.data && clearedData.data.length > 0) {
+        const lastClearedInterview = clearedData.data[0]
+
+        const feedbackRes = await fetch(
+          `${API_BASE_URL}/api/resource/Interview Feedback?` +
+          `filters=[["interview","=","${lastClearedInterview.name}"]]` +
+          `&fields=["name"]&limit_page_length=1`,
+          {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
+        const feedbackData = await feedbackRes.json()
+        console.log("Feedback check for last cleared interview:", feedbackData)
+
+        if (!feedbackData.data || feedbackData.data.length === 0) {
+          alert(
+            `Cannot schedule next round!\n\n` +
+            `The previous round "${lastClearedInterview.interview_round}" was cleared but feedback has not been submitted yet.\n\n` +
+            `Please submit feedback for interview "${lastClearedInterview.name}" before scheduling the next round.`
+          )
+          return
+        }
+      }
+    } catch (err) {
+      console.error("Feedback validation failed:", err)
+    }
+
+
 
     setIsSaving(true)
     try {
@@ -625,7 +680,7 @@ function EventPageContent() {
                       )}
                     </div>
 
-                    <div className="ev-form-field">
+                    {/* <div className="ev-form-field">
                       <label className="ev-label"><MapPin size={12} /> Location</label>
                       {locations.length > 0 ? (
                         <div className="ev-select-wrap">
@@ -638,6 +693,16 @@ function EventPageContent() {
                       ) : (
                         <input className="ev-input" value={eventForm.location} onChange={e => setEventForm({ ...eventForm, location: e.target.value })} placeholder="Loading locations..." disabled />
                       )}
+                    </div> */}
+                    <div className="ev-form-field">
+                      {/* <label className="ev-label"><MapPin size={12} /> Location</label> */}
+                      <label className="ev-label"><MapPin size={12} /> Location <span className="ev-req">*</span></label>
+                      <SearchableSelect
+                        value={eventForm.location}
+                        onChange={val => setEventForm({ ...eventForm, location: val })}
+                        options={locations.map(l => l.name)}
+                        placeholder="Select location"
+                      />
                     </div>
 
                     <div className="ev-form-grid3">
@@ -658,7 +723,7 @@ function EventPageContent() {
                 </div>
 
                 {/* Interviewers card */}
-                <div className="ev-card">
+                {/* <div className="ev-card">
                   <div className="ev-card-head">
                     <div className="ev-card-title"><Users size={15} /> Select Interviewers</div>
                     {eventForm.interviewers.length > 0 && (
@@ -673,34 +738,69 @@ function EventPageContent() {
                           <th style={{ width: 56 }}>No.</th>
                           <th>Interviewer Details</th>
                         </tr>
+                      </thead> */}
+                <div className="ev-card">
+                  <div className="ev-card-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    {/* <div className="ev-card-title"><Users size={15} /> Select Interviewers</div> */}
+                    <div className="ev-card-title"><Users size={15} /> Select Interviewers <span className="ev-req">*</span></div>
+                    {eventForm.interviewers.length > 0 && (
+                      <span className="ev-selected-badge">{eventForm.interviewers.length} selected</span>
+                    )}
+                  </div>
+
+                  {/* Search bar */}
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border-s)", background: "#fff" }}>
+                    <input
+                      className="ev-input"
+                      style={{ height: 38, fontSize: 13 }}
+                      placeholder="Search interviewers by name or email..."
+                      value={interviewerSearch}
+                      onChange={e => setInterviewerSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="ev-table-scroll">
+                    <table className="ev-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: 48 }}><input type="checkbox" className="ev-check" disabled /></th>
+                          <th style={{ width: 56 }}>No.</th>
+                          <th>Interviewer Details</th>
+                        </tr>
                       </thead>
                       <tbody>
                         {availableInterviewers.length > 0 ? (
-                          availableInterviewers.map((interviewer, index) => (
-                            <tr key={interviewer.name} onClick={() => handleInterviewerToggle(interviewer.name)}>
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  className="ev-check"
-                                  checked={eventForm.interviewers.includes(interviewer.name)}
-                                  onChange={() => handleInterviewerToggle(interviewer.name)}
-                                  onClick={e => e.stopPropagation()}
-                                />
-                              </td>
-                              <td style={{ color: 'var(--t3)', fontWeight: 600 }}>{index + 1}</td>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                  <div className="ev-interviewer-avatar">
-                                    {(interviewer.full_name || interviewer.name).charAt(0).toUpperCase()}
+                          availableInterviewers
+                            .filter(i =>
+                              i.full_name?.toLowerCase().includes(interviewerSearch.toLowerCase()) ||
+                              i.email?.toLowerCase().includes(interviewerSearch.toLowerCase()) ||
+                              i.name?.toLowerCase().includes(interviewerSearch.toLowerCase())
+                            )
+                            .map((interviewer, index) => (
+                              <tr key={interviewer.name} onClick={() => handleInterviewerToggle(interviewer.name)}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    className="ev-check"
+                                    checked={eventForm.interviewers.includes(interviewer.name)}
+                                    onChange={() => handleInterviewerToggle(interviewer.name)}
+                                    onClick={e => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td style={{ color: 'var(--t3)', fontWeight: 600 }}>{index + 1}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <div className="ev-interviewer-avatar">
+                                      {(interviewer.full_name || interviewer.name).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <div className="ev-interviewer-name">{interviewer.full_name || interviewer.name}</div>
+                                      <div className="ev-interviewer-email">{interviewer.email}</div>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <div className="ev-interviewer-name">{interviewer.full_name || interviewer.name}</div>
-                                    <div className="ev-interviewer-email">{interviewer.email}</div>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
+                                </td>
+                              </tr>
+                            ))
                         ) : (
                           <tr><td colSpan={3}>
                             <div className="ev-table-empty">
@@ -725,8 +825,80 @@ function EventPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </div >
     </>
+  )
+}
+
+function SearchableSelect({ value, onChange, options, placeholder }: {
+  value: string
+  onChange: (val: string) => void
+  options: string[]
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()))
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        className="ev-input"
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", height: 44 }}
+        onClick={() => { setOpen(o => !o); setSearch("") }}
+      >
+        <span style={{ color: value ? "var(--t1)" : "var(--t3)" }}>{value || placeholder}</span>
+        <ChevronRight size={14} style={{ transform: open ? "rotate(270deg)" : "rotate(90deg)", color: "var(--t3)", transition: "transform .2s" }} />
+      </div>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 9999,
+          background: "#fff", border: "1px solid var(--border)", borderRadius: 8,
+          boxShadow: "0 8px 24px rgba(0,0,0,.12)", overflow: "hidden"
+        }}>
+          <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--border-s)" }}>
+            <input
+              autoFocus
+              className="ev-input"
+              style={{ height: 34, fontSize: 13 }}
+              placeholder="Search..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+          <div style={{ maxHeight: 220, overflowY: "auto" }}>
+            {filtered.length === 0
+              ? <div style={{ padding: "12px 14px", color: "var(--t3)", fontSize: 13 }}>No results found</div>
+              : filtered.map(opt => (
+                <div key={opt} onClick={() => { onChange(opt); setOpen(false) }}
+                  style={{
+                    padding: "9px 14px", fontSize: 13.5, cursor: "pointer",
+                    background: opt === value ? "var(--accent-lt)" : "transparent",
+                    color: opt === value ? "var(--accent)" : "var(--t1)",
+                    transition: "background .12s"
+                  }}
+                  onMouseEnter={e => { if (opt !== value) (e.target as HTMLElement).style.background = "var(--bg)" }}
+                  onMouseLeave={e => { if (opt !== value) (e.target as HTMLElement).style.background = "transparent" }}
+                >
+                  {opt}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

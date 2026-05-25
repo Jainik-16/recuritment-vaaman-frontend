@@ -741,6 +741,10 @@ function CandidateFeedbackForm() {
       alert("Please fill all required fields (Interview, Interviewer, Result)")
       return
     }
+    if (!feedbackForm.applicant_rating) {
+      alert("Please select an Overall Rating before submitting")
+      return
+    }
     if (existingFeedback) {
       alert(`Feedback already exists for this interview (${existingFeedback}). You cannot submit feedback again for the same interview.`)
       return
@@ -1145,7 +1149,8 @@ function CandidateFeedbackForm() {
                   </div>
                   <div className="cf-card-body">
                     <div className="cf-form-field">
-                      <label className="cf-label"><Star size={12} /> Overall Rating</label>
+                      {/* <label className="cf-label"><Star size={12} /> Overall Rating</label> */}
+                      <label className="cf-label"><Star size={12} /> Overall Rating <span className="cf-req">*</span></label>
                       <div className="cf-select-wrap">
                         <select className="cf-select" value={feedbackForm.applicant_rating} onChange={e => setFeedbackForm({ ...feedbackForm, applicant_rating: e.target.value })} disabled={loading.applicantRatingOptions || isFormDisabled}>
                           <option value="">{loading.applicantRatingOptions ? "Loading ratings..." : applicantRatingOptions.length === 0 ? "No ratings available" : "Select rating"}</option>

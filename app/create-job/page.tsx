@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import type React from "react"
 import { getFrappeCSRF } from "@/lib/csrf"
 import {
@@ -366,6 +366,80 @@ const css = `
 
 interface ToastItem { id: number; title: string; desc?: string; type: 'info' | 'success' | 'error' }
 
+function SearchableSelect({ value, onChange, options, placeholder }: {
+  value: string
+  onChange: (val: string) => void
+  options: string[]
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()))
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        className="cj-input"
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", height: 44 }}
+        onClick={() => { setOpen(o => !o); setSearch("") }}
+      >
+        <span style={{ color: value ? "var(--t1)" : "var(--t3)" }}>{value || placeholder}</span>
+        <ChevronRight size={14} style={{ transform: open ? "rotate(270deg)" : "rotate(90deg)", color: "var(--t3)", transition: "transform .2s" }} />
+      </div>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+          background: "#fff", border: "1px solid var(--border)", borderRadius: 8,
+          boxShadow: "0 8px 24px rgba(0,0,0,.12)", overflow: "hidden"
+        }}>
+          <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--border-s)" }}>
+            <input
+              autoFocus
+              className="cj-input"
+              style={{ height: 34, fontSize: 13 }}
+              placeholder="Search..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+          <div style={{ maxHeight: 220, overflowY: "auto" }}>
+            {filtered.length === 0
+              ? <div style={{ padding: "12px 14px", color: "var(--t3)", fontSize: 13 }}>No results found</div>
+              : filtered.map(opt => (
+                <div
+                  key={opt}
+                  onClick={() => { onChange(opt); setOpen(false) }}
+                  style={{
+                    padding: "9px 14px", fontSize: 13.5, cursor: "pointer",
+                    background: opt === value ? "var(--accent-lt)" : "transparent",
+                    color: opt === value ? "var(--accent)" : "var(--t1)",
+                    transition: "background .12s"
+                  }}
+                  onMouseEnter={e => { if (opt !== value) (e.target as HTMLElement).style.background = "var(--bg)" }}
+                  onMouseLeave={e => { if (opt !== value) (e.target as HTMLElement).style.background = "transparent" }}
+                >
+                  {opt}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CreateJobOpeningForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
@@ -421,13 +495,13 @@ export default function CreateJobOpeningForm() {
     async function fetchOptions() {
       try {
         const [companiesRes, departmentsRes, employmentTypesRes, designationsRes, locationsRes, docTypeRes, currenciesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/resource/Company?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Employment Type?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Designation?fields=["name"]`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Company?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Employment Type?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Designation?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Cost Center?fields=["name"]&filters=[["Cost Center","is_group","=",0]]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/DocType/Job Opening`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Currency?fields=["name"]&limit_page_length=999`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Currency?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
         ])
         const companies = await companiesRes.json()
         const departments = await departmentsRes.json()
@@ -484,6 +558,7 @@ export default function CreateJobOpeningForm() {
         return true
       case 2:
         if (!formData.company) { showToast("Company Required", "Please select a company to continue.", "error"); return false }
+        if (!formData.department) { showToast("Department Required", "Please select a department to continue.", "error"); return false }
         if (!formData.location) { showToast("Work Location Required", "Please select a work location to continue.", "error"); return false }
         if (!formData.employment_type) { showToast("Employment Type Required", "Please select an employment type to continue.", "error"); return false }
         return true
@@ -592,15 +667,21 @@ export default function CreateJobOpeningForm() {
             <div className="cj-field">
               {/* <label className="cj-label"><Users size={13} /> Designation</label> */}
               <label className="cj-label"><Users size={13} /> Designation <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span></label>
-              <div className="cj-select-wrap">
-                <select className="cj-select" value={formData.designation}
+              {/* <div className="cj-select-wrap"> */}
+              {/* <select className="cj-select" value={formData.designation}
                   onChange={e => handleSelect("designation", e.target.value)}>
                   <option value="">Select Designation</option>
                   {options.designations.length === 0 && <option value="" disabled>No designations available</option>}
                   {options.designations.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                <ChevronRight size={14} className="cj-select-chevron" />
-              </div>
+                </select> */}
+              <SearchableSelect
+                value={formData.designation}
+                onChange={val => handleSelect("designation", val)}
+                options={options.designations}
+                placeholder="Select Designation"
+              />
+              {/* <ChevronRight size={14} className="cj-select-chevron" /> */}
+              {/* </div> */}
             </div>
             <div className="cj-field">
               <label className="cj-label"><AlertCircle size={13} /> Status</label>
@@ -648,21 +729,29 @@ export default function CreateJobOpeningForm() {
               </div>
             </div>
             <div className="cj-field">
-              <label className="cj-label"><Users size={13} /> Department</label>
-              <div className="cj-select-wrap">
-                <select className="cj-select" value={formData.department}
+              {/* <label className="cj-label"><Users size={13} /> Department</label> */}
+              <label className="cj-label"><Users size={13} /> Department <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span></label>
+              {/* <div className="cj-select-wrap"> */}
+              {/* <select className="cj-select" value={formData.department}
                   onChange={e => handleSelect("department", e.target.value)}>
                   <option value="">Select Department</option>
                   {options.departments.length === 0 && <option value="" disabled>No departments available</option>}
                   {options.departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                <ChevronRight size={14} className="cj-select-chevron" />
-              </div>
+                </select> */}
+              <SearchableSelect
+                value={formData.department}
+                onChange={val => handleSelect("department", val)}
+                options={options.departments}
+                placeholder="Select Department"
+              />
+
+              {/* <ChevronRight size={14} className="cj-select-chevron" />  
+              </div> */}
             </div>
             <div className="cj-field">
               {/* <label className="cj-label"><MapPin size={13} /> Work Location</label> */}
               <label className="cj-label"><MapPin size={13} /> Work Location <span style={{ color: '#ef4444', marginLeft: 2 }}>*</span></label>
-              <div className="cj-select-wrap">
+              {/* <div className="cj-select-wrap">
                 <select className="cj-select" value={formData.location}
                   onChange={e => handleSelect("location", e.target.value)}>
                   <option value="">Select Location</option>
@@ -670,7 +759,13 @@ export default function CreateJobOpeningForm() {
                   {options.locations.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
                 <ChevronRight size={14} className="cj-select-chevron" />
-              </div>
+              </div> */}
+              <SearchableSelect
+                value={formData.location}
+                onChange={val => handleSelect("location", val)}
+                options={options.locations}
+                placeholder="Select Location"
+              />
             </div>
             <div className="cj-field">
               {/* <label className="cj-label"><Clock size={13} /> Employment Type</label> */}

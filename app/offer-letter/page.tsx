@@ -604,6 +604,15 @@ export default function JobOfferPage() {
     if (!offerForm.jobApplicant || !offerForm.applicantName || !offerForm.designation || !offerForm.company || !offerForm.customGrade || !offerForm.customMobileNo || !offerForm.customContactName) {
       alert("Please fill all required fields"); return
     }
+    if (!offerForm.offerDate) {
+      alert("Please select an Offer Date"); return
+    }
+    if (!offerForm.customOfferAcceptanceDate) {
+      alert("Please select an Offer Acceptance Date"); return
+    }
+    if (!offerForm.customJoiningDate) {
+      alert("Please select a Joining Date"); return
+    }
     if (!offerForm.customSalaryAnnexure) {
       alert("Salary Annexure is required. Please create a Salary Annexure in Frappe first, then create the offer letter."); return
     }
@@ -847,7 +856,8 @@ export default function JobOfferPage() {
                         />
                       </div>
                       <div className="ol-field">
-                        <label className="ol-label"><Calendar size={13} /> Offer Date</label>
+                        {/* <label className="ol-label"><Calendar size={13} /> Offer Date</label> */}
+                        <label className="ol-label"><Calendar size={13} /> Offer Date <span className="ol-req">*</span></label>
                         <input
                           className="ol-input"
                           type="date"
@@ -925,7 +935,8 @@ export default function JobOfferPage() {
                     {/* Row 4: Acceptance Date + Joining Date */}
                     <div className="ol-grid-2">
                       <div className="ol-field">
-                        <label className="ol-label"><Calendar size={13} /> Offer Acceptance Date</label>
+                        {/* <label className="ol-label"><Calendar size={13} /> Offer Acceptance Date</label> */}
+                        <label className="ol-label"><Calendar size={13} /> Offer Acceptance Date <span className="ol-req">*</span></label>
                         <input
                           className="ol-input"
                           type="date"
@@ -938,7 +949,8 @@ export default function JobOfferPage() {
                         />
                       </div>
                       <div className="ol-field">
-                        <label className="ol-label"><Calendar size={13} /> Joining Date</label>
+                        {/* <label className="ol-label"><Calendar size={13} /> Joining Date</label> */}
+                        <label className="ol-label"><Calendar size={13} /> Joining Date <span className="ol-req">*</span></label>
                         <input
                           className="ol-input"
                           type="date"
