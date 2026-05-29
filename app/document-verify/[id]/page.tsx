@@ -1666,7 +1666,7 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
     // }
 
     const handleSaveDocuments = async () => {
-        const required = [{ field: 'aadharCard', name: 'Aadhar Card' }, { field: 'education', name: 'Education' }, { field: 'bankDetails', name: 'Bank Details' }, { field: 'pan', name: 'PAN' }]
+        const required = [{ field: 'aadharCard', name: 'Aadhar Card' }]
         const missing = required.filter(d => !existingFiles[d.field])
         if (missing.length > 0) { alert(`Please upload required documents: ${missing.map(d => d.name).join(", ")}`); return }
         setIsSavingDocs(true)
@@ -1940,14 +1940,14 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                     <FileUploadField label="Aadhar Card" field="aadharCard" required />
                     <FileUploadField label="Passport" field="passport" />
                     <FileUploadField label="Experience Certificate" field="experience" />
-                    <FileUploadField label="Education Certificate" field="education" required />
+                    <FileUploadField label="Education Certificate" field="education" />
                 </div>
             </div>
             <div className="ob-card">
                 <div className="ob-card-head"><FileText size={16} /><span className="ob-card-title">Financial Documents</span></div>
                 <div className="ob-card-body">
-                    <FileUploadField label="Bank Account Details" field="bankDetails" required />
-                    <FileUploadField label="PAN Card" field="pan" required />
+                    <FileUploadField label="Bank Account Details" field="bankDetails" />
+                    <FileUploadField label="PAN Card" field="pan" />
                     <FileUploadField label="Medical Certificate" field="medical" />
                     <FileUploadField label="Passport Photos" field="photos" />
                 </div>

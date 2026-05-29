@@ -572,6 +572,11 @@ interface Candidate {
     stage_statuses?: CandidateStageStatus[]
     justification_by_ai?: string; applicant_rating?: number; fit_level?: string; score?: number
     job_opening?: string
+    custom_current_company: string;
+    custom_total_experience: string;
+    resume_attachment: string;
+    owner: string;
+
 }
 
 function CandidatesInner() {
@@ -607,6 +612,7 @@ function CandidatesInner() {
     const [comments, setComments] = useState<CandidateComment[]>([])
     const [newComment, setNewComment] = useState("")
     const [loadingComments, setLoadingComments] = useState(false)
+    const [pendingInterviewCount, setPendingInterviewCount] = useState(0)
     const ITEMS_PER_PAGE = 10
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -761,6 +767,10 @@ function CandidatesInner() {
                     applicant_rating: item.applicant_rating || 0,
                     fit_level: item.fit_level || "", score: item.score || 0,
                     job_opening: item.job_title || "",
+                    custom_current_company: item.custom_current_company || "",
+                    custom_total_experience: item.custom_total_experience || "",
+                    resume_attachment: item.resume_attachment || "",
+                    owner: item.owner || "",    // ← ADD THIS
                 }))
                 setCandidates(mappedData); setFilteredCandidates(mappedData); setIsLoading(false)
 
@@ -785,6 +795,8 @@ function CandidatesInner() {
                     fetchBulk('Joining Confirmation', [['candidate_id', 'in', candidateIds]], ['candidate_id', 'join', 'not_join', 'offer_revoked', 'modified']),
                     fetchBulk('Appointment Letter', [['job_applicant', 'in', candidateIds]], ['job_applicant']),
                 ])
+                setPendingInterviewCount(interviewData.filter((i: any) => i.status === 'Pending').length)
+
 
                 const allResults = mappedData.map((candidate: Candidate) => {
                     const statuses: CandidateStageStatus[] = []
@@ -1006,7 +1018,7 @@ function CandidatesInner() {
 
     const allCandidates = jobOpeningFilter ? candidates.filter(c => c.job_opening === jobOpeningFilter) : candidates
     const totalCandidates = allCandidates.length
-    const candidatesInInterview = allCandidates.filter(c => getCurrentStage(c)?.id === 'interview').length
+    // const candidatesInInterview = allCandidates.filter(c => getCurrentStage(c)?.id === 'interview').length
     const candidatesInDocVerification = allCandidates.filter(c => c.stage_statuses?.find(s => s.stage_id === 'document_verification')?.status === 'completed').length
     const candidatesCompleted = allCandidates.filter(c => c.stage_statuses?.find(s => s.stage_id === 'appointment_letter')?.status === 'completed').length
     const candidatesInOfferLetter = allCandidates.filter(c => c.stage_statuses?.find(s => s.stage_id === 'offer_letter')?.status === 'completed').length
@@ -1106,7 +1118,8 @@ function CandidatesInner() {
                             <div className="cp-stats">
                                 {[
                                     { label: "Total Candidates", val: totalCandidates, cls: "blue", icon: <Users size={18} /> },
-                                    { label: "In Interview", val: candidatesInInterview, cls: "purple", icon: <Users size={18} /> },
+                                    // { label: "In Interview", val: candidatesInInterview, cls: "purple", icon: <Users size={18} /> },
+                                    { label: "In Interview", val: pendingInterviewCount, cls: "purple", icon: <Users size={18} /> },
                                     { label: "Doc Verification", val: candidatesInDocVerification, cls: "orange", icon: <FileCheck size={18} /> },
                                     { label: "Completed", val: candidatesCompleted, cls: "green", icon: <CheckCircle size={18} /> },
                                     { label: "Offer Letter", val: candidatesInOfferLetter, cls: "indigo", icon: <Send size={18} /> },
@@ -1269,6 +1282,34 @@ function CandidatesInner() {
                                                     <span className={`cp-badge ${selectedCandidate.status === 'Open' ? 'open' : 'blue'}`}>{selectedCandidate.status}</span>
                                                     {selectedCandidate.fit_level && <span className="cp-badge purple">{selectedCandidate.fit_level}</span>}
                                                 </div>
+                                                {/* <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                                    <span className={`cp-badge ${selectedCandidate.status === 'Open' ? 'open' : 'blue'}`}>{selectedCandidate.status}</span>
+                                                    {selectedCandidate.fit_level && <span className="cp-badge purple">{selectedCandidate.fit_level}</span>}
+                                                </div> */}
+
+                                                {/* ← INSERT PART A HERE */}
+                                                {(selectedCandidate.custom_current_company || selectedCandidate.custom_total_experience) && (
+                                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                                                        {selectedCandidate.custom_current_company && (
+                                                            <span style={{
+                                                                fontSize: 12, fontWeight: 700, color: '#fff',
+                                                                background: 'rgba(255,255,255,0.13)', borderRadius: 6,
+                                                                padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 5
+                                                            }}>
+                                                                <Briefcase size={11} /> {selectedCandidate.custom_current_company}
+                                                            </span>
+                                                        )}
+                                                        {selectedCandidate.custom_total_experience && (
+                                                            <span style={{
+                                                                fontSize: 12, fontWeight: 700, color: '#fff',
+                                                                background: 'rgba(255,255,255,0.13)', borderRadius: 6,
+                                                                padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 5
+                                                            }}>
+                                                                <Clock size={11} /> {selectedCandidate.custom_total_experience}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="cp-detail-body">
@@ -1276,8 +1317,61 @@ function CandidatesInner() {
                                                     <div><div className="cp-detail-label"><Calendar size={11} /> Created</div><div className="cp-detail-val" style={{ fontSize: 12 }}>{formatDate(selectedCandidate.creation)}</div></div>
                                                     <div><div className="cp-detail-label"><Calendar size={11} /> Modified</div><div className="cp-detail-val" style={{ fontSize: 12 }}>{formatDate(selectedCandidate.modified)}</div></div>
                                                 </div>
+                                                {/* Created By — HR who added this candidate */}
+                                                {selectedCandidate.owner && (
+                                                    <div style={{
+                                                        display: 'flex', alignItems: 'center', gap: 10,
+                                                        padding: '10px 12px', borderRadius: 8,
+                                                        background: 'linear-gradient(135deg, var(--accent-lt), #f0f8fe)',
+                                                        border: '1px solid var(--accent-bdr)',
+                                                        marginBottom: 2
+                                                    }}>
+                                                        <div style={{
+                                                            width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                                                            background: 'linear-gradient(135deg, var(--accent), #7c3aed)',
+                                                            color: '#fff', display: 'flex', alignItems: 'center',
+                                                            justifyContent: 'center', fontSize: 13, fontWeight: 700
+                                                        }}>
+                                                            {selectedCandidate.owner.split('@')[0].charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'var(--t3)', marginBottom: 2 }}>
+                                                                Created By
+                                                            </div>
+                                                            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>
+                                                                {selectedCandidate.owner.split('@')[0]}
+                                                            </div>
+                                                            <div style={{ fontSize: 11, color: 'var(--t3)' }}>
+                                                                {selectedCandidate.owner}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div><div className="cp-detail-label"><Mail size={11} /> Email</div><div className="cp-detail-val" style={{ wordBreak: 'break-all' }}>{selectedCandidate.email_id}</div></div>
                                                 <div><div className="cp-detail-label"><Phone size={11} /> Phone</div><div className="cp-detail-val">{selectedCandidate.phone_number}</div></div>
+                                                {selectedCandidate.resume_attachment && (
+                                                    <div>
+                                                        <div className="cp-detail-label"><FileText size={11} /> Resume</div>
+                                                        <a
+                                                            href={`${API_BASE_URL}${selectedCandidate.resume_attachment}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{
+                                                                display: 'flex', alignItems: 'center', gap: 8,
+                                                                marginTop: 4, padding: '8px 12px', borderRadius: 8,
+                                                                background: 'var(--bg)', border: '1px solid var(--border-s)',
+                                                                fontSize: 12.5, fontWeight: 600, color: 'var(--accent)',
+                                                                textDecoration: 'none', transition: 'all .14s',
+                                                                wordBreak: 'break-all'
+                                                            }}
+                                                            onMouseOver={e => (e.currentTarget.style.background = 'var(--accent-lt)')}
+                                                            onMouseOut={e => (e.currentTarget.style.background = 'var(--bg)')}
+                                                        >
+                                                            <Download size={13} style={{ flexShrink: 0 }} />
+                                                            {selectedCandidate.resume_attachment.split('/').pop()}
+                                                        </a>
+                                                    </div>
+                                                )}
                                                 {/* <div><div className="cp-detail-label"><Briefcase size={11} /> Job Title</div><div className="cp-detail-val">{selectedCandidate.job_title}</div></div> */}
 
                                                 <div>

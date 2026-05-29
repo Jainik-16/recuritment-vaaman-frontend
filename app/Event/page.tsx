@@ -400,10 +400,46 @@ function EventPageContent() {
       alert("Cannot schedule interview for past dates. Please select today or a future date.")
       return
     }
+    // if (eventForm.fromTime && eventForm.toTime) {
+    //   const fromTime = new Date(`2000-01-01T${eventForm.fromTime}`)
+    //   const toTime = new Date(`2000-01-01T${eventForm.toTime}`)
+    //   if (fromTime >= toTime) { alert("To Time must be later than From Time"); return }
+    // }
+
+    // // REPLACE the duplicate check block with this:
+    // try {
+    //   const existingRes = await fetch(
     if (eventForm.fromTime && eventForm.toTime) {
       const fromTime = new Date(`2000-01-01T${eventForm.fromTime}`)
       const toTime = new Date(`2000-01-01T${eventForm.toTime}`)
       if (fromTime >= toTime) { alert("To Time must be later than From Time"); return }
+    }
+
+    // ✅ NEW: Prevent rescheduling same round at same date+time
+    try {
+      const sameTimeRes = await fetch(
+        `${API_BASE_URL}/api/resource/Interview?` +
+        `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["interview_round","=","${eventForm.interviewRound}"],["scheduled_on","=","${eventForm.scheduledOn}"],["from_time","=","${eventForm.fromTime}:00"]]` +
+        `&fields=["name","scheduled_on","from_time","to_time","status"]&limit_page_length=1`,
+        {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+      const sameTimeData = await sameTimeRes.json()
+      console.log("Same time check:", sameTimeData)
+
+      if (sameTimeData.data && sameTimeData.data.length > 0) {
+        const existing = sameTimeData.data[0]
+        alert(
+          `Cannot reschedule at the same time!\n\n` +
+          `"${eventForm.interviewRound}" is already scheduled on ${eventForm.scheduledOn} at ${eventForm.fromTime}.\n\n` +
+          `Please choose a different date or time.`
+        )
+        return
+      }
+    } catch (err) {
+      console.error("Same time validation failed:", err)
     }
 
     // REPLACE the duplicate check block with this:
@@ -428,47 +464,91 @@ function EventPageContent() {
       console.error("Round validation failed:", err)
     }
 
-    // BLOCK 2 — NEW: prevent scheduling next round if previous cleared round has no feedback
+
+    // BLOCK 3 — Round order validation: must schedule rounds in sequence
     try {
-      const clearedRes = await fetch(
-        `${API_BASE_URL}/api/resource/Interview?` +
-        `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["status","=","Cleared"]]` +
-        `&fields=["name","interview_round","scheduled_on"]&order_by=scheduled_on desc&limit_page_length=1`,
-        {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        }
+      // Fetch all interview rounds in order (assumes round names are ordered in the system)
+      const allRoundsRes = await fetch(
+        `${API_BASE_URL}/api/resource/Interview Round?fields=["name","round_name"]&limit_page_length=100`,
+        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
-      const clearedData = await clearedRes.json()
-      console.log("Last cleared interview check:", clearedData)
+      const allRoundsData = await allRoundsRes.json()
+      const orderedRounds: string[] = (allRoundsData.data || []).map((r: any) => r.name)
 
-      if (clearedData.data && clearedData.data.length > 0) {
-        const lastClearedInterview = clearedData.data[0]
+      const selectedRoundIndex = orderedRounds.indexOf(eventForm.interviewRound)
 
-        const feedbackRes = await fetch(
-          `${API_BASE_URL}/api/resource/Interview Feedback?` +
-          `filters=[["interview","=","${lastClearedInterview.name}"]]` +
-          `&fields=["name"]&limit_page_length=1`,
-          {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-          }
+      if (selectedRoundIndex > 0) {
+        // There are rounds before this one — check all previous rounds have been scheduled
+        const previousRounds = orderedRounds.slice(0, selectedRoundIndex)
+
+        const existingRoundsRes = await fetch(
+          `${API_BASE_URL}/api/resource/Interview?` +
+          `filters=[["job_applicant","=","${eventForm.jobApplicant}"]]` +
+          `&fields=["name","interview_round","status"]&limit_page_length=100`,
+          { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
         )
-        const feedbackData = await feedbackRes.json()
-        console.log("Feedback check for last cleared interview:", feedbackData)
+        const existingRoundsData = await existingRoundsRes.json()
+        const scheduledRoundNames: string[] = (existingRoundsData.data || []).map((i: any) => i.interview_round)
 
-        if (!feedbackData.data || feedbackData.data.length === 0) {
-          alert(
-            `Cannot schedule next round!\n\n` +
-            `The previous round "${lastClearedInterview.interview_round}" was cleared but feedback has not been submitted yet.\n\n` +
-            `Please submit feedback for interview "${lastClearedInterview.name}" before scheduling the next round.`
-          )
-          return
+        for (const prevRound of previousRounds) {
+          if (!scheduledRoundNames.includes(prevRound)) {
+            alert(
+              `Round order violation!\n\n` +
+              `You cannot schedule "${eventForm.interviewRound}" before "${prevRound}" has been scheduled.\n\n` +
+              `Please schedule rounds in order.`
+            )
+            return
+          }
         }
       }
     } catch (err) {
-      console.error("Feedback validation failed:", err)
+      console.error("Round order validation failed:", err)
     }
+
+
+    // BLOCK 2 — NEW: prevent scheduling next round if previous cleared round has no feedback
+    // try {
+    //   const clearedRes = await fetch(
+    //     `${API_BASE_URL}/api/resource/Interview?` +
+    //     `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["status","=","Cleared"]]` +
+    //     `&fields=["name","interview_round","scheduled_on"]&order_by=scheduled_on desc&limit_page_length=1`,
+    //     {
+    //       credentials: 'include',
+    //       headers: { 'Content-Type': 'application/json' }
+    //     }
+    //   )
+    //   const clearedData = await clearedRes.json()
+    //   console.log("Last cleared interview check:", clearedData)
+
+    //   if (clearedData.data && clearedData.data.length > 0) {
+    //     const lastClearedInterview = clearedData.data[0]
+
+    //     const feedbackRes = await fetch(
+    //       `${API_BASE_URL}/api/resource/Interview Feedback?` +
+    //       `filters=[["interview","=","${lastClearedInterview.name}"]]` +
+    //       `&fields=["name"]&limit_page_length=1`,
+    //       {
+    //         credentials: 'include',
+    //         headers: { 'Content-Type': 'application/json' }
+    //       }
+    //     )
+    //     const feedbackData = await feedbackRes.json()
+    //     console.log("Feedback check for last cleared interview:", feedbackData)
+
+    //     if (!feedbackData.data || feedbackData.data.length === 0) {
+    //       alert(
+    //         `Cannot schedule next round!\n\n` +
+    //         `The previous round "${lastClearedInterview.interview_round}" was cleared but feedback has not been submitted yet.\n\n` +
+    //         `Please submit feedback for interview "${lastClearedInterview.name}" before scheduling the next round.`
+    //       )
+    //       return
+    //     }
+    //   }
+    // } catch (err) {
+    //   console.error("Feedback validation failed:", err)
+    // }
+
+
 
 
 

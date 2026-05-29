@@ -549,6 +549,8 @@ interface Candidate {
     round: number
     round_name?: string
     notes?: string
+    scheduledBy?: string
+
   }
 }
 
@@ -619,6 +621,22 @@ export default function InterviewPage() {
           } catch { return { ...interview, interviewers: [] } }
         }))
         setAllInterviews(interviews)
+        setAllInterviews(interviews)
+
+        // ← ADD THIS ENTIRE BLOCK
+        const ownerEmails = [...new Set(interviews.map((i: any) => i.owner).filter(Boolean))]
+        const ownerNameMap: Record<string, string> = {}
+        if (ownerEmails.length > 0) {
+          try {
+            const usersRes = await fetch(
+              `${API_BASE_URL}/api/resource/User?fields=["name","full_name"]&filters=[["name","in","${ownerEmails.join('","')}"]]&limit_page_length=100`,
+              { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+            )
+            const usersData = await usersRes.json()
+            const users = usersData?.data || []
+            users.forEach((u: any) => { ownerNameMap[u.name] = u.full_name || u.name })
+          } catch (e) { console.error("Error fetching owner names:", e) }
+        }
         const mappedData = applicants.map((item: any) => {
           const applicantInterviews = interviews.filter((int: any) => int.job_applicant === item.name || int.job_applicant === item.email_id)
           const interview = applicantInterviews.length > 0 ? applicantInterviews.sort((a: any, b: any) => new Date(b.scheduled_on || b.creation).getTime() - new Date(a.scheduled_on || a.creation).getTime())[0] : null
@@ -637,11 +655,14 @@ export default function InterviewPage() {
               location: interview.custom_location || interview.location || "",
               meeting_link: interview.google_meet || interview.meeting_link || "",
               interviewers: interview.interviewers || [], round: interview.round || 1,
-              round_name: interview.interview_round || "", notes: interview.notes || ""
+              round_name: interview.interview_round || "", notes: interview.notes || "",
+              scheduledBy: interview.owner ? (ownerNameMap[interview.owner] || interview.owner) : ""
             } : undefined
           }
         })
-        setCandidate(mappedData.sort((a: any, b: any) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime()))
+        // setCandidate(mappedData.sort((a: any, b: any) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime()))
+        const candidatesWithInterviews = mappedData.filter((c: any) => c.interviewDetails !== undefined)
+        setCandidate(candidatesWithInterviews.sort((a: any, b: any) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime()))
       }
     } catch (error: any) { setApiError("Network error: Unable to reach server. Please check if the API server is running.") }
     finally { setIsLoading(false) }
@@ -771,8 +792,10 @@ export default function InterviewPage() {
               {/* ══ STATS ══ */}
               <div className="ip-stats">
                 {[
-                  { label: "Open", val: candidates.filter(c => c.status === "Open" || c.interviewStatus === "Open").length, cls: "blue", icon: <Clock size={18} /> },
-                  { label: "Pending", val: candidates.filter(c => c.status === "Pending" || c.interviewStatus === "Pending").length, cls: "gray", icon: <AlertCircle size={18} /> },
+                  // { label: "Open", val: candidates.filter(c => c.status === "Open" || c.interviewStatus === "Open").length, cls: "blue", icon: <Clock size={18} /> },
+                  // { label: "Pending", val: candidates.filter(c => c.status === "Pending" || c.interviewStatus === "Pending").length, cls: "gray", icon: <AlertCircle size={18} /> },
+                  { label: "Interviews Scheduled", val: candidates.length, cls: "blue", icon: <Calendar size={18} /> },
+                  { label: "Pending", val: candidates.filter(c => c.interviewStatus === "Pending").length, cls: "gray", icon: <AlertCircle size={18} /> },
                   { label: "Under Review", val: candidates.filter(c => c.interviewStatus === "Under Review").length, cls: "yellow", icon: <AlertCircle size={18} /> },
                   { label: "Cleared", val: candidates.filter(c => c.interviewStatus === "Cleared").length, cls: "green", icon: <CheckCircle size={18} /> },
                   { label: "Rejected", val: candidates.filter(c => c.interviewStatus === "Rejected").length, cls: "red", icon: <XCircle size={18} /> },
@@ -999,9 +1022,44 @@ export default function InterviewPage() {
                               {selectedCandidate.interviewDetails.location && <div className="ip-det-full"><div className="ip-det-label">Location</div><div className="ip-det-val">{selectedCandidate.interviewDetails.location}</div></div>}
                               {selectedCandidate.interviewDetails.meeting_link && <div className="ip-det-full"><div className="ip-det-label">Meeting Link</div><a href={selectedCandidate.interviewDetails.meeting_link} target="_blank" rel="noopener noreferrer" className="ip-det-link">{selectedCandidate.interviewDetails.meeting_link}</a></div>}
                             </div>
-                            <div style={{ marginTop: 12 }}>
+                            {/* <div style={{ marginTop: 12 }}>
                               <div className="ip-det-label">Interviewers</div>
                               {selectedCandidate.interviewDetails.interviewers?.length > 0 ? <div className="ip-interviewers">{selectedCandidate.interviewDetails.interviewers.map((iv, idx) => <span key={idx} className="ip-interviewer-chip">{iv}</span>)}</div> : <div style={{ fontSize: 12.5, color: 'var(--t3)', marginTop: 4 }}>No interviewers assigned</div>}
+                            </div> */}
+                            {/* Scheduled By */}
+                            {selectedCandidate.interviewDetails.scheduledBy && (
+                              <div style={{ marginTop: 12, marginBottom: 12 }}>
+                                <div className="ip-det-label">Scheduled By</div>
+                                <div style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, marginTop: 4,
+                                  padding: '8px 10px', borderRadius: 8,
+                                  background: 'linear-gradient(135deg, var(--accent-lt), #f0f8fe)',
+                                  border: '1px solid var(--accent-bdr)'
+                                }}>
+                                  <div style={{
+                                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                                    background: 'linear-gradient(135deg, var(--accent), #7c3aed)',
+                                    color: '#fff', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', fontSize: 12, fontWeight: 700
+                                  }}>
+                                    {selectedCandidate.interviewDetails.scheduledBy.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--t1)' }}>
+                                      {selectedCandidate.interviewDetails.scheduledBy}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Interviewers — keep exactly as before */}
+                            <div style={{ marginTop: 12 }}>
+                              <div className="ip-det-label">Interviewers</div>
+                              {selectedCandidate.interviewDetails.interviewers?.length > 0
+                                ? <div className="ip-interviewers">{selectedCandidate.interviewDetails.interviewers.map((iv, idx) => <span key={idx} className="ip-interviewer-chip">{iv}</span>)}</div>
+                                : <div style={{ fontSize: 12.5, color: 'var(--t3)', marginTop: 4 }}>No interviewers assigned</div>
+                              }
                             </div>
                             {selectedCandidate.interviewDetails.notes && <div style={{ marginTop: 12 }}><div className="ip-det-label">Notes</div><div className="ip-det-val" style={{ marginTop: 3 }}>{selectedCandidate.interviewDetails.notes}</div></div>}
                           </div>
