@@ -602,35 +602,69 @@ export default function ResumeUploader() {
       const successfulUploads: string[] = []
       const failedUploads: string[] = []
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        try {
-          const formData = new FormData()
-          formData.append("files", file)
-          // formData.append("job_opening", selectedJobId)
-          // ✅ conditionally send job
-          if (!isDataBank) {
-            formData.append("job_opening", selectedJobId)
-          }
+      // for (let i = 0; i < files.length; i++) {
+      //   const file = files[i]
+      //   try {
+      //     const formData = new FormData()
+      //     formData.append("files", file)
+      //     // formData.append("job_opening", selectedJobId)
+      //     // ✅ conditionally send job
+      //     if (!isDataBank) {
+      //       formData.append("job_opening", selectedJobId)
+      //     }
 
-          // ✅ send databank flag
-          formData.append("is_data_bank", isDataBank ? "1" : "0")
-          const csrfToken = await getFrappeCSRF()
-          const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
-            method: 'POST', credentials: 'include',
-            headers: { "X-Frappe-CSRF-Token": csrfToken, },
-            body: formData,
-          })
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-          await res.json()
+      //     // ✅ send databank flag
+      //     formData.append("is_data_bank", isDataBank ? "1" : "0")
+      //     const csrfToken = await getFrappeCSRF()
+      //     const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
+      //       method: 'POST', credentials: 'include',
+      //       headers: { "X-Frappe-CSRF-Token": csrfToken, },
+      //       body: formData,
+      //     })
+      //     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+      //     await res.json()
+      //     successfulUploads.push(file.name)
+      //     setProcessedFiles(prev => [...prev, file.name])
+      //     setUploadProgress(((i + 1) / files.length) * 100)
+      //     toast({ title: `Processing ${file.name}`, description: `File ${i + 1} of ${files.length} processed successfully.`, duration: 2000 })
+      //   } catch (fileError) {
+      //     console.error(`Failed to upload ${file.name}:`, fileError)
+      //     failedUploads.push(file.name)
+      //   }
+      // }
+
+      try {
+        // Send ALL files in a single request → one Resume Import Log per batch
+        const formData = new FormData()
+        files.forEach(file => formData.append("files", file))
+        if (!isDataBank) {
+          formData.append("job_opening", selectedJobId)
+        }
+        formData.append("is_data_bank", isDataBank ? "1" : "0")
+
+        const csrfToken = await getFrappeCSRF()
+        const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            "X-Frappe-CSRF-Token": csrfToken,
+            "Expect": "",
+          },
+          body: formData,
+        })
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+        await res.json()
+
+        // Mark all as successful for UI
+        files.forEach(file => {
           successfulUploads.push(file.name)
           setProcessedFiles(prev => [...prev, file.name])
-          setUploadProgress(((i + 1) / files.length) * 100)
-          toast({ title: `Processing ${file.name}`, description: `File ${i + 1} of ${files.length} processed successfully.`, duration: 2000 })
-        } catch (fileError) {
-          console.error(`Failed to upload ${file.name}:`, fileError)
-          failedUploads.push(file.name)
-        }
+        })
+        setUploadProgress(100)
+
+      } catch (batchError) {
+        console.error(`Batch upload failed:`, batchError)
+        files.forEach(file => failedUploads.push(file.name))
       }
 
       if (successfulUploads.length === files.length) {
