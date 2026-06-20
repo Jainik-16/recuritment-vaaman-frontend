@@ -113,9 +113,10 @@ const css = `
   }
   .dvl-main.sb-closed { margin-left: 0; }
   .dvl-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .dvl-btn-back {
     display: inline-flex; align-items: center; gap: 6px;
@@ -133,10 +134,11 @@ const css = `
   }
   .dvl-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .dvl-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .dvl-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .dvl-crumb svg { width: 13px; height: 13px; color: var(--t3); }
-  .dvl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
-  .dvl-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .dvl-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+  .dvl-crumb svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
+  .dvl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dvl-crumb a { white-space: nowrap; }
+  .dvl-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .dvl-btn {
     display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px;
     background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-size: 13px;
@@ -426,12 +428,32 @@ const css = `
     .dvl-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .dvl-sb.open { transform: translateX(0); }
     .dvl-main { margin-left: 0 !important; }
-    .dvl-page-outer { padding: 16px; }
-    .dvl-header { padding: 0 16px; }
+    .dvl-page-outer { padding: 12px; }
+    .dvl-header { padding: 0 12px; gap: 6px; }
+    .dvl-hdr-sep { display: none; }
+    .dvl-btn-back { font-size: 12px; padding: 6px 10px; }
     .dvl-cards-grid { grid-template-columns: 1fr; }
-    .dvl-stats { grid-template-columns: 1fr; }
+    .dvl-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dvl-stat { padding: 14px 16px; }
+    .dvl-stat-val { font-size: 24px; }
+    .dvl-stat-icon { width: 40px; height: 40px; }
     .dvl-doc-status-grid { grid-template-columns: 1fr; }
     .dvl-info-grid { grid-template-columns: 1fr; }
+    .dvl-hdr-right { width: 100%; justify-content: flex-end; margin-left: 0; }
+    .dvl-hdr-right .dvl-btn { font-size: 11px; padding: 6px 10px; white-space: nowrap; }
+    .dvl-detail-hero { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .dvl-detail-hero-badge { align-self: flex-start; }
+    .dvl-pagination { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .dvl-page { gap: 14px; }
+    .dvl-sec-body { padding: 14px; }
+    .dvl-sec-head { padding: 12px 14px; }
+  }
+
+  @media (max-width: 480px) {
+    .dvl-header { flex-wrap: wrap; min-height: 56px; padding: 8px 12px; row-gap: 6px; }
+    .dvl-hdr-right { width: 100%; }
+    .dvl-hdr-right .dvl-btn { width: 100%; justify-content: center; font-size: 11.5px; }
+    .dvl-stats { grid-template-columns: 1fr; }
   }
 `
 
@@ -813,7 +835,33 @@ export default function DocumentVerifyListPage() {
                                                         <div className="dvl-detail-hero-id">ID: {selectedDoc.name}</div>
                                                     </div>
                                                 </div>
-                                                <div className="dvl-detail-hero-badge">{countDocuments(selectedDoc)} / 11 Documents</div>
+                                                {/* ── RIGHT SIDE: Documents badge + Created By stacked ── */}
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+                                                    <div className="dvl-detail-hero-badge">{countDocuments(selectedDoc)} / 11 Documents</div>
+                                                    {(selectedDoc as any).owner && (
+                                                        <div style={{
+                                                            display: 'flex', alignItems: 'center', gap: 10,
+                                                            padding: '10px 12px', borderRadius: 8,
+                                                            background: 'rgba(255,255,255,.10)',
+                                                            border: '1px solid rgba(255,255,255,.15)',
+                                                            minWidth: 200,
+                                                        }}>
+                                                            <div style={{
+                                                                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                                                                background: 'linear-gradient(135deg, #009ef7, #3b5bdb)',
+                                                                color: '#fff', display: 'flex', alignItems: 'center',
+                                                                justifyContent: 'center', fontSize: 12, fontWeight: 700
+                                                            }}>
+                                                                {(selectedDoc as any).owner.split('@')[0].charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'rgba(255,255,255,.55)', marginBottom: 2 }}>Created By</div>
+                                                                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{(selectedDoc as any).owner.split('@')[0]}</div>
+                                                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)' }}>{(selectedDoc as any).owner}</div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Info Grid */}

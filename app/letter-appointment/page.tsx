@@ -661,6 +661,7 @@ export default function AppointmentPage() {
           closing_notes: existingLetter.closing_notes,
           terms: existingLetter.terms,
           custom_staffworker: existingLetter.custom_staffworker || "",
+          owner: existingLetter.owner || "",
         })
       } else {
         setSavedAppointment({
@@ -757,6 +758,7 @@ export default function AppointmentPage() {
           closing_notes: jsonData.message.data.closing_notes || appointmentDetails.closing_notes,
           terms: jsonData.message.data.terms || appointmentDetails.terms,
           custom_staffworker: appointmentDetails.custom_staffworker,
+          owner: jsonData.message.data.owner || "",
         }
         setSavedAppointment(previewData)
         await fetchAcceptedOffers()
@@ -1002,7 +1004,7 @@ export default function AppointmentPage() {
                           </div>
                           <span className="al-status-badge close"><span className="al-status-dot red" />Close</span>
                         </div>
-                        <div className="al-already-body">
+                        {/* <div className="al-already-body">
                           {savedAppointment ? (
                             <div className="al-letter-box">
                               <div className="al-letter-title-row">
@@ -1034,6 +1036,72 @@ export default function AppointmentPage() {
                               <p className="al-letter-footer">Appointment letter has been successfully created.</p>
                               <DownloadButtons appt={savedAppointment} />
                             </div>
+                          ) : (
+                            <div className="al-loader">
+                              <div className="al-spinner" />
+                              <p className="al-loader-txt">Loading appointment letter...</p>
+                              <p style={{ fontSize: 11, color: 'var(--t3)', marginTop: 4 }}>If this takes too long, try clicking the candidate again.</p>
+                            </div>
+                          )}
+                        </div> */}
+                        <div className="al-already-body">
+                          {savedAppointment ? (
+                            <>
+                              {/* ── CREATED BY — outside the letter box, at top ── */}
+                              {savedAppointment.owner && (
+                                <div style={{
+                                  display: 'flex', alignItems: 'center', gap: 10,
+                                  padding: '10px 14px', borderRadius: 10, marginBottom: 16,
+                                  background: 'linear-gradient(135deg, var(--accent-lt), #f0f8fe)',
+                                  border: '1px solid rgba(0,158,247,.28)',
+                                }}>
+                                  <div style={{
+                                    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                                    background: 'linear-gradient(135deg, #009ef7, #3b5bdb)',
+                                    color: '#fff', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', fontSize: 14, fontWeight: 700
+                                  }}>
+                                    {savedAppointment.owner.split('@')[0].charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'var(--t3)', marginBottom: 2 }}>Created By</div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>{savedAppointment.owner.split('@')[0]}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--t3)' }}>{savedAppointment.owner}</div>
+                                  </div>
+                                </div>
+                              )}
+                              <div className="al-letter-box">
+                                <div className="al-letter-title-row">
+                                  <div className="al-letter-h1">APPOINTMENT LETTER</div>
+                                  <div className="al-letter-company">{savedAppointment.company}</div>
+                                </div>
+                                {/* Remove the old owner block that was here */}
+                                <div>
+                                  <p className="al-letter-dear">Dear {savedAppointment.candidateName},</p>
+                                  <p className="al-letter-body-txt" style={{ marginTop: 8 }}>
+                                    We are pleased to confirm your appointment as <strong>{savedAppointment.designation}</strong> with our organization.
+                                  </p>
+                                </div>
+                                {savedAppointment.introduction && (
+                                  <p className="al-letter-body-txt" style={{ whiteSpace: 'pre-line' }}>{savedAppointment.introduction}</p>
+                                )}
+                                {savedAppointment.terms?.length > 0 && (
+                                  <div className="al-letter-terms">
+                                    {savedAppointment.terms.map((term: TermRow, idx: number) => (
+                                      <div key={idx}>
+                                        <p className="al-letter-term-title">{idx + 1}. {term.title}</p>
+                                        <p className="al-letter-term-desc">{term.description}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {savedAppointment.closing_notes && (
+                                  <p className="al-letter-body-txt" style={{ whiteSpace: 'pre-line' }}>{savedAppointment.closing_notes}</p>
+                                )}
+                                <p className="al-letter-footer">Appointment letter has been successfully created.</p>
+                                <DownloadButtons appt={savedAppointment} />
+                              </div>
+                            </>
                           ) : (
                             <div className="al-loader">
                               <div className="al-spinner" />

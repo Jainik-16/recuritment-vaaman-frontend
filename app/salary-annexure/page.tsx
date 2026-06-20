@@ -239,9 +239,10 @@ const css = `
   }
   .sa-main.sb-closed { margin-left: 0; }
   .sa-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .sa-toggle {
     width: 34px; height: 34px; border-radius: 8px; background: none;
@@ -250,9 +251,10 @@ const css = `
   }
   .sa-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .sa-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .sa-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .sa-crumb svg { width: 13px; height: 13px; color: var(--t3); }
-  .sa-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+  .sa-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+.sa-crumb svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
+.sa-crumb a { white-space: nowrap; flex-shrink: 0; color: var(--t3); text-decoration: none; }
+.sa-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
 
   /* ══ PAGE ══ */
   .sa-page-outer { flex: 1; display: flex; justify-content: center; padding: 28px 32px; }
@@ -465,13 +467,14 @@ const css = `
 
   /* Add new condition */
   .sa-add-cond {
-    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px;
     border-top: 1px solid var(--border-s); background: #fafcff;
+    justify-content: space-between;
   }
   .sa-add-cond-input {
-    flex: 1; height: 38px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--border);
-    background: #fff; color: var(--t1); font-family: 'Inter', sans-serif; font-size: 13px;
-    outline: none; transition: all .15s;
+    flex: 1; height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: var(--t1); font-family: 'Inter', sans-serif; font-size: 13.5px;
+    outline: none; transition: all .15s; min-width: 0;
   }
   .sa-add-cond-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-lt); }
   .sa-add-cond-input::placeholder { color: var(--t3); }
@@ -532,14 +535,25 @@ const css = `
   @media (max-width: 768px) {
     .sa-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .sa-sb.open { transform: translateX(0); }
-    .sa-main { margin-left: 0 !important; }
-    .sa-page-outer { padding: 16px; }
-    .sa-header { padding: 0 16px; }
+    .sa-main { margin-left: 0 !important; overflow-x: hidden; max-width: 100vw; }
+    .sa-wrap { overflow-x: hidden; }
+    .sa-page-outer { padding: 12px; overflow-x: hidden; }
+    .sa-page { overflow-x: hidden; gap: 14px; }
+    .sa-header { padding: 0 12px; gap: 6px; }
+    .sa-hdr-sep { display: none; }
+    .sa-back-btn { font-size: 12px; padding: 6px 10px; flex-shrink: 0; }
     .sa-grid-2 { grid-template-columns: 1fr; }
     .sa-grid-3 { grid-template-columns: 1fr; }
     .sa-totals-grid { grid-template-columns: 1fr 1fr; }
-    .sa-add-cond { flex-direction: column; }
-    .sa-add-cond-input { width: 100%; }
+    .sa-add-cond { flex-direction: row; flex-wrap: nowrap; }
+    .sa-add-cond-input { width: 100%; min-width: 0; flex: 1; }
+    .sa-add-cond-btn { flex-shrink: 0; }
+    .sa-card-body { padding: 14px; }
+    .sa-card-head { padding: 12px 14px; }
+    .sa-actions { flex-direction: column; }
+    .sa-btn-cancel, .sa-btn-submit { width: 100%; justify-content: center; }
+    .sa-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sa-table { min-width: 500px; }
   }
 `
 
@@ -1006,7 +1020,7 @@ export default function SalaryAnnexurePage() {
                                                             <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
                                                         </button>
                                                     </PopoverTrigger>
-                                                    <PopoverContent style={{ width: 400, padding: 0 }}>
+                                                    <PopoverContent style={{ width: 'min(400px, calc(100vw - 24px))', padding: 0 }}>
                                                         <Command>
                                                             <CommandInput placeholder="Search by name or email..." />
                                                             <CommandEmpty>No applicant found.</CommandEmpty>
@@ -1051,7 +1065,7 @@ export default function SalaryAnnexurePage() {
                                                             <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
                                                         </button>
                                                     </PopoverTrigger>
-                                                    <PopoverContent style={{ width: 360, padding: 0 }}>
+                                                    <PopoverContent style={{ width: 'min(360px, calc(100vw - 24px))', padding: 0 }}>
                                                         <Command>
                                                             <CommandInput placeholder="Search template..." />
                                                             <CommandEmpty>No template found.</CommandEmpty>
@@ -1346,7 +1360,7 @@ export default function SalaryAnnexurePage() {
                                                         <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
                                                     </button>
                                                 </PopoverTrigger>
-                                                <PopoverContent style={{ width: 360, padding: 0 }}>
+                                                <PopoverContent style={{ width: 'min(360px, calc(100vw - 24px))', padding: 0 }}>
                                                     <Command>
                                                         <CommandInput placeholder="Search condition template..." />
                                                         <CommandEmpty>No template found.</CommandEmpty>

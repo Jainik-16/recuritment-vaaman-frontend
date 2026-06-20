@@ -167,8 +167,7 @@ const css = `
   .jol-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
   .jol-crumb svg { width: 13px; height: 13px; }
   .jol-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
-  .jol-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-
+  .jol-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .jol-overlay {
     display: none; position: fixed; inset: 0; z-index: 99;
     background: rgba(13,27,42,.35); backdrop-filter: blur(2px); cursor: pointer;
@@ -234,7 +233,7 @@ const css = `
   .jol-search-inner { position: relative; }
   .jol-search-inner svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--t3); width: 16px; height: 16px; }
   .jol-search-input {
-    width: 100%; height: 44px; padding: 0 40px 0 42px;
+    width: 100%; height: 44px; padding: 0 36px 0 42px;
     border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
     font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--t1);
     outline: none; transition: all .15s;
@@ -242,10 +241,11 @@ const css = `
   .jol-search-input::placeholder { color: var(--t3); }
   .jol-search-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,158,247,.12); }
   .jol-search-clear {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
     background: none; border: none; cursor: pointer; color: var(--t3);
     display: flex; align-items: center; justify-content: center;
     padding: 4px; border-radius: 4px; transition: color .14s;
+    z-index: 2;
   }
   .jol-search-clear:hover { color: var(--t1); }
 
@@ -478,14 +478,68 @@ const css = `
 
   @media (max-width: 1100px) { .jol-content { grid-template-columns: 1fr; } .jol-detail { position: static; max-height: none; } }
   @media (max-width: 900px) { .jol-cards-grid { grid-template-columns: 1fr; } .jol-stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .jol-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; } .jol-stat { padding: 12px 12px; } .jol-stat-val { font-size: 18px; } .jol-stat-label { font-size: 10.5px; } .jol-stat-icon { width: 34px; height: 34px; } }
   @media (max-width: 768px) {
     .jol-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .jol-sb.open { transform: translateX(0); }
     .jol-main { margin-left: 0 !important; }
-    .jol-page { padding: 18px 16px; } .jol-header { padding: 0 16px; }
+    .jol-page { padding: 14px 12px; }
+    .jol-header { padding: 0 12px; gap: 8px; }
+    .jol-hdr-right { gap: 0; width: 100%; justify-content: space-between; }
+    .jol-hdr-right .jol-btn { font-size: 12px; padding: 8px 12px; gap: 5px; flex: 1; justify-content: center; border-radius: 0; }
+    .jol-hdr-right .jol-btn:first-child { border-radius: 8px 0 0 8px; }
+    .jol-hdr-right .jol-btn:last-child { border-radius: 0 8px 8px 0; border-left: 1px solid rgba(255,255,255,0.2); }
     .jol-toolbar { flex-direction: column; align-items: flex-start; }
-    .jol-filters { grid-template-columns: 1fr; }
+    .jol-filters { grid-template-columns: 1fr; gap: 8px; }
+    .jol-content { grid-template-columns: 1fr; gap: 14px; }
+    .jol-detail { position: static; max-height: none; }
+    .jol-cards-grid { grid-template-columns: 1fr; gap: 12px; }
+    .jol-pagination { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .jol-crumb { font-size: 12px; }
+    .jol-btn-back { font-size: 12px; padding: 6px 10px; }
+    .jol-hdr-sep { display: none; }
+    .jol-search-input { height: 40px; font-size: 13px; }
+    .jol-job-card { padding: 14px; }
+    .jol-card-name { font-size: 13px; }
+    .jol-card-foot { grid-template-columns: 1fr; gap: 4px; }
+    .jol-detail-inner { padding: 16px; }
+    .jol-detail-jobtitle { font-size: 17px; }
   }
+  @media (max-width: 430px) {
+    .jol-hdr-right { flex-direction: row; gap: 4px; align-items: center; flex-wrap: nowrap; }
+    .jol-hdr-right .jol-btn { font-size: 11px; padding: 6px 8px; }
+    .jol-header { height: auto; min-height: 60px; padding: 8px 12px; flex-wrap: wrap; }
+    .jol-main { padding-top: 0; }
+    .jol-stats { grid-template-columns: repeat(2, 1fr); }
+    .jol-stat-val { font-size: 16px; }
+    .jol-dropdown-btn { font-size: 12px; padding: 8px 10px; }
+    .jol-card-row-val { font-size: 12px; }
+    .jol-applicant-chip { font-size: 11px; padding: 3px 8px; }
+  }
+  @media (max-width: 560px) {
+  .jol-header { height: auto; min-height: 56px; padding: 8px 12px; flex-wrap: wrap; row-gap: 6px; }
+  .jol-hdr-right { width: 100%; justify-content: flex-end; margin-left: 0; flex-wrap: nowrap; gap: 4px; }
+  .jol-hdr-right .jol-btn { font-size: 10px; padding: 5px 7px; gap: 3px; white-space: nowrap; flex-shrink: 1; min-width: 0; }
+  .jol-toggle { flex-shrink: 0; }
+  .jol-btn-back { font-size: 11.5px; padding: 6px 8px; }
+  .jol-crumb { font-size: 11.5px; gap: 4px; }
+  .jol-crumb strong { font-size: 11.5px; }
+ }
+
+ @media (max-width: 400px) {
+  .jol-hdr-right .jol-btn { font-size: 10.5px; padding: 5px 8px; }
+  .jol-header { padding: 6px 10px; }
+ }
+ @media (max-width: 768px) {
+  .jol-header { height: auto; min-height: 56px; padding: 8px 12px; flex-wrap: wrap; row-gap: 6px; }
+  .jol-hdr-right { width: 100%; justify-content: flex-end; margin-left: 0; flex-wrap: wrap; gap: 6px; }
+  .jol-hdr-right .jol-btn { font-size: 11.5px; padding: 6px 10px; gap: 4px; white-space: nowrap; }
+}
+ 
+ @media (max-width: 400px) {
+  .jol-hdr-right .jol-btn { font-size: 10.5px; padding: 5px 8px; }
+  .jol-header { padding: 6px 10px; }
+}     
 `
 
 interface JobOpening {
@@ -506,6 +560,7 @@ interface JobOpening {
     description: string
     publish_salary_range: number
     publish_on_website: number
+    owner: string
 }
 
 export default function JobOpeningList() {
@@ -954,7 +1009,7 @@ export default function JobOpeningList() {
                                 <strong>Job Openings</strong>
                             </div>
                             <div className="jol-hdr-right">
-                                <Link href="/create-job" className="jol-btn" style={{ flexShrink: 0 }}>
+                                <Link href="/create-job" className="jol-btn" style={{ flexShrink: 0, marginLeft: 'auto' }}>
                                     <Plus size={14} /> Create Job Opening
                                 </Link>
                                 <button
@@ -1177,6 +1232,37 @@ export default function JobOpeningList() {
                                                 {selectedJob.publish_on_website === 1 && <span className="jol-badge pub">Published</span>}
                                             </div>
                                             <div className="jol-detail-id">ID: {selectedJob.name}</div>
+
+                                            {/* ── CREATED BY ── */}
+                                            {selectedJob.owner && (
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: 10,
+                                                    padding: '10px 12px', borderRadius: 8,
+                                                    background: 'linear-gradient(135deg, var(--accent-lt), #f0f8fe)',
+                                                    border: '1px solid var(--accent-bdr)',
+                                                    marginBottom: 8, marginTop: 8
+                                                }}>
+                                                    <div style={{
+                                                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                                                        background: 'linear-gradient(135deg, var(--accent), #7c3aed)',
+                                                        color: '#fff', display: 'flex', alignItems: 'center',
+                                                        justifyContent: 'center', fontSize: 13, fontWeight: 700
+                                                    }}>
+                                                        {selectedJob.owner.split('@')[0].charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'var(--t3)', marginBottom: 2 }}>
+                                                            Created By
+                                                        </div>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>
+                                                            {selectedJob.owner.split('@')[0]}
+                                                        </div>
+                                                        <div style={{ fontSize: 11, color: 'var(--t3)' }}>
+                                                            {selectedJob.owner}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* ── APPLICANT COUNT IN DETAIL PANEL ── */}
                                             <div style={{ marginBottom: 12 }}>

@@ -163,10 +163,11 @@ const css = `
 
   /* ══ HEADER ══ */
   .cp-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50;
     box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .cp-toggle {
     width: 34px; height: 34px; border-radius: 8px;
@@ -185,9 +186,10 @@ const css = `
   }
   .cp-btn-back:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .cp-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .cp-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .cp-crumb svg { width: 13px; height: 13px; }
-  .cp-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+  .cp-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+.cp-crumb svg { width: 13px; height: 13px; flex-shrink: 0; }
+.cp-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+.cp-crumb a { white-space: nowrap; flex-shrink: 0; }
 
   /* ══ BUTTONS ══ */
   .cp-btn-sm {
@@ -240,6 +242,7 @@ const css = `
     border-radius: 10px; padding: 16px 18px;
     display: flex; align-items: center; justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0,158,247,.06);
+    overflow: hidden; min-width: 0;
   }
   .cp-stat-label { font-size: 11.5px; color: var(--t3); font-weight: 500; margin-bottom: 4px; }
   .cp-stat-val   { font-size: 22px; font-weight: 800; color: var(--t1); letter-spacing: -0.5px; line-height: 1; }
@@ -529,13 +532,26 @@ const css = `
   @media (max-width: 1280px) { .cp-stats { grid-template-columns: repeat(4, 1fr); } }
   @media (max-width: 1100px) { .cp-content { grid-template-columns: 1fr; } .cp-detail { position: static; max-height: none; } }
   @media (max-width: 900px)  { .cp-cards-grid { grid-template-columns: 1fr; } .cp-stats { grid-template-columns: repeat(2, 1fr); } .cp-filters { grid-template-columns: 1fr; } }
-  @media (max-width: 768px)  {
+  @media (max-width: 768px) {
     .cp-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .cp-sb.open { transform: translateX(0); }
-    .cp-main { margin-left: 0 !important; }
-    .cp-page { padding: 18px 16px; }
-    .cp-header { padding: 0 16px; }
-    .cp-stats { grid-template-columns: repeat(2, 1fr); }
+    .cp-main { margin-left: 0 !important; overflow-x: hidden; max-width: 100vw; }
+    .cp-wrap { overflow-x: hidden; }
+    .cp-page { padding: 12px; overflow-x: hidden; gap: 14px; }
+    .cp-header { padding: 0 12px; gap: 6px; }
+    .cp-hdr-sep { display: none; }
+    .cp-btn-back { font-size: 12px; padding: 6px 10px; flex-shrink: 0; }
+    .cp-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .cp-stat { padding: 12px 14px; overflow: hidden; }
+    .cp-stat-val { font-size: 18px; }
+    .cp-stat-label { font-size: 10.5px; }
+    .cp-filters { grid-template-columns: 1fr; gap: 8px; }
+    .cp-content { grid-template-columns: 1fr; }
+    .cp-detail { position: static; max-height: none; }
+    .cp-cards-grid { grid-template-columns: 1fr; }
+    .cp-pagination { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .cp-job-filter-banner { flex-wrap: wrap; gap: 8px; }
+    .cp-job-filter-clear { margin-left: 0; }
   }
 `
 
@@ -1159,7 +1175,7 @@ function CandidatesInner() {
                                     <ChevronRight size={14} className="cp-select-arrow" />
                                 </div>
                                 <div className="cp-select-wrap">
-                                    <select className="cp-select" value={filterStage} onChange={e => setFilterStage(e.target.value)}>
+                                    <select className="cp-select" value={filterStage} onChange={e => { setFilterStage(e.target.value); setSelectedCandidate(null); }}>
                                         <option value="all">All Stages</option>
                                         {RECRUITMENT_STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                                         <option value="completed">Completed</option>

@@ -129,10 +129,11 @@ const css = `
 
   /* ── HEADER ── */
   .cj-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50;
     box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .cj-toggle {
     width: 34px; height: 34px; border-radius: 8px;
@@ -142,11 +143,11 @@ const css = `
   }
   .cj-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .cj-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .cj-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .cj-crumb svg { width: 13px; height: 13px; }
-  .cj-crumb a  { color: var(--t3); text-decoration: none; transition: color .14s; }
-  .cj-crumb a:hover { color: var(--accent); }
-  .cj-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+  .cj-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+.cj-crumb svg { width: 13px; height: 13px; flex-shrink: 0; }
+.cj-crumb a  { color: var(--t3); text-decoration: none; transition: color .14s; white-space: nowrap; flex-shrink: 0; }
+.cj-crumb a:hover { color: var(--accent); }
+.cj-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
   .cj-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
   .cj-btn-out {
@@ -356,11 +357,19 @@ const css = `
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    .cj-page     { padding: 18px 16px; }
-    .cj-header   { padding: 0 16px; }
-    .cj-grid     { grid-template-columns: 1fr; }
-    .cj-form-card{ padding: 20px 18px; }
+    .cj-wrap { overflow-x: hidden; }
+    .cj-main { overflow-x: hidden; max-width: 100vw; }
+    .cj-page { padding: 12px; overflow-x: hidden; }
+    .cj-header { padding: 0 12px; gap: 6px; }
+    .cj-hdr-sep { display: none; }
+    .cj-btn-out { font-size: 12px; padding: 6px 10px; flex-shrink: 0; }
+    .cj-grid { grid-template-columns: 1fr; }
+    .cj-form-card { padding: 16px 14px; overflow: hidden; }
+    .cj-progress-card { padding: 16px; overflow: hidden; }
     .cj-step-title { font-size: 10px; }
+    .cj-step-circle { width: 34px; height: 34px; }
+    .cj-form-footer { flex-direction: column; gap: 10px; }
+    .cj-btn-prev, .cj-btn-next, .cj-btn-submit { width: 100%; justify-content: center; }
   }
 `
 

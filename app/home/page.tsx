@@ -52,7 +52,7 @@ const css = `
   ══════════════════════════ */
   .v1-sb {
     width: var(--sb-w); background: var(--sb);
-    min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 100;
+    min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 200;
     display: flex; flex-direction: column;
     transition: transform .25s cubic-bezier(.4,0,.2,1);
   }
@@ -145,7 +145,7 @@ const css = `
   /* CHANGE 1: Overlay only on mobile — hidden on desktop */
   .v1-overlay {
     display: none;
-    position: fixed; inset: 0; z-index: 99;
+    position: fixed; inset: 0; z-index: 150;
     background: rgba(13,27,42,.35); backdrop-filter: blur(2px);
     cursor: pointer;
   }
@@ -327,12 +327,18 @@ const css = `
   }
 
   @media (max-width: 768px) {
-    .v1-sb { transform: translateX(calc(-1 * var(--sb-w))); }
+    .v1-sb { transform: translateX(calc(-1 * var(--sb-w))); z-index: 200; }
     .v1-sb.open { transform: translateX(0); }
-    .v1-main { margin-left: 0 !important; }
-    .v1-page { padding: 20px 16px; }
-    .v1-header { padding: 0 16px; }
-    .v1-toolbar { flex-direction: column; }
+    .v1-main { margin-left: 0 !important; overflow-x: hidden; }
+    .v1-wrap { overflow-x: hidden; }
+    .v1-page { padding: 16px 14px; }
+    .v1-header { padding: 0 12px; gap: 6px; min-height: 56px; overflow: hidden; }
+    .v1-hdr-sep { display: none; }
+    .v1-toolbar { flex-direction: column; gap: 10px; }
+    .v1-btn { width: 100%; justify-content: center; }
+    .v1-crumb { font-size: 12px; flex: 1; min-width: 0; overflow: hidden; }
+    .v1-crumb strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+    .v1-grid { grid-template-columns: 1fr; gap: 10px; }
   }
 `
 
@@ -392,7 +398,7 @@ export default function RecruitmentDashboard() {
           />
 
           {/* ══ SIDEBAR ══ */}
-          <aside className={`v1-sb${sidebarOpen ? "" : " collapsed"}`}>
+          <aside className={`v1-sb${sidebarOpen ? " open" : " collapsed"}`}>
             <div className="v1-sb-brand">
               <div className="v1-sb-icon">
                 <img src="/vaaman_logo.png" alt="logo" />

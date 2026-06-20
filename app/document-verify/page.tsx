@@ -123,9 +123,10 @@ const css = `
   .dv-main.sb-closed { margin-left: 0; }
 
   .dv-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .dv-toggle {
     width: 34px; height: 34px; border-radius: 8px; background: none;
@@ -134,9 +135,10 @@ const css = `
   }
   .dv-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .dv-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .dv-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .dv-crumb svg { width: 13px; height: 13px; color: var(--t3); }
-  .dv-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+  .dv-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+.dv-crumb svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
+.dv-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dv-crumb a { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .dv-page-outer { flex: 1; display: flex; justify-content: center; padding: 28px 32px; }
   .dv-page { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 22px; }
@@ -291,6 +293,24 @@ const css = `
     .dv-header { padding: 0 16px; }
     .dv-doc-grid { grid-template-columns: 1fr; }
   }
+  @media (max-width: 768px) {
+  .dv-wrap { overflow-x: hidden; }
+  .dv-main { overflow-x: hidden; max-width: 100vw; }
+  .dv-page-outer { padding: 12px; overflow-x: hidden; }
+  .dv-page { overflow-x: hidden; gap: 14px; }
+  .dv-header { padding: 0 12px; gap: 6px; min-height: 56px; overflow: hidden; }
+  .dv-hdr-sep { display: none; }
+  .dv-back-btn { font-size: 12px; padding: 6px 10px; flex-shrink: 0; }
+  .dv-back-btn svg { width: 13px; height: 13px; }
+  .dv-crumb { font-size: 11px; gap: 3px; flex: 1; min-width: 0; overflow: hidden; }
+  .dv-crumb strong { font-size: 11px; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dv-crumb a { white-space: nowrap; font-size: 11px; }
+  .dv-doc-grid { grid-template-columns: 1fr; gap: 14px; }
+  .dv-card-body { padding: 14px; }
+  .dv-card-head { padding: 12px 14px; }
+  .dv-save-btn { width: 100%; justify-content: center; }
+  .dv-save-wrap { justify-content: stretch; }
+} 
 `
 
 interface JobApplicant { name: string; applicant_name: string }
@@ -747,7 +767,7 @@ export default function DocumentVerifyPage() {
                                                     <ChevronsUpDown size={14} style={{ color: 'var(--t3)' }} />
                                                 </button>
                                             </PopoverTrigger>
-                                            <PopoverContent style={{ width: 400, padding: 0 }}>
+                                            <PopoverContent style={{ width: 'min(400px, calc(100vw - 24px))', padding: 0 }}>
                                                 <Command>
                                                     <CommandInput placeholder="Search applicant..." />
                                                     <CommandEmpty>No applicant found.</CommandEmpty>

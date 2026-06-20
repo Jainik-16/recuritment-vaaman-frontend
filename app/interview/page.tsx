@@ -811,7 +811,7 @@ export default function InterviewPage() {
               <div className="ip-search-wrap">
                 <div className="ip-search-inner">
                   <Search size={16} />
-                  <input type="text" className="ip-search-input" placeholder="Search by name, email, phone, or job title..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                  <input type="text" className="ip-search-input" placeholder="Search by name, email, phone, or job title..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setSelectedCandidate(null); }} />
                   {searchTerm && <button className="ip-search-clear" onClick={() => setSearchTerm("")}><X size={14} /></button>}
                 </div>
               </div>
@@ -819,14 +819,14 @@ export default function InterviewPage() {
               {/* ══ FILTERS ══ */}
               <div className="ip-filters">
                 <div className="ip-select-wrap">
-                  <select className="ip-select" value={filterDesignation} onChange={e => setFilterDesignation(e.target.value)}>
+                  <select className="ip-select" value={filterDesignation} onChange={e => { setFilterDesignation(e.target.value); setSelectedCandidate(null); }}>
                     <option value="all">All Designations</option>
                     {uniqueDesignations.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                   <ChevronRight size={14} className="ip-select-arrow" />
                 </div>
                 <div className="ip-select-wrap">
-                  <select className="ip-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                  <select className="ip-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setSelectedCandidate(null); }}>
                     <option value="all">All Statuses</option>
                     {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>

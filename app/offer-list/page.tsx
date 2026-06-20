@@ -110,9 +110,10 @@ const css = `
   }
   .ofl-main.sb-closed { margin-left: 0; }
   .ofl-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .ofl-btn-back {
     display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px;
@@ -128,10 +129,11 @@ const css = `
   }
   .ofl-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .ofl-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .ofl-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .ofl-crumb svg { width: 13px; height: 13px; color: var(--t3); }
-  .ofl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
-  .ofl-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .ofl-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+  .ofl-crumb svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
+  .ofl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ofl-crumb a { white-space: nowrap; }
+  .ofl-hdr-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
   .ofl-btn {
     display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px;
@@ -425,12 +427,32 @@ const css = `
   @media (max-width: 768px) {
     .ofl-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .ofl-sb.open { transform: translateX(0); }
-    .ofl-main { margin-left: 0 !important; }
-    .ofl-page-outer { padding: 16px; }
-    .ofl-header { padding: 0 16px; }
+    .ofl-main { margin-left: 0 !important; overflow-x: hidden; max-width: 100vw; }
+    .ofl-wrap { overflow-x: hidden; }
+    .ofl-page-outer { padding: 12px; overflow-x: hidden; }
+    .ofl-page { overflow-x: hidden; gap: 14px; }
+    .ofl-header { padding: 0 10px; gap: 6px; flex-wrap: wrap; min-height: 56px; row-gap: 6px; }
+    .ofl-hdr-sep { display: none; }
+    .ofl-btn-back { font-size: 12px; padding: 6px 10px; }
     .ofl-cards-grid { grid-template-columns: 1fr; }
     .ofl-info-grid { grid-template-columns: 1fr; }
     .ofl-info-grid-3 { grid-template-columns: 1fr; }
+    .ofl-sec-body { padding: 14px; }
+    .ofl-sec-head { padding: 12px 14px; }
+    .ofl-pagination { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .ofl-detail-hero { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .ofl-total-pill { padding: 5px 10px; }
+    .ofl-total-val { font-size: 16px; }
+    .ofl-total-label { font-size: 9.5px; }
+    .ofl-hdr-right { width: 100%; justify-content: flex-end; margin-left: 0; flex-wrap: wrap; gap: 6px; }
+    .ofl-hdr-right .ofl-btn { font-size: 11px; padding: 6px 10px; white-space: nowrap; }
+  }
+
+  @media (max-width: 480px) {
+    .ofl-header { padding: 6px 10px; }
+    .ofl-hdr-right { width: 100%; }
+    .ofl-hdr-right .ofl-btn { width: 100%; justify-content: center; font-size: 11.5px; }
+    .ofl-total-pill { width: 100%; align-items: flex-start; flex-direction: row; gap: 8px; }
   }
 `
 
@@ -823,38 +845,65 @@ export default function OfferListPage() {
                                                         <div className="ofl-detail-id">ID: {selectedOffer.name}</div>
                                                     </div>
                                                 </div>
-                                                {/* ── EDITABLE STATUS in hero ── */}
-                                                {editingStatus ? (
-                                                    <div className="ofl-edit-row">
-                                                        <select
-                                                            className="ofl-edit-select"
-                                                            value={editStatusVal}
-                                                            onChange={e => setEditStatusVal(e.target.value)}
-                                                        >
-                                                            {availableStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-                                                        </select>
-                                                        <button className="ofl-edit-save" onClick={saveStatus} disabled={savingStatus} title="Save">
-                                                            <Check size={14} />
-                                                        </button>
-                                                        <button className="ofl-edit-cancel" onClick={() => setEditingStatus(false)} title="Cancel">
-                                                            <X size={14} />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                        <span className={`ofl-badge ${getStatusBadgeClass(selectedOffer.status)}`} style={{ fontSize: 13, padding: '6px 16px' }}>
-                                                            {selectedOffer.status}
-                                                        </span>
-                                                        <button
-                                                            className="ofl-edit-pencil"
-                                                            style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
-                                                            onClick={() => { setEditStatusVal(selectedOffer.status); setEditingStatus(true) }}
-                                                            title="Edit status"
-                                                        >
-                                                            <Edit2 size={13} />
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                {/* ── RIGHT SIDE: Status + Created By stacked ── */}
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+                                                    {/* Status */}
+                                                    {editingStatus ? (
+                                                        <div className="ofl-edit-row">
+                                                            <select
+                                                                className="ofl-edit-select"
+                                                                value={editStatusVal}
+                                                                onChange={e => setEditStatusVal(e.target.value)}
+                                                            >
+                                                                {availableStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                                                            </select>
+                                                            <button className="ofl-edit-save" onClick={saveStatus} disabled={savingStatus} title="Save">
+                                                                <Check size={14} />
+                                                            </button>
+                                                            <button className="ofl-edit-cancel" onClick={() => setEditingStatus(false)} title="Cancel">
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                            <span className={`ofl-badge ${getStatusBadgeClass(selectedOffer.status)}`} style={{ fontSize: 13, padding: '6px 16px' }}>
+                                                                {selectedOffer.status}
+                                                            </span>
+                                                            <button
+                                                                className="ofl-edit-pencil"
+                                                                style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+                                                                onClick={() => { setEditStatusVal(selectedOffer.status); setEditingStatus(true) }}
+                                                                title="Edit status"
+                                                            >
+                                                                <Edit2 size={13} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {/* Created By — below status */}
+                                                    {selectedOffer.owner && (
+                                                        <div style={{
+                                                            display: 'flex', alignItems: 'center', gap: 10,
+                                                            padding: '10px 12px', borderRadius: 8,
+                                                            background: 'rgba(255,255,255,.10)',
+                                                            border: '1px solid rgba(255,255,255,.15)',
+                                                            minWidth: 200,
+                                                        }}>
+                                                            <div style={{
+                                                                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                                                                background: 'linear-gradient(135deg, #009ef7, #3b5bdb)',
+                                                                color: '#fff', display: 'flex', alignItems: 'center',
+                                                                justifyContent: 'center', fontSize: 12, fontWeight: 700
+                                                            }}>
+                                                                {selectedOffer.owner.split('@')[0].charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'rgba(255,255,255,.55)', marginBottom: 2 }}>Created By</div>
+                                                                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{selectedOffer.owner.split('@')[0]}</div>
+                                                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)' }}>{selectedOffer.owner}</div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Contact & Position */}

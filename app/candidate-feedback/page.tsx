@@ -85,12 +85,13 @@ const css = `
   .cf-main.sb-closed { margin-left: 0; }
 
   /* HEADER */
-  .cf-header { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08); }
-  .cf-toggle { width: 34px; height: 34px; border-radius: 8px; background: none; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--t2); transition: all .14s; }
+  .cf-header { min-height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08); overflow: hidden; }  .cf-toggle { width: 34px; height: 34px; border-radius: 8px; background: none; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--t2); transition: all .14s; }
   .cf-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
   .cf-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
-  .cf-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .cf-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+  .cf-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+  .cf-crumb svg { flex-shrink: 0; }
+  .cf-crumb a { white-space: nowrap; flex-shrink: 0; color: var(--t3); text-decoration: none; }
+  .cf-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
   .cf-hdr-right { margin-left: auto; }
   .cf-btn-back { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 8px; background: transparent; color: var(--t2); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; border: 1px solid var(--border); cursor: pointer; transition: all .14s; }
   .cf-btn-back:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
@@ -215,11 +216,23 @@ const css = `
   @media (max-width: 768px) {
     .cf-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .cf-sb.open { transform: translateX(0); }
-    .cf-main { margin-left: 0 !important; }
-    .cf-page-outer { padding: 16px; }
-    .cf-header { padding: 0 16px; }
+    .cf-main { margin-left: 0 !important; overflow-x: hidden; max-width: 100vw; }
+    .cf-wrap { overflow-x: hidden; }
+    .cf-page-outer { padding: 12px; overflow-x: hidden; }
+    .cf-page { overflow-x: hidden; gap: 14px; }
+    .cf-header { padding: 0 12px; gap: 6px; }
+    .cf-hdr-sep { display: none; }
+    .cf-btn-back { font-size: 12px; padding: 6px 10px; flex-shrink: 0; }
     .cf-form-grid { grid-template-columns: 1fr; }
     .cf-check-grid { grid-template-columns: 1fr; }
+    .cf-card-body { padding: 14px; }
+    .cf-card-head { padding: 12px 14px; }
+    .cf-actions { flex-direction: column; }
+    .cf-btn-cancel, .cf-btn-save { width: 100%; justify-content: center; }
+    .cf-table { min-width: 380px; }
+    .cf-table td, .cf-table th { padding: 10px 8px; }
+    .cf-table th:first-child, .cf-table td:first-child { width: 32px; padding: 10px 6px; }
+    .cf-table th:nth-child(2), .cf-table td:nth-child(2) { width: 36px; }
   }
   .cf-textarea:disabled, .cf-check:disabled { 
     background: #f3f7fa; 
@@ -977,7 +990,7 @@ function CandidateFeedbackForm() {
                       <div className="cf-form-field">
                         <label className="cf-label"><Calendar size={12} /> Interview <span className="cf-req">*</span></label>
                         <div className="cf-select-wrap">
-                          <select className="cf-select" value={feedbackForm.interview} onChange={e => handleInterviewChange(e.target.value)} disabled={loading.interviews}>
+                          <select className="cf-select" value={feedbackForm.interview} onChange={e => handleInterviewChange(e.target.value)} disabled={loading.interviews || !!interviewNameFromUrl}>
                             <option value="">{loading.interviews ? "Loading..." : interviews.length === 0 ? "No interviews found" : "Select interview"}</option>
                             {interviews.map(i => <option key={i.name} value={i.name}>{i.name} - {i.applicant_name || i.job_applicant}</option>)}
                           </select>
@@ -1106,7 +1119,7 @@ function CandidateFeedbackForm() {
                               <td><input type="checkbox" className="cf-check" /></td>
                               <td style={{ color: 'var(--t3)', fontWeight: 600 }}>{index + 1}</td>
                               <td>
-                                <input className="cf-input readonly" value={skill.skill} disabled style={{ maxWidth: 280 }} />
+                                <input className="cf-input readonly" value={skill.skill} disabled style={{ maxWidth: '100%', minWidth: 160 }} />
                               </td>
                               <td>
                                 <StarRating rating={skill.rating} onRate={r => updateSkillAssessment(skill.id, 'rating', r)}

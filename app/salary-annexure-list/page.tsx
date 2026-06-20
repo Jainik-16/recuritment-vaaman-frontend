@@ -124,9 +124,10 @@ const css = `
   }
   .sl-main.sb-closed { margin-left: 0; }
   .sl-header {
-    height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+    min-height: 60px; background: #fff; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; padding: 0 28px; gap: 12px;
     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+    overflow: hidden;
   }
   .sl-toggle {
     width: 34px; height: 34px; border-radius: 8px; background: none;
@@ -144,9 +145,10 @@ const css = `
   transition: all .14s; white-space: nowrap;
 }
 .sl-btn-back:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
-  .sl-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
-  .sl-crumb svg { width: 13px; height: 13px; color: var(--t3); }
-  .sl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+.sl-crumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--t3); flex: 1; min-width: 0; overflow: hidden; }
+.sl-crumb svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
+.sl-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-crumb a { white-space: nowrap; }
 
   /* ══ PAGE ══ */
   .sl-page-outer { flex: 1; display: flex; justify-content: center; padding: 28px 32px; }
@@ -254,8 +256,8 @@ const css = `
   }
 
   /* ══ TABLE ══ */
-  .sl-tbl-wrap { overflow-x: visible; }
-  .sl-tbl { width: 100%; border-collapse: collapse; }
+  .sl-tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .sl-tbl { width: 100%; border-collapse: collapse; min-width: 600px; }
   .sl-tbl thead tr { border-bottom: 2px solid var(--border-s); }
   .sl-tbl th {
     padding: 10px 16px; text-align: left; font-size: 10.5px; font-weight: 700;
@@ -414,15 +416,42 @@ const css = `
   }
 
   /* responsive */
-  @media (max-width: 900px) { .sl-stats { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 900px) { .sl-stats { grid-template-columns: repeat(3,1fr); } }
   @media (max-width: 768px) {
     .sl-sb { transform: translateX(calc(-1 * var(--sb-w))); }
     .sl-sb.open { transform: translateX(0); }
-    .sl-main { margin-left: 0 !important; }
-    .sl-page-outer { padding: 16px; }
-    .sl-header { padding: 0 16px; }
+    .sl-main { margin-left: 0 !important; overflow-x: hidden; max-width: 100vw; }
+    .sl-page-outer { padding: 12px; overflow-x: hidden; }
+    .sl-header { padding: 0 12px; gap: 6px; }
+    .sl-hdr-sep { display: none; }
+    .sl-btn-back { font-size: 12px; padding: 6px 10px; }
+    .sl-page { gap: 14px; overflow-x: hidden; }
+    .sl-wrap { overflow-x: hidden; }
+    .sl-card { overflow: hidden; }
+    .sl-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .sl-toolbar-right { width: 100%; }
+    .sl-btn-new { width: 100%; justify-content: center; }
+    .sl-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .sl-bar { padding: 10px 12px; gap: 8px; }
+    .sl-card-head { padding: 12px 14px; }
+    .sl-card-title { font-size: 12.5px; }
+    .sl-pagination { padding: 12px 14px; flex-direction: column; align-items: flex-start; }
+    .sl-pg-btns { flex-wrap: wrap; }
+    .sl-tbl th:nth-child(4), .sl-tbl td:nth-child(4) { display: none; }
+    .sl-tbl th:nth-child(6), .sl-tbl td:nth-child(6) { display: none; }
+    .sl-tbl th:nth-child(8), .sl-tbl td:nth-child(8) { display: none; }
+    .sl-tbl th { padding: 8px 10px; font-size: 9.5px; }
+    .sl-tbl td { padding: 10px 10px; }
+    .sl-name { font-size: 12px; }
+    .sl-email { font-size: 10.5px; }
+    .sl-amt { font-size: 12px; }
+    .sl-id { font-size: 11px; }
   }
-  @media (max-width: 480px) { .sl-stats { grid-template-columns: 1fr 1fr; } }
+
+@media (max-width: 480px) {
+    .sl-stats { grid-template-columns: repeat(3, 1fr); }
+    .sl-tbl th:nth-child(1), .sl-tbl td:nth-child(1) { display: none; }
+  }
 `
 
 /* ─── types ─── */
@@ -436,6 +465,7 @@ interface SalaryAnnexure {
     total_annual: number
     docstatus: number
     creation: string
+    owner?: string
 }
 type SortKey = "name" | "applicant_name" | "total_monthly" | "total_annual" | "creation"
 type SortDir = "asc" | "desc"
@@ -687,6 +717,7 @@ export default function SalaryAnnexureListPage() {
                                                     <th onClick={() => toggleSort("creation")}>
                                                         <div className="sl-th-inner">Created <SortIco col="creation" /></div>
                                                     </th>
+                                                    <th>Created By</th>
                                                     <th style={{ width: 60 }} />
                                                 </tr>
                                             </thead>
@@ -767,6 +798,24 @@ export default function SalaryAnnexureListPage() {
                                                             </span>
                                                         </td>
                                                         <td><div className="sl-date">{fmtDate(row.creation)}</div></td>
+                                                        <td>
+                                                            {row.owner && (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                                    <div style={{
+                                                                        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                                                                        background: 'linear-gradient(135deg, #009ef7, #3b5bdb)',
+                                                                        color: '#fff', display: 'flex', alignItems: 'center',
+                                                                        justifyContent: 'center', fontSize: 11, fontWeight: 700
+                                                                    }}>
+                                                                        {row.owner.split('@')[0].charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                    <div>
+                                                                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t1)' }}>{row.owner.split('@')[0]}</div>
+                                                                        <div style={{ fontSize: 10.5, color: 'var(--t3)' }}>{row.owner}</div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </td>
                                                         <td>
                                                             {/* only delete — no view button */}
                                                             <button

@@ -392,6 +392,7 @@ interface FeedbackItem {
   applicant_rating?: string; final_score_recommendation?: string[]; not_shortlisted_reason?: string[];
   withdrawn_reason?: string[]; remarks?: string;
   job_applicant?: string;  // ADD THIS
+  owner?: string;
 
 }
 
@@ -766,6 +767,29 @@ export default function FeedbackPage() {
                         <div className="fl-info-card">
                           <div className="fl-info-head"><div className="fl-info-title">Candidate Information</div></div>
                           <div className="fl-info-body">
+                            {/* ── CREATED BY ── */}
+                            {selectedFeedback.owner && (
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '10px 12px', borderRadius: 8,
+                                background: 'linear-gradient(135deg, var(--accent-lt), #f0f8fe)',
+                                border: '1px solid rgba(0,158,247,.28)',
+                              }}>
+                                <div style={{
+                                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                                  background: 'linear-gradient(135deg, #009ef7, #3b5bdb)',
+                                  color: '#fff', display: 'flex', alignItems: 'center',
+                                  justifyContent: 'center', fontSize: 13, fontWeight: 700
+                                }}>
+                                  {selectedFeedback.owner.split('@')[0].charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'var(--t3)', marginBottom: 2 }}>Created By</div>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>{selectedFeedback.owner.split('@')[0]}</div>
+                                  <div style={{ fontSize: 11, color: 'var(--t3)' }}>{selectedFeedback.owner}</div>
+                                </div>
+                              </div>
+                            )}
                             <div>
                               <div className="fl-info-lbl"><Briefcase size={13} /> Job Position</div>
                               <div className="fl-info-val">{selectedFeedback.position_applied_for || selectedFeedback.job_opening?.job_title || "N/A"}</div>
