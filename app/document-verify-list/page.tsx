@@ -330,6 +330,15 @@ const css = `
     color: var(--accent); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
     white-space: nowrap;
   }
+   .dvl-pdf-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 7px;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: background .14s; white-space: nowrap;
+  }
+  .dvl-pdf-btn:hover { background: rgba(255,255,255,.24); }
+  .dvl-pdf-btn svg { width: 12px; height: 12px; } 
 
   .dvl-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .dvl-info-item {
@@ -838,6 +847,34 @@ export default function DocumentVerifyListPage() {
                                                 {/* ── RIGHT SIDE: Documents badge + Created By stacked ── */}
                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
                                                     <div className="dvl-detail-hero-badge">{countDocuments(selectedDoc)} / 11 Documents</div>
+
+                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                        <button
+                                                            className="dvl-pdf-btn"
+                                                            onClick={e => {
+                                                                e.stopPropagation()
+                                                                const email = selectedDoc.applicant_details?.email_id
+                                                                if (!email) { alert("No email found for this applicant."); return }
+                                                                const url = `${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Application%20Form&name=${encodeURIComponent(email)}&format=Application%20Form%20Format&no_letterhead=0`
+                                                                window.open(url, '_blank')
+                                                            }}
+                                                        >
+                                                            <FileText size={12} /> Application Form
+                                                        </button>
+                                                        <button
+                                                            className="dvl-pdf-btn"
+                                                            onClick={e => {
+                                                                e.stopPropagation()
+                                                                const name = selectedDoc.applicant_details?.applicant_name
+                                                                if (!name) { alert("No name found for this applicant."); return }
+                                                                const url = `${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Application%20Declaration&name=${encodeURIComponent(name)}&format=Declaration%20Form&no_letterhead=0`
+                                                                window.open(url, '_blank')
+                                                            }}
+                                                        >
+                                                            <FileText size={12} /> Declaration
+                                                        </button>
+                                                    </div>
+
                                                     {(selectedDoc as any).owner && (
                                                         <div style={{
                                                             display: 'flex', alignItems: 'center', gap: 10,

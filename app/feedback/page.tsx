@@ -643,7 +643,15 @@ export default function FeedbackPage() {
                             {paginatedFeedback.map(item => (
                               <div key={item.name}
                                 className={`fl-cand-card${selectedFeedback?.name === item.name ? " selected" : ""}`}
-                                onClick={() => setSelectedFeedback(item)}>
+                                onClick={() => {
+                                  setSelectedFeedback(item);
+                                  if (window.innerWidth <= 1024) {
+                                    setTimeout(() => {
+                                      const panel = document.getElementById('fl-detail-panel');
+                                      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }, 50);
+                                  }
+                                }}>
                                 <div className="fl-cand-top">
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div className="fl-avatar">{getInitials(item.candidate_name || item.applicant?.applicant_name || "")}</div>
@@ -725,7 +733,7 @@ export default function FeedbackPage() {
                   </div>
 
                   {/* Detail panel */}
-                  <div>
+                  <div id="fl-detail-panel">
                     {selectedFeedback ? (
                       <>
                         <div className="fl-detail-hero">

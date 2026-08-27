@@ -15,6 +15,7 @@ export async function POST(request: Request) {
         const payload = {
             date: body.date || null,
             applicant_email: body.applicant_email || null,
+            job_applicant: body.job_applicant || null,
             post_applied_for: body.post_applied_for || null,
             job_location: body.job_location || null,
             vacancy_known_from: body.vacancy_known_from || null,

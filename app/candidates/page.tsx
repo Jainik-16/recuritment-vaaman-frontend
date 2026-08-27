@@ -592,6 +592,7 @@ interface Candidate {
     custom_total_experience: string;
     resume_attachment: string;
     owner: string;
+    custom_date_of_joining?: string;
 
 }
 
@@ -611,6 +612,8 @@ function CandidatesInner() {
     const [locations, setLocations] = useState<string[]>([])
     const [updatingLocation, setUpdatingLocation] = useState(false)
     const [locationSaved, setLocationSaved] = useState(false)
+    const [updatingJoinDate, setUpdatingJoinDate] = useState(false)   // ADD
+    const [joinDateSaved, setJoinDateSaved] = useState(false)
 
     const [jobTitles, setJobTitles] = useState<string[]>([])
     const [updatingJobTitle, setUpdatingJobTitle] = useState(false)
@@ -689,6 +692,27 @@ function CandidatesInner() {
             }
         } catch (e) { alert("Error updating location.") }
         finally { setUpdatingLocation(false) }
+    }
+
+    const updateJoiningDate = async (candidateId: string, newDate: string) => {
+        setUpdatingJoinDate(true); setJoinDateSaved(false)
+        try {
+            const csrfToken = await getFrappeCSRF()
+            const res = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.update_joining_date`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrfToken },
+                body: JSON.stringify({ candidate_id: candidateId, date_of_joining: newDate })
+            })
+            const result = await res.json()
+            if (result.message?.success ?? result.success) {
+                setSelectedCandidate(prev => prev ? { ...prev, custom_date_of_joining: newDate } : prev)
+                setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, custom_date_of_joining: newDate } : c))
+                setJoinDateSaved(true)
+                setTimeout(() => setJoinDateSaved(false), 2000)
+            } else { alert("Failed to update date of joining.") }
+        } catch (e) { alert("Error updating date of joining.") }
+        finally { setUpdatingJoinDate(false) }
     }
 
     const updateCandidateJobTitle = async (candidateId: string, newJobTitle: string) => {
@@ -808,7 +832,7 @@ function CandidatesInner() {
                     fetchBulk('Interview Feedback', [['job_applicant', 'in', candidateIds]], ['job_applicant']),
                     fetchBulk('Applicant Document', [['applicant_name', 'in', candidateIds]], ['applicant_name']),
                     fetchBulk('Job Offer', [['job_applicant', 'in', candidateIds]], ['job_applicant', 'status']),
-                    fetchBulk('Joining Confirmation', [['candidate_id', 'in', candidateIds]], ['candidate_id', 'join', 'not_join', 'offer_revoked', 'modified']),
+                    fetchBulk('Joining Confirmation', [['candidate_id', 'in', candidateIds]], ['candidate_id', 'join', 'not_join', 'offer_revoked', 'modified', 'custom_date_of_joining']),
                     fetchBulk('Appointment Letter', [['job_applicant', 'in', candidateIds]], ['job_applicant']),
                 ])
                 setPendingInterviewCount(interviewData.filter((i: any) => i.status === 'Pending').length)
@@ -825,8 +849,15 @@ function CandidatesInner() {
                     statuses.push({ stage_id: 'feedback', status: hasFeedback ? 'completed' : 'pending' })
                     const hasDoc = docData.some((d: any) => d.applicant_name === candidate.id)
                     statuses.push({ stage_id: 'document_verification', status: hasDoc ? 'completed' : 'pending' })
-                    const hasOffer = offerData.some((o: any) => o.job_applicant === candidate.id)
-                    statuses.push({ stage_id: 'offer_letter', status: hasOffer ? 'completed' : 'pending' })
+                    const candidateOffer = offerData.find((o: any) => o.job_applicant === candidate.id)
+                    let offerStageStatus: any = 'pending'
+                    if (candidateOffer) {
+                        const s = (candidateOffer.status || '').toLowerCase()
+                        if (s.includes('accept')) offerStageStatus = 'completed'
+                        else if (s.includes('reject')) offerStageStatus = 'rejected'
+                        else offerStageStatus = 'in_progress' // e.g. "Awaiting Response"
+                    }
+                    statuses.push({ stage_id: 'offer_letter', status: offerStageStatus })
                     const joining = joiningData.find((j: any) => j.candidate_id === candidate.id)
                     if (joining) {
                         let joiningStatus: any = 'pending'
@@ -836,11 +867,11 @@ function CandidatesInner() {
                     } else { statuses.push({ stage_id: 'joining_confirmation', status: 'pending' }) }
                     const hasAppointment = appointmentData.some((a: any) => a.job_applicant === candidate.id)
                     statuses.push({ stage_id: 'appointment_letter', status: hasAppointment ? 'completed' : 'pending' })
-                    return { id: candidate.id, statuses }
+                    return { id: candidate.id, statuses, dateOfJoining: joining?.custom_date_of_joining || "" }   // CHANGED
                 })
 
-                setCandidates(prev => prev.map(c => { const result = allResults.find(r => r.id === c.id); return result ? { ...c, stage_statuses: result.statuses } : c }))
-                setFilteredCandidates(prev => prev.map(c => { const result = allResults.find(r => r.id === c.id); return result ? { ...c, stage_statuses: result.statuses } : c }))
+                setCandidates(prev => prev.map(c => { const result = allResults.find(r => r.id === c.id); return result ? { ...c, stage_statuses: result.statuses, custom_date_of_joining: result.dateOfJoining } : c }))
+                setFilteredCandidates(prev => prev.map(c => { const result = allResults.find(r => r.id === c.id); return result ? { ...c, stage_statuses: result.statuses, custom_date_of_joining: result.dateOfJoining } : c }))
             }
         } catch (error: any) { setApiError("Network error: Unable to reach server."); setIsLoading(false) }
     }
@@ -1203,7 +1234,15 @@ function CandidatesInner() {
                                                 <div
                                                     key={candidate.id}
                                                     className={`cp-job-card${selectedCandidate?.id === candidate.id ? " selected" : ""}`}
-                                                    onClick={() => setSelectedCandidate(candidate)}
+                                                    onClick={() => {
+                                                        setSelectedCandidate(candidate);
+                                                        if (window.innerWidth <= 1100) {
+                                                            setTimeout(() => {
+                                                                const panel = document.getElementById('cp-detail-panel');
+                                                                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                            }, 50);
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="cp-job-card-bg" />
 
@@ -1284,7 +1323,7 @@ function CandidatesInner() {
                                 </div>
 
                                 {/* ══ RIGHT DETAIL PANEL ══ */}
-                                <div className="cp-detail">
+                                <div className="cp-detail" id="cp-detail-panel">
                                     {selectedCandidate ? (
                                         <>
                                             <div className="cp-detail-hero">
@@ -1504,6 +1543,24 @@ function CandidatesInner() {
                                                                         <div className="cp-joining-option"><input type="checkbox" id={`join-${selectedCandidate.id}`} checked={status === 'completed'} onChange={async () => { await updateJoiningConfirmation(selectedCandidate.id, 'join') }} disabled={updatingJoiningStatus} /><label htmlFor={`join-${selectedCandidate.id}`}>Join (Status: Accepted)</label></div>
                                                                         <div className="cp-joining-option"><input type="checkbox" id={`not-join-${selectedCandidate.id}`} checked={status === 'pending'} onChange={async () => { await updateJoiningConfirmation(selectedCandidate.id, 'not_join') }} disabled={updatingJoiningStatus} /><label htmlFor={`not-join-${selectedCandidate.id}`}>Not Join (Status: Pending)</label></div>
                                                                         <div className="cp-joining-option"><input type="checkbox" id={`offer-revoked-${selectedCandidate.id}`} checked={status === 'rejected'} onChange={async () => { await updateJoiningConfirmation(selectedCandidate.id, 'offer_revoked') }} disabled={updatingJoiningStatus} /><label htmlFor={`offer-revoked-${selectedCandidate.id}`}>Offer Revoke (Not Accepted)</label></div>
+                                                                        {status === 'completed' && (
+                                                                            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-s)' }}>
+                                                                                <div className="cp-detail-label" style={{ marginBottom: 4 }}><Calendar size={11} /> Date of Joining</div>
+                                                                                <input
+                                                                                    type="date"
+                                                                                    value={selectedCandidate.custom_date_of_joining || ""}
+                                                                                    onChange={e => updateJoiningDate(selectedCandidate.id, e.target.value)}
+                                                                                    disabled={updatingJoinDate}
+                                                                                    style={{
+                                                                                        width: '100%', height: 36, padding: '0 10px', borderRadius: 7,
+                                                                                        border: '1px solid var(--border)', background: '#fff',
+                                                                                        fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'var(--t1)', outline: 'none'
+                                                                                    }}
+                                                                                />
+                                                                                {updatingJoinDate && <div className="cp-loc-saving"><div className="cp-loc-spin" /> Saving date...</div>}
+                                                                                {joinDateSaved && !updatingJoinDate && <div className="cp-loc-saved"><CheckCircle size={11} /> Date saved</div>}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1521,6 +1578,7 @@ function CandidatesInner() {
                                                     const isDocVerifyCompleted = selectedCandidate.stage_statuses?.find(s => s.stage_id === 'document_verification')?.status === 'completed'
                                                     const isOfferLetterCompleted = selectedCandidate.stage_statuses?.find(s => s.stage_id === 'offer_letter')?.status === 'completed'
                                                     const isAppointmentCompleted = selectedCandidate.stage_statuses?.find(s => s.stage_id === 'appointment_letter')?.status === 'completed'
+
                                                     return (
                                                         <>
                                                             {/* <button className="cp-action-btn" disabled={isInterviewCompleted} onClick={() => !isInterviewCompleted && router.push(`/interview?applicantId=${selectedCandidate.id}&jobOpening=${encodeURIComponent(selectedCandidate.job_opening || "")}`)}><Users size={14} /> Schedule Interview{isInterviewCompleted && <span className="cp-action-completed">(Completed)</span>}</button> */}
@@ -1533,8 +1591,62 @@ function CandidatesInner() {
                                                             </button>
                                                             <button className="cp-action-btn" disabled={isFeedbackCompleted} onClick={() => !isFeedbackCompleted && router.push(`/candidate-feedback?candidateId=${selectedCandidate.id}`)}><ClipboardList size={14} /> Add Feedback{isFeedbackCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
                                                             <button className="cp-action-btn" disabled={isDocVerifyCompleted} onClick={() => !isDocVerifyCompleted && router.push(`/document-verify?candidateId=${selectedCandidate.id}`)}><FileCheck size={14} /> Verify Documents{isDocVerifyCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
+                                                            <button
+                                                                className="cp-action-btn"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const csrfToken = await getFrappeCSRF()
+                                                                        const res = await fetch(`${API_BASE_URL}/api/method/resume.api.api.generate_document_link`, {
+                                                                            method: 'POST',
+                                                                            credentials: 'include',
+                                                                            headers: {
+                                                                                'Content-Type': 'application/json',
+                                                                                'X-Frappe-CSRF-Token': csrfToken
+                                                                            },
+                                                                            body: JSON.stringify({ applicant_name: selectedCandidate.id })
+                                                                        })
+                                                                        const result = await res.json()
+                                                                        if (result.message?.success) {
+                                                                            alert("Document link email sent successfully!")
+                                                                        } else {
+                                                                            alert("Failed to send document link email.")
+                                                                        }
+                                                                    } catch (e) {
+                                                                        alert("Error sending document link.")
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Send size={14} /> Send Document Link
+                                                            </button>
                                                             <button className="cp-action-btn" disabled={isOfferLetterCompleted} onClick={() => !isOfferLetterCompleted && router.push(`/offer-letter?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Offer Letter{isOfferLetterCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
                                                             <button className="cp-action-btn" style={{ marginBottom: 4 }} disabled={isAppointmentCompleted} onClick={() => !isAppointmentCompleted && router.push(`/letter-appointment?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Appointment Letter{isAppointmentCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
+                                                            {/* <button
+                                                                className="cp-action-btn"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const csrfToken = await getFrappeCSRF()
+                                                                        const res = await fetch(`${API_BASE_URL}/api/method/resume.api.api.generate_document_link`, {
+                                                                            method: 'POST',
+                                                                            credentials: 'include',
+                                                                            headers: {
+                                                                                'Content-Type': 'application/json',
+                                                                                'X-Frappe-CSRF-Token': csrfToken
+                                                                            },
+                                                                            body: JSON.stringify({ applicant_name: selectedCandidate.id })
+                                                                        })
+                                                                        const result = await res.json()
+                                                                        if (result.message?.success) {
+                                                                            alert("Document link email sent successfully!")
+                                                                        } else {
+                                                                            alert("Failed to send document link email.")
+                                                                        }
+                                                                    } catch (e) {
+                                                                        alert("Error sending document link.")
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Send size={14} /> Send Document Link
+                                                            </button> */}
                                                         </>
                                                     )
                                                 })()}

@@ -1,3 +1,1318 @@
+// "use client"
+// import { useState, useEffect } from "react"
+// import { useRouter } from "next/navigation"
+// import Link from "next/link"
+// import {
+//   ArrowLeft, FileText, Mail, Calendar, Briefcase, Building2,
+//   Plus, Trash2, User, CheckCircle2, AlertCircle, Search,
+//   Menu, X, Home, ChevronRight, Upload, Users, MessageSquare,
+//   Zap, UserCheck, LogOut,
+// } from "lucide-react"
+// import {
+//   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem,
+// } from "@/components/ui/command"
+// import {
+//   Popover, PopoverContent, PopoverTrigger,
+// } from "@/components/ui/popover"
+// import { Check, ChevronsUpDown } from "lucide-react"
+// import { cn } from "@/lib/utils"
+// import { getFrappeCSRF } from "@/lib/csrf"
+
+// const API_MODULE_PATH = "resume.api.offer_letter"
+// const API_BASE_URL = "https://ats.vaaman.in"
+
+// const css = `
+//   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+//   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+//   .ol {
+//     --sb-w:      265px;
+//     --sb:        #1e1e2d;
+//     --sb-hover:  #2b2b40;
+//     --sb-bdr:    rgba(255,255,255,.07);
+//     --sb-txt:    #9899ac;
+//     --sb-lbl:    #474761;
+//     --accent:    #009ef7;
+//     --accent-h:  #007ec4;
+//     --accent-lt: #e0f4ff;
+//     --accent-md: rgba(0,158,247,.15);
+//     --bg:        #f0f8fe;
+//     --card:      #ffffff;
+//     --border:    #cce8f8;
+//     --border-s:  #ddf0fb;
+//     --t1:        #0d1b2a;
+//     --t2:        #2d5a78;
+//     --t3:        #6a9cb8;
+//     --green:     #16a34a;
+//     --green-lt:  #dcfce7;
+//     --red:       #dc2626;
+//     --red-lt:    #fee2e2;
+//     font-family: 'Inter', system-ui, sans-serif;
+//     font-size: 13.5px;
+//     -webkit-font-smoothing: antialiased;
+//   }
+
+//   .ol-wrap { display: flex; min-height: 100vh; background: var(--bg); color: var(--t1); }
+
+//   /* ══ SIDEBAR ══ */
+//   .ol-sb {
+//     width: var(--sb-w); background: var(--sb); min-height: 100vh;
+//     position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column;
+//     transition: transform .25s cubic-bezier(.4,0,.2,1);
+//   }
+//   .ol-sb.collapsed { transform: translateX(calc(-1 * var(--sb-w))); }
+//   .ol-sb-brand {
+//     height: 64px; display: flex; align-items: center; gap: 12px;
+//     padding: 0 16px 0 22px; border-bottom: 1px solid var(--sb-bdr); flex-shrink: 0;
+//   }
+//   .ol-sb-icon {
+//     width: 38px; height: 38px; border-radius: 10px;
+//     background: rgba(0,158,247,.15); border: 1px solid rgba(0,158,247,.25);
+//     display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+//   }
+//   .ol-sb-icon img { width: 24px; height: 24px; object-fit: contain; filter: brightness(0) invert(1); }
+//   .ol-sb-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -0.1px; line-height: 1.25; }
+//   .ol-sb-sub { font-size: 10.5px; color: var(--sb-lbl); margin-top: 1px; }
+//   .ol-sb-close {
+//     margin-left: auto; flex-shrink: 0; width: 28px; height: 28px; border-radius: 7px;
+//     background: none; border: none; cursor: pointer; color: var(--sb-lbl);
+//     display: flex; align-items: center; justify-content: center; transition: all .14s;
+//   }
+//   .ol-sb-close:hover { background: var(--sb-hover); color: #fff; }
+//   .ol-nav { flex: 1; padding: 18px 12px; overflow-y: auto; }
+//   .ol-nav::-webkit-scrollbar { width: 3px; }
+//   .ol-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.06); border-radius: 4px; }
+//   .ol-nav-cta {
+//     display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-radius: 9px;
+//     background: var(--accent-md); border: 1px solid rgba(0,158,247,.28);
+//     color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none;
+//     transition: background .15s; margin-bottom: 22px; letter-spacing: -0.1px;
+//   }
+//   .ol-nav-cta:hover { background: rgba(0,158,247,.24); }
+//   .ol-nav-lbl {
+//     font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+//     letter-spacing: .11em; color: var(--sb-lbl); padding: 4px 12px 7px; margin-top: 4px;
+//   }
+//   .ol-nav-link {
+//     display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+//     font-size: 13px; font-weight: 500; color: var(--sb-txt); text-decoration: none; transition: all .14s;
+//   }
+//   .ol-nav-link svg { width: 15px; height: 15px; flex-shrink: 0; opacity: .5; transition: opacity .14s; }
+//   .ol-nav-link:hover { background: var(--sb-hover); color: #fff; }
+//   .ol-nav-link:hover svg { opacity: 1; }
+//   .ol-nav-link.active { background: var(--accent-md); color: var(--accent); border: 1px solid rgba(0,158,247,.2); }
+//   .ol-nav-link.active svg { opacity: 1; }
+//   .ol-sb-foot { padding: 14px 12px; border-top: 1px solid var(--sb-bdr); flex-shrink: 0; }
+//   .ol-logout {
+//     display: flex; align-items: center; gap: 10px; width: 100%;
+//     padding: 9px 12px; border-radius: 8px; background: none; border: none;
+//     cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+//     color: var(--sb-lbl); text-align: left; transition: all .14s;
+//   }
+//   .ol-logout svg { opacity: .6; width: 15px; height: 15px; }
+//   .ol-logout:hover { background: rgba(239,68,68,.1); color: #f87171; }
+//   .ol-overlay {
+//     display: none; position: fixed; inset: 0; z-index: 99;
+//     background: rgba(13,27,42,.35); backdrop-filter: blur(2px); cursor: pointer;
+//   }
+//   @media (max-width: 768px) { .ol-overlay.show { display: block; } }
+
+//   /* ══ MAIN ══ */
+//   .ol-main {
+//     margin-left: var(--sb-w); flex: 1; display: flex; flex-direction: column;
+//     min-height: 100vh; transition: margin-left .25s cubic-bezier(.4,0,.2,1);
+//   }
+//   .ol-main.sb-closed { margin-left: 0; }
+//   .ol-header {
+//     height: 60px; background: #fff; border-bottom: 1px solid var(--border);
+//     display: flex; align-items: center; padding: 0 28px; gap: 12px;
+//     position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,158,247,.08);
+//   }
+//   .ol-toggle {
+//     width: 34px; height: 34px; border-radius: 8px; background: none;
+//     border: 1px solid var(--border); cursor: pointer; display: flex;
+//     align-items: center; justify-content: center; color: var(--t2); flex-shrink: 0; transition: all .14s;
+//   }
+//   .ol-toggle:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
+//   .ol-hdr-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+//   .ol-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t3); }
+//   .ol-crumb svg { width: 13px; height: 13px; color: var(--t3); }
+//   .ol-crumb strong { color: var(--t1); font-weight: 600; font-size: 13.5px; }
+
+//   /* ══ PAGE ══ */
+//   .ol-page-outer { flex: 1; display: flex; justify-content: center; padding: 28px 32px; }
+//   .ol-page { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 22px; }
+
+//   /* toolbar */
+//   .ol-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+//   .ol-page-title { font-size: 21px; font-weight: 800; color: var(--t1); letter-spacing: -0.5px; line-height: 1.15; }
+//   .ol-page-sub { font-size: 13px; color: var(--t3); margin-top: 5px; }
+//   .ol-back-btn {
+//     display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 8px;
+//     border: 1px solid var(--border); background: var(--card); color: var(--t2);
+//     font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .14s;
+//   }
+//   .ol-back-btn:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
+
+//   /* ══ CARDS ══ */
+//   .ol-card {
+//     background: var(--card); border: 1px solid var(--border-s); border-radius: 14px;
+//     overflow: hidden; box-shadow: 0 1px 4px rgba(0,158,247,.06);
+//   }
+//   .ol-card-head {
+//     padding: 16px 22px; border-bottom: 1px solid var(--border-s);
+//     background: linear-gradient(to right, #f8fbff, #eef7ff);
+//     display: flex; align-items: center; justify-content: space-between;
+//   }
+//   .ol-card-head-left { display: flex; align-items: center; gap: 10px; }
+//   .ol-card-head-icon {
+//     width: 34px; height: 34px; border-radius: 9px;
+//     background: linear-gradient(135deg, var(--accent), #3b82f6);
+//     display: flex; align-items: center; justify-content: center;
+//   }
+//   .ol-card-head-icon.purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+//   .ol-card-head-icon svg { color: #fff; width: 16px; height: 16px; }
+//   .ol-card-title { font-size: 14px; font-weight: 700; color: var(--t1); letter-spacing: -0.2px; }
+//   .ol-card-body { padding: 24px; }
+
+//   /* badge */
+//   .ol-badge {
+//     display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px;
+//     font-size: 11.5px; font-weight: 600; border: 1px solid transparent;
+//   }
+//   .ol-badge.blue { background: var(--accent-lt); color: var(--accent); border-color: rgba(0,158,247,.25); }
+
+//   /* ══ FORM ══ */
+//   .ol-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+//   .ol-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+//   .ol-field { display: flex; flex-direction: column; gap: 6px; }
+//   .ol-label {
+//     display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+//     color: var(--t2); letter-spacing: 0.02em;
+//   }
+//   .ol-label svg { width: 13px; height: 13px; color: var(--accent); flex-shrink: 0; }
+//   .ol-req { color: #ef4444; margin-left: 2px; }
+//   .ol-input {
+//     height: 42px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border);
+//     background: var(--bg); color: var(--t1); font-family: 'Inter', sans-serif; font-size: 13.5px;
+//     outline: none; transition: all .15s; width: 100%;
+//   }
+//   .ol-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-lt); }
+//   .ol-input::placeholder { color: var(--t3); }
+//   .ol-input:disabled { opacity: 0.65; cursor: not-allowed; background: #f0f4f8; }
+//   .ol-textarea {
+//     min-height: 68px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+//     background: var(--bg); color: var(--t1); font-family: 'Inter', sans-serif; font-size: 13.5px;
+//     outline: none; transition: all .15s; width: 100%; resize: vertical;
+//   }
+//   .ol-textarea:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-lt); }
+//   .ol-textarea::placeholder { color: var(--t3); }
+
+//   /* select wrapper for shadcn selects */
+//   .ol-select-trigger {
+//     height: 42px !important; border: 1px solid var(--border) !important; background: var(--bg) !important;
+//     border-radius: 8px !important; font-family: 'Inter', sans-serif !important;
+//     font-size: 13.5px !important; color: var(--t1) !important; width: 100% !important;
+//     transition: all .15s !important;
+//   }
+//   .ol-select-trigger:focus, .ol-select-trigger[data-state="open"] {
+//     background: #fff !important; border-color: var(--accent) !important;
+//     box-shadow: 0 0 0 3px var(--accent-lt) !important;
+//   }
+
+//   /* combobox trigger (popover button) */
+//   .ol-combo-btn {
+//     height: 42px !important; width: 100% !important; justify-content: space-between !important;
+//     border: 1px solid var(--border) !important; background: var(--bg) !important;
+//     border-radius: 8px !important; font-family: 'Inter', sans-serif !important;
+//     font-size: 13.5px !important; color: var(--t1) !important; padding: 0 12px !important;
+//     transition: all .15s !important;
+//   }
+//   .ol-combo-btn:hover, .ol-combo-btn[aria-expanded="true"] {
+//     background: #fff !important; border-color: var(--accent) !important;
+//     box-shadow: 0 0 0 3px var(--accent-lt) !important;
+//   }
+//   .ol-combo-btn:disabled { opacity: 0.65 !important; cursor: not-allowed !important; background: #f0f4f8 !important; }
+
+//   /* hint text */
+//   .ol-hint { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--accent); margin-top: 4px; }
+//   .ol-hint svg { width: 12px; height: 12px; }
+
+//   /* ══ ALERT BANNERS ══ */
+//   .ol-alert {
+//     border-radius: 10px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+//   }
+//   .ol-alert.red { background: var(--red-lt); border: 1px solid #fca5a5; }
+//   .ol-alert.blue { background: var(--accent-lt); border: 1px solid rgba(0,158,247,.25); }
+//   .ol-alert-icon { flex-shrink: 0; margin-top: 1px; }
+//   .ol-alert.red .ol-alert-icon svg { color: var(--red); width: 18px; height: 18px; }
+//   .ol-alert.blue .ol-alert-icon svg { color: var(--accent); width: 16px; height: 16px; }
+//   .ol-alert-title { font-size: 13px; font-weight: 700; color: var(--t1); }
+//   .ol-alert.red .ol-alert-title { color: #7f1d1d; }
+//   .ol-alert-sub { font-size: 11.5px; color: var(--t2); margin-top: 3px; }
+//   .ol-alert.red .ol-alert-sub { color: #991b1b; }
+//   .ol-alert.blue .ol-alert-sub { color: var(--t2); }
+//   .ol-spin {
+//     width: 16px; height: 16px; border: 2px solid rgba(0,158,247,.25); border-top-color: var(--accent);
+//     border-radius: 50%; animation: ol-spin 1s linear infinite; flex-shrink: 0;
+//   }
+//   @keyframes ol-spin { to { transform: rotate(360deg); } }
+
+//   /* ══ OFFER TERMS TABLE ══ */
+//   .ol-terms-table { width: 100%; border-collapse: collapse; }
+//   .ol-terms-table thead tr { background: linear-gradient(to right, #f8fbff, #eef7ff); border-bottom: 1px solid var(--border-s); }
+//   .ol-terms-table th {
+//     padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 700;
+//     text-transform: uppercase; letter-spacing: 0.08em; color: var(--t2);
+//   }
+//   .ol-terms-table tbody tr { border-bottom: 1px solid var(--border-s); transition: background .12s; }
+//   .ol-terms-table tbody tr:last-child { border-bottom: none; }
+//   .ol-terms-table tbody tr:hover { background: #f8fbff; }
+//   .ol-terms-table td { padding: 10px 14px; vertical-align: top; }
+//   .ol-terms-num { font-size: 12px; font-weight: 600; color: var(--t3); padding-top: 12px !important; }
+
+//   .ol-terms-empty {
+//     text-align: center; padding: 48px 20px; display: flex; flex-direction: column;
+//     align-items: center; gap: 10px;
+//   }
+//   .ol-terms-empty-icon { color: var(--t3); }
+//   .ol-terms-empty-title { font-size: 13.5px; font-weight: 600; color: var(--t2); }
+
+//   /* ══ STATUS DOT ══ */
+//   .ol-status-dot {
+//     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block;
+//   }
+//   .ol-status-dot.blue { background: var(--accent); }
+//   .ol-status-dot.green { background: var(--green); }
+//   .ol-status-dot.red { background: var(--red); }
+//   .ol-status-dot.yellow { background: #f59e0b; }
+//   .ol-status-dot.grey { background: #94a3b8; }
+
+//   /* ══ ACTION BUTTONS ══ */
+//   .ol-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+//   .ol-btn-cancel {
+//     display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px;
+//     border: 1px solid var(--border); background: var(--card); color: var(--t2);
+//     font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: all .14s;
+//   }
+//   .ol-btn-cancel:hover { background: #f0f4f8; border-color: #b0c4d4; }
+//   .ol-btn-submit {
+//     display: flex; align-items: center; gap: 7px; padding: 10px 28px; border-radius: 8px;
+//     background: var(--accent); color: #fff; border: none;
+//     font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .15s;
+//     box-shadow: 0 2px 8px rgba(0,158,247,.3);
+//   }
+//   .ol-btn-submit:hover:not(:disabled) { background: var(--accent-h); box-shadow: 0 4px 14px rgba(0,158,247,.4); }
+//   .ol-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+//   .ol-btn-submit svg { width: 16px; height: 16px; }
+//   .ol-btn-submit-spin {
+//     width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+//     border-radius: 50%; animation: ol-spin 1s linear infinite;
+//   }
+
+//   @media (max-width: 768px) {
+//     .ol-sb { transform: translateX(calc(-1 * var(--sb-w))); }
+//     .ol-sb.open { transform: translateX(0); }
+//     .ol-main { margin-left: 0 !important; }
+//     .ol-page-outer { padding: 16px; }
+//     .ol-header { padding: 0 16px; }
+//     .ol-grid-2 { grid-template-columns: 1fr; }
+//     .ol-grid-3 { grid-template-columns: 1fr; }
+//   }
+// `
+
+// interface JobApplicant {
+//   name: string; applicant_name: string; email_id: string
+// }
+// interface JobOfferTemplate { name: string; offer_term_template_name?: string }
+// interface Company { name: string; company_name: string }
+// interface Designation { name: string; designation_name: string }
+// interface EmployeeGrade { name: string }
+// interface OfferTerm { id: string; offer_term: string; value_description: string }
+// interface LocationOption { name: string }
+
+// export default function JobOfferPage() {
+//   const router = useRouter()
+//   const [sidebarOpen, setSidebarOpen] = useState(false)
+//   const [offerForm, setOfferForm] = useState({
+//     jobApplicant: "",
+//     applicantName: "",
+//     applicantEmail: "",
+//     status: "Awaiting Response",
+//     offerDate: "",
+//     designation: "",
+//     company: "",
+//     jobOfferTemplate: "",
+//     customOfferAcceptanceDate: "",
+//     customGrade: "",
+//     customMobileNo: "",
+//     customContactName: "",
+//     customJoiningDate: "",
+//     customSalaryAnnexure: "",
+//   })
+
+//   const [offerTerms, setOfferTerms] = useState<OfferTerm[]>([])
+//   const [jobApplicants, setJobApplicants] = useState<JobApplicant[]>([])
+//   const [templates, setTemplates] = useState<JobOfferTemplate[]>([])
+//   const [companies, setCompanies] = useState<Company[]>([])
+//   const [designations, setDesignations] = useState<Designation[]>([])
+//   const [grades, setGrades] = useState<EmployeeGrade[]>([])
+//   const [salaryAnnexures, setSalaryAnnexures] = useState<{ name: string }[]>([])
+//   const [statusOptions, setStatusOptions] = useState<string[]>([])
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [loading, setLoading] = useState({
+//     applicants: true, templates: true, companies: true,
+//     designations: true, grades: true, salaryAnnexures: true, statuses: true,
+//   })
+//   const [existingOffer, setExistingOffer] = useState<string | null>(null)
+//   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
+//   const [openApplicant, setOpenApplicant] = useState(false)
+//   const [openDesignation, setOpenDesignation] = useState(false)
+//   const [openGrade, setOpenGrade] = useState(false)
+//   const [locations, setLocations] = useState<LocationOption[]>([])
+//   const [openLocation, setOpenLocation] = useState(false)
+
+//   const getTodayDate = () => {
+//     const today = new Date()
+//     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+//   }
+
+//   useEffect(() => {
+//     fetchJobApplicants(); fetchTemplates(); fetchCompanies()
+//     fetchDesignations(); fetchGrades(); fetchStatusOptions()
+//     fetchLocations()
+//   }, [])
+
+//   useEffect(() => { document.title = 'Offer Letter' }, [])
+
+//   useEffect(() => {
+//     if (offerForm.jobOfferTemplate) fetchTemplateTerms(offerForm.jobOfferTemplate)
+//   }, [offerForm.jobOfferTemplate])
+
+//   const fetchJobApplicants = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_applicants`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setJobApplicants(result?.message?.data || [])
+//       console.log("✅ Fetched job applicants:", result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.error("❌ Error fetching job applicants:", error)
+//       setJobApplicants([])
+//     } finally { setLoading(prev => ({ ...prev, applicants: false })) }
+//   }
+
+//   const fetchTemplates = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_offer_templates`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setTemplates(result?.message?.data || [])
+//       console.log("✅ Fetched templates:", result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.warn("⚠️ Templates not available:", error.message)
+//       setTemplates([])
+//     } finally { setLoading(prev => ({ ...prev, templates: false })) }
+//   }
+
+//   const fetchCompanies = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_companies`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setCompanies(result?.message?.data || [])
+//       console.log("✅ Fetched companies:", result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.error("❌ Error fetching companies:", error)
+//       setCompanies([])
+//     } finally { setLoading(prev => ({ ...prev, companies: false })) }
+//   }
+
+//   const fetchDesignations = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_designations`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setDesignations(result?.message?.data || [])
+//       console.log("✅ Fetched designations:", result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.error("❌ Error fetching designations:", error)
+//       setDesignations([])
+//     } finally { setLoading(prev => ({ ...prev, designations: false })) }
+//   }
+
+//   const fetchGrades = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_employee_grades`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setGrades(result?.message?.data || [])
+//       console.log('✅ Fetched grades:', result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.error('❌ Error fetching grades:', error)
+//       setGrades([])
+//     } finally { setLoading(prev => ({ ...prev, grades: false })) }
+//   }
+
+//   const fetchLocations = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_locations`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setLocations(result?.message?.data || [])
+//       console.log('✅ Fetched locations:', result?.message?.data?.length)
+//     } catch (error: any) {
+//       console.error('❌ Error fetching locations:', error)
+//       setLocations([])
+//     } finally { setLoading(prev => ({ ...prev, locations: false })) }
+//   }
+
+//   const fetchStatusOptions = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_offer_statuses`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setStatusOptions(result?.message?.data || ["Awaiting Response", "Accepted", "Rejected"])
+//     } catch (error) {
+//       setStatusOptions(["Awaiting Response", "Accepted", "Rejected"])
+//     } finally { setLoading(prev => ({ ...prev, statuses: false })) }
+//   }
+
+//   const fetchSalaryAnnexures = async () => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_salary_annexures`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       setSalaryAnnexures(result?.message?.data || [])
+//     } catch (error) {
+//       setSalaryAnnexures([])
+//     } finally { setLoading(prev => ({ ...prev, salaryAnnexures: false })) }
+//   }
+
+//   const checkExistingOffer = async (jobApplicant: string) => {
+//     if (!jobApplicant) return
+//     setCheckingDuplicate(true)
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.check_existing_offer?job_applicant=${jobApplicant}`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const data = await response.json()
+//       if (data?.message?.exists) {
+//         setExistingOffer(data.message.offer_name)
+//         console.log("⚠️ Offer already exists:", data.message.offer_name)
+//       } else {
+//         setExistingOffer(null)
+//         console.log("✅ No existing offer found")
+//       }
+//     } catch (error) {
+//       console.error("❌ Error checking existing offer:", error)
+//       setExistingOffer(null)
+//     } finally { setCheckingDuplicate(false) }
+//   }
+
+//   const fetchTemplateTerms = async (templateName: string) => {
+//     try {
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_template_terms?template_name=${templateName}`,
+//         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//       )
+//       const result = await response.json()
+//       const terms = result?.message?.data || []
+//       const formattedTerms = terms.map((term: any, index: number) => ({
+//         id: Date.now().toString() + index,
+//         offer_term: term.offer_term || "",
+//         value_description: term.value || ""
+//       }))
+//       setOfferTerms(formattedTerms)
+//       console.log("✅ Fetched template terms:", formattedTerms.length)
+//     } catch (error: any) {
+//       console.error("❌ Error fetching template terms:", error)
+//     }
+//   }
+
+//   const handleJobApplicantChange = async (value: string) => {
+//     const applicant = jobApplicants.find(a => a.name === value)
+//     if (applicant) {
+//       setSalaryAnnexures([])
+//       setOfferForm({
+//         ...offerForm,
+//         jobApplicant: value,
+//         applicantName: applicant.applicant_name || "",
+//         applicantEmail: applicant.email_id || "",
+//       })
+//       await checkExistingOffer(value)
+//       try {
+//         const response = await fetch(
+//           `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_applicant_details?job_applicant_name=${value}`,
+//           { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//         )
+//         const result = await response.json()
+//         if (result?.message?.data) {
+//           const details = result.message.data
+//           setOfferForm(prev => ({
+//             ...prev,
+//             designation: details.designation || prev.designation,
+//             company: details.company || prev.company
+//           }))
+//         }
+//       } catch (error) { console.error("Error fetching applicant details:", error) }
+
+//       try {
+//         const annexureRes = await fetch(
+//           `${API_BASE_URL}/api/method/frappe.client.get_list?doctype=Salary%20Annexure&filters=${encodeURIComponent(JSON.stringify({ custom_job_applicant: value }))}&fields=${encodeURIComponent(JSON.stringify(["name"]))}&order_by=creation%20desc&limit_page_length=10`,
+//           { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+//         )
+//         const annexureResult = await annexureRes.json()
+//         const annexures = annexureResult?.message || []
+//         setSalaryAnnexures(annexures)
+//         if (annexures.length > 0) {
+//           setOfferForm(prev => ({ ...prev, customSalaryAnnexure: annexures[0].name }))
+//           console.log("✅ Auto-selected salary annexure:", annexures[0].name)
+//         } else {
+//           setOfferForm(prev => ({ ...prev, customSalaryAnnexure: "" }))
+//           console.log("ℹ️ No salary annexure found for this applicant")
+//         }
+//       } catch (error) {
+//         console.error("Error fetching salary annexure:", error)
+//         setSalaryAnnexures([])
+//       }
+//     }
+//     setOpenApplicant(false)
+//   }
+
+//   const handleDesignationChange = (value: string) => {
+//     setOfferForm({ ...offerForm, designation: value })
+//     setOpenDesignation(false)
+//   }
+
+//   const handleGradeChange = (value: string) => {
+//     setOfferForm({ ...offerForm, customGrade: value })
+//     setOpenGrade(false)
+//   }
+
+//   const handleLocationChange = (value: string) => {
+//     setOfferForm({ ...offerForm, customLocationList: value })
+//     setOpenLocation(false)
+//   }
+
+//   const addOfferTerm = () => {
+//     setOfferTerms([...offerTerms, { id: Date.now().toString(), offer_term: "", value_description: "" }])
+//   }
+
+//   const removeOfferTerm = (id: string) => {
+//     setOfferTerms(offerTerms.filter(term => term.id !== id))
+//   }
+
+//   const updateOfferTerm = (id: string, field: keyof OfferTerm, value: string) => {
+//     setOfferTerms(offerTerms.map(term => term.id === id ? { ...term, [field]: value } : term))
+//   }
+
+//   const handleSave = async () => {
+//     if (!offerForm.jobApplicant || !offerForm.applicantName || !offerForm.designation || !offerForm.company || !offerForm.customGrade || !offerForm.customMobileNo || !offerForm.customContactName) {
+//       alert("Please fill all required fields"); return
+//     }
+//     if (!offerForm.offerDate) {
+//       alert("Please select an Offer Date"); return
+//     }
+//     if (!offerForm.customOfferAcceptanceDate) {
+//       alert("Please select an Offer Acceptance Date"); return
+//     }
+//     if (!offerForm.customJoiningDate) {
+//       alert("Please select a Joining Date"); return
+//     }
+//     if (!offerForm.customSalaryAnnexure) {
+//       alert("Salary Annexure is required. Please create a Salary Annexure in Frappe first, then create the offer letter."); return
+//     }
+//     if (offerForm.customMobileNo.length !== 10) {
+//       alert("Mobile number must be exactly 10 digits"); return
+//     }
+//     if (existingOffer) {
+//       alert(`Job Offer already exists for this applicant (${existingOffer}). You cannot create duplicate offers for the same applicant.`); return
+//     }
+//     setIsSaving(true)
+//     try {
+//       const requestData = {
+//         job_applicant: offerForm.jobApplicant,
+//         applicant_name: offerForm.applicantName,
+//         applicant_email: offerForm.applicantEmail,
+//         offer_date: offerForm.offerDate,
+//         designation: offerForm.designation,
+//         company: offerForm.company,
+//         status: offerForm.status,
+//         job_offer_template: offerForm.jobOfferTemplate,
+//         custom_offer_acceptance_date: offerForm.customOfferAcceptanceDate,
+//         custom_grade: offerForm.customGrade,
+//         custom_mobile_no: offerForm.customMobileNo,
+//         custom_contact_name: offerForm.customContactName,
+//         custom_joining_date: offerForm.customJoiningDate,
+//         custom_salary_annexure: offerForm.customSalaryAnnexure,
+//         custom_location_list: offerForm.customLocationList,
+//         offer_terms: offerTerms
+//       }
+//       console.log("Submitting job offer with data:", requestData)
+//       const csrfToken = await getFrappeCSRF()
+//       const response = await fetch(
+//         `${API_BASE_URL}/api/method/${API_MODULE_PATH}.create_job_offer`,
+//         {
+//           method: 'POST', credentials: 'include',
+//           headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
+//           body: JSON.stringify({ data: requestData })
+//         }
+//       )
+//       const result = await response.json()
+//       if (result?.message?.success === false) throw new Error(result.message.message || "Failed to create job offer")
+//       alert(result?.message?.message || "Job Offer created successfully!")
+//       router.push('/offer-list')
+//     } catch (error: any) {
+//       console.error("Error creating job offer:", error)
+//       alert(error.message || "Failed to create job offer")
+//     } finally { setIsSaving(false) }
+//   }
+
+//   const getStatusDotClass = (status: string) => {
+//     switch (status) {
+//       case "Accepted": return "green"
+//       case "Rejected": return "red"
+//       case "Awaiting Response": return "blue"
+//       case "Pending": return "yellow"
+//       default: return "grey"
+//     }
+//   }
+
+//   const dateChangeHandler = (field: keyof typeof offerForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const value = e.target.value
+//     if (value && new Date(value).getFullYear() > 9999) return
+//     setOfferForm(prev => ({ ...prev, [field]: value }))
+//   }
+
+//   const dateKeyDownHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//     const input = e.currentTarget
+//     const value = input.value
+//     if (!value) return
+//     const year = value.split("-")[0]
+//     const allowed = ["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]
+//     if (year && year.length >= 4 && !allowed.includes(e.key)) {
+//       const cursorPos = input.selectionStart
+//       const firstDash = value.indexOf("-")
+//       if (cursorPos !== null && cursorPos <= firstDash && year.length >= 4) e.preventDefault()
+//     }
+//   }
+
+//   return (
+//     <>
+//       <style>{css}</style>
+//       <div className="ol">
+//         <div className="ol-wrap">
+
+//           <div className={`ol-overlay${sidebarOpen ? " show" : ""}`} onClick={() => setSidebarOpen(false)} />
+
+//           {/* SIDEBAR */}
+//           <aside className={`ol-sb${sidebarOpen ? "" : " collapsed"}`}>
+//             <div className="ol-sb-brand">
+//               <div className="ol-sb-icon"><img src="/vaaman_logo.png" alt="logo" /></div>
+//               <div><div className="ol-sb-name">Job Management</div><div className="ol-sb-sub">HR Platform</div></div>
+//               <button className="ol-sb-close" onClick={() => setSidebarOpen(false)}><X size={15} /></button>
+//             </div>
+//             <nav className="ol-nav">
+//               <Link href="/create-job" className="ol-nav-cta"><Plus size={14} /> New Job Opening</Link>
+//               <div className="ol-nav-lbl">General</div>
+//               <Link href="/home" className="ol-nav-link">
+//                 <Home size={15} /> Home
+//               </Link>
+//               <div className="ol-nav-lbl">Pipeline</div>
+//               <Link href="/job-opening" className="ol-nav-link"><Briefcase size={15} /> Job Opening</Link>
+//               <Link href="/upload-resumes" className="ol-nav-link"><Upload size={15} /> Resume Collection</Link>
+//               <Link href="/candidates" className="ol-nav-link"><Users size={15} /> Candidates</Link>
+//               <Link href="/interview" className="ol-nav-link"><Calendar size={15} /> Interview Scheduling</Link>
+//               <div className="ol-nav-lbl" style={{ marginTop: 12 }}>Closing</div>
+//               <Link href="/feedback" className="ol-nav-link"><MessageSquare size={15} /> Feedback</Link>
+//               <Link href="/document-verify-list" className="ol-nav-link"><FileText size={15} /> Document Verification</Link>
+//               <Link href="/offer-list" className="ol-nav-link active"><Zap size={15} /> Offer Letter</Link>
+//               <Link href="/letter-appointment" className="ol-nav-link"><UserCheck size={15} /> Appointment Letter</Link>
+//             </nav>
+//             <div className="ol-sb-foot">
+//               <button className="ol-logout"><LogOut size={15} /> Sign out</button>
+//             </div>
+//           </aside>
+
+//           {/* MAIN */}
+//           <div className={`ol-main${sidebarOpen ? "" : " sb-closed"}`}>
+//             <header className="ol-header">
+//               <button className="ol-toggle" onClick={() => setSidebarOpen(o => !o)}><Menu size={16} /></button>
+//               <div className="ol-hdr-sep" />
+//               <button className="ol-back-btn" onClick={() => router.back()}>
+//                 <ArrowLeft size={13} /> Back
+//               </button>
+//               <div className="ol-hdr-sep" />
+//               {/* <div className="ol-crumb">
+//                 <Home size={13} /> Home <ChevronRight size={13} />
+//                 <Link href="/offer-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Offer Letter</Link>
+//                 <ChevronRight size={13} /> <strong>Create Offer</strong>
+//               </div> */}
+//               <div className="ol-crumb">
+//                 <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'inherit', textDecoration: 'none' }}>
+//                   <Home size={13} /> Home
+//                 </Link>
+//                 <ChevronRight size={13} />
+//                 <Link href="/offer-list" style={{ color: 'var(--t3)', textDecoration: 'none' }}>Offer Letter</Link>
+//                 <ChevronRight size={13} />
+//                 <strong>Create Offer</strong>
+//               </div>
+//             </header>
+
+//             <div className="ol-page-outer">
+//               <div className="ol-page">
+
+//                 {/* Toolbar */}
+//                 <div className="ol-toolbar">
+//                   <div>
+//                     <h1 className="ol-page-title">Create Job Offer</h1>
+//                     <p className="ol-page-sub">Generate and send job offers to selected candidates</p>
+//                   </div>
+//                 </div>
+
+//                 {/* ── OFFER DETAILS CARD ── */}
+//                 <div className="ol-card">
+//                   <div className="ol-card-head">
+//                     <div className="ol-card-head-left">
+//                       <div className="ol-card-head-icon"><FileText size={16} /></div>
+//                       <span className="ol-card-title">Offer Details</span>
+//                     </div>
+//                   </div>
+//                   <div className="ol-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+//                     {/* Row 1: Applicant + Status */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><User size={13} /> Job Applicant <span className="ol-req">*</span></label>
+//                         <Popover open={openApplicant} onOpenChange={setOpenApplicant}>
+//                           <PopoverTrigger asChild>
+//                             <button
+//                               className="ol-combo-btn"
+//                               role="combobox"
+//                               aria-expanded={openApplicant}
+//                               disabled={loading.applicants}
+//                               style={{
+//                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+//                                 height: 42, width: '100%', padding: '0 12px', borderRadius: 8,
+//                                 border: '1px solid var(--border)', background: 'var(--bg)',
+//                                 fontFamily: 'Inter, sans-serif', fontSize: 13.5, color: 'var(--t1)',
+//                                 cursor: loading.applicants ? 'not-allowed' : 'pointer',
+//                                 opacity: loading.applicants ? 0.65 : 1,
+//                                 transition: 'all .15s',
+//                               }}
+//                             >
+//                               <span style={{ color: offerForm.jobApplicant ? 'var(--t1)' : 'var(--t3)' }}>
+//                                 {offerForm.jobApplicant
+//                                   ? jobApplicants.find(a => a.name === offerForm.jobApplicant)?.applicant_name
+//                                   : loading.applicants ? "Loading applicants..." : "Search and select applicant..."}
+//                               </span>
+//                               <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+//                             </button>
+//                           </PopoverTrigger>
+//                           <PopoverContent style={{ width: 400, padding: 0 }}>
+//                             <Command>
+//                               <CommandInput placeholder="Search applicant by name or email..." />
+//                               <CommandEmpty>No applicant found.</CommandEmpty>
+//                               <CommandGroup style={{ maxHeight: 300, overflow: 'auto' }}>
+//                                 {jobApplicants.map(applicant => (
+//                                   <CommandItem
+//                                     key={applicant.name}
+//                                     value={`${applicant.applicant_name} ${applicant.email_id}`}
+//                                     onSelect={() => handleJobApplicantChange(applicant.name)}
+//                                   >
+//                                     <Check size={14} style={{ marginRight: 8, opacity: offerForm.jobApplicant === applicant.name ? 1 : 0 }} />
+//                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
+//                                       <span style={{ fontWeight: 500 }}>{applicant.applicant_name}</span>
+//                                       <span style={{ fontSize: 11.5, color: 'var(--t3)' }}>{applicant.email_id}</span>
+//                                     </div>
+//                                   </CommandItem>
+//                                 ))}
+//                               </CommandGroup>
+//                             </Command>
+//                           </PopoverContent>
+//                         </Popover>
+//                       </div>
+
+//                       <div className="ol-field">
+//                         <label className="ol-label">
+//                           <span className="ol-status-dot blue" style={{ marginRight: 2 }} /> Status <span className="ol-req">*</span>
+//                         </label>
+//                         <select
+//                           className="ol-input"
+//                           value={offerForm.status}
+//                           onChange={e => setOfferForm({ ...offerForm, status: e.target.value })}
+//                           style={{ cursor: 'pointer' }}
+//                         >
+//                           {statusOptions.map(s => (
+//                             <option key={s} value={s}>{s}</option>
+//                           ))}
+//                         </select>
+//                       </div>
+//                     </div>
+
+//                     {/* Row 2: Applicant Name + Offer Date */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><User size={13} /> Applicant Name <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           value={offerForm.applicantName}
+//                           onChange={e => setOfferForm({ ...offerForm, applicantName: e.target.value })}
+//                           placeholder="Full name of applicant"
+//                           disabled={!!offerForm.jobApplicant}
+//                         />
+//                       </div>
+//                       <div className="ol-field">
+//                         {/* <label className="ol-label"><Calendar size={13} /> Offer Date</label> */}
+//                         <label className="ol-label"><Calendar size={13} /> Offer Date <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           type="date"
+//                           value={offerForm.offerDate}
+//                           onChange={dateChangeHandler('offerDate')}
+//                           onKeyDown={dateKeyDownHandler}
+//                           min={getTodayDate()}
+//                           onFocus={e => e.currentTarget.showPicker?.()}
+//                           style={{ cursor: 'pointer' }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     {/* Row 3: Email + Designation */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><Mail size={13} /> Applicant Email Address</label>
+//                         <input
+//                           className="ol-input"
+//                           type="email"
+//                           value={offerForm.applicantEmail}
+//                           onChange={e => setOfferForm({ ...offerForm, applicantEmail: e.target.value })}
+//                           placeholder="email@example.com"
+//                           disabled={!!offerForm.jobApplicant}
+//                         />
+//                       </div>
+//                       <div className="ol-field">
+//                         <label className="ol-label"><Briefcase size={13} /> Designation <span className="ol-req">*</span></label>
+//                         <Popover open={openDesignation} onOpenChange={setOpenDesignation}>
+//                           <PopoverTrigger asChild>
+//                             <button
+//                               role="combobox"
+//                               aria-expanded={openDesignation}
+//                               disabled={loading.designations}
+//                               onClick={() => setOpenDesignation(o => !o)}
+//                               style={{
+//                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+//                                 height: 42, width: '100%', padding: '0 12px', borderRadius: 8,
+//                                 border: '1px solid var(--border)', background: 'var(--bg)',
+//                                 fontFamily: 'Inter, sans-serif', fontSize: 13.5, color: 'var(--t1)',
+//                                 cursor: loading.designations ? 'not-allowed' : 'pointer',
+//                                 opacity: loading.designations ? 0.65 : 1,
+//                               }}
+//                             >
+//                               <span style={{ color: offerForm.designation ? 'var(--t1)' : 'var(--t3)' }}>
+//                                 {offerForm.designation
+//                                   ? designations.find(d => d.name === offerForm.designation)?.designation_name || offerForm.designation
+//                                   : loading.designations ? "Loading designations..." : "Search and select designation..."}
+//                               </span>
+//                               <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+//                             </button>
+//                           </PopoverTrigger>
+//                           <PopoverContent style={{ width: 350, padding: 0 }}>
+//                             <Command>
+//                               <CommandInput placeholder="Search designation..." />
+//                               <CommandEmpty>No designation found.</CommandEmpty>
+//                               <CommandGroup style={{ maxHeight: 300, overflow: 'auto' }}>
+//                                 {designations.map(d => (
+//                                   <CommandItem
+//                                     key={d.name}
+//                                     value={d.designation_name || d.name}
+//                                     onSelect={() => handleDesignationChange(d.name)}
+//                                   >
+//                                     <Check size={14} style={{ marginRight: 8, opacity: offerForm.designation === d.name ? 1 : 0 }} />
+//                                     {d.designation_name || d.name}
+//                                   </CommandItem>
+//                                 ))}
+//                               </CommandGroup>
+//                             </Command>
+//                           </PopoverContent>
+//                         </Popover>
+//                       </div>
+//                     </div>
+
+//                     {/* Row 4: Acceptance Date + Joining Date */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         {/* <label className="ol-label"><Calendar size={13} /> Offer Acceptance Date</label> */}
+//                         <label className="ol-label"><Calendar size={13} /> Offer Acceptance Date <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           type="date"
+//                           value={offerForm.customOfferAcceptanceDate}
+//                           onChange={dateChangeHandler('customOfferAcceptanceDate')}
+//                           onKeyDown={dateKeyDownHandler}
+//                           min={getTodayDate()}
+//                           onFocus={e => e.currentTarget.showPicker?.()}
+//                           style={{ cursor: 'pointer' }}
+//                         />
+//                       </div>
+//                       <div className="ol-field">
+//                         {/* <label className="ol-label"><Calendar size={13} /> Joining Date</label> */}
+//                         <label className="ol-label"><Calendar size={13} /> Joining Date <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           type="date"
+//                           value={offerForm.customJoiningDate}
+//                           onChange={dateChangeHandler('customJoiningDate')}
+//                           onKeyDown={dateKeyDownHandler}
+//                           min={getTodayDate()}
+//                           onFocus={e => e.currentTarget.showPicker?.()}
+//                           style={{ cursor: 'pointer' }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     {/* Row 5: Grade + Salary Annexure + Mobile No + Contact Name */}
+//                     <div className="ol-grid-3">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><Briefcase size={13} /> Grade <span className="ol-req">*</span></label>
+//                         <Popover open={openGrade} onOpenChange={setOpenGrade}>
+//                           <PopoverTrigger asChild>
+//                             <button
+//                               role="combobox"
+//                               aria-expanded={openGrade}
+//                               disabled={loading.grades}
+//                               onClick={() => setOpenGrade(o => !o)}
+//                               style={{
+//                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+//                                 height: 42, width: '100%', padding: '0 12px', borderRadius: 8,
+//                                 border: '1px solid var(--border)', background: 'var(--bg)',
+//                                 fontFamily: 'Inter, sans-serif', fontSize: 13.5, color: 'var(--t1)',
+//                                 cursor: loading.grades ? 'not-allowed' : 'pointer',
+//                                 opacity: loading.grades ? 0.65 : 1,
+//                               }}
+//                             >
+//                               <span style={{ color: offerForm.customGrade ? 'var(--t1)' : 'var(--t3)' }}>
+//                                 {offerForm.customGrade
+//                                   ? offerForm.customGrade
+//                                   : loading.grades ? "Loading grades..." : "Search and select grade..."}
+//                               </span>
+//                               <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+//                             </button>
+//                           </PopoverTrigger>
+//                           <PopoverContent style={{ width: 250, padding: 0 }}>
+//                             <Command>
+//                               <CommandInput placeholder="Search grade..." />
+//                               <CommandEmpty>No grade found.</CommandEmpty>
+//                               <CommandGroup style={{ maxHeight: 300, overflow: 'auto' }}>
+//                                 {grades.map(g => (
+//                                   <CommandItem
+//                                     key={g.name}
+//                                     value={g.name}
+//                                     onSelect={() => handleGradeChange(g.name)}
+//                                   >
+//                                     <Check size={14} style={{ marginRight: 8, opacity: offerForm.customGrade === g.name ? 1 : 0 }} />
+//                                     {g.name}
+//                                   </CommandItem>
+//                                 ))}
+//                               </CommandGroup>
+//                             </Command>
+//                           </PopoverContent>
+//                         </Popover>
+//                       </div>
+
+//                       <div className="ol-field">
+//                         <label className="ol-label"><FileText size={13} /> Salary Annexure <span className="ol-req">*</span></label>
+//                         <select
+//                           className="ol-input"
+//                           value={offerForm.customSalaryAnnexure}
+//                           onChange={e => setOfferForm({ ...offerForm, customSalaryAnnexure: e.target.value })}
+//                           disabled={loading.salaryAnnexures}
+//                           style={{ cursor: 'pointer' }}
+//                         >
+//                           <option value="">
+//                             {loading.salaryAnnexures ? "No Salary Anexure found"
+//                               : salaryAnnexures.length === 0 ? "No annexures available"
+//                                 : "Select annexure..."}
+//                           </option>
+//                           {salaryAnnexures.map(a => (
+//                             <option key={a.name} value={a.name}>{a.name}</option>
+//                           ))}
+//                         </select>
+//                         {salaryAnnexures.length === 0 && !loading.salaryAnnexures && (
+//                           <div className="ol-hint" style={{ color: '#f59e0b' }}>
+//                             <AlertCircle size={12} /> Please create a Salary Annexure in Frappe first.
+//                           </div>
+//                         )}
+//                       </div>
+
+//                       <div className="ol-field">
+//                         <label className="ol-label"><User size={13} /> Mobile No <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           type="tel"
+//                           value={offerForm.customMobileNo}
+//                           onChange={e => {
+//                             const val = e.target.value.replace(/\D/g, '').slice(0, 10)
+//                             setOfferForm({ ...offerForm, customMobileNo: val })
+//                           }}
+//                           placeholder="e.g., 9876543210"
+//                           maxLength={10}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     {/* Row 6: Contact Name (single col) */}
+//                     {/* Row 6: Contact Name + Location List */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><User size={13} /> Contact Name <span className="ol-req">*</span></label>
+//                         <input
+//                           className="ol-input"
+//                           value={offerForm.customContactName}
+//                           onChange={e => setOfferForm({ ...offerForm, customContactName: e.target.value })}
+//                           placeholder="e.g., HR Manager name"
+//                         />
+//                       </div>
+
+//                       <div className="ol-field">
+//                         <label className="ol-label"><Building2 size={13} /> Location List</label>
+//                         <Popover open={openLocation} onOpenChange={setOpenLocation}>
+//                           <PopoverTrigger asChild>
+//                             <button
+//                               role="combobox"
+//                               aria-expanded={openLocation}
+//                               disabled={loading.locations}
+//                               onClick={() => setOpenLocation(o => !o)}
+//                               style={{
+//                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+//                                 height: 42, width: '100%', padding: '0 12px', borderRadius: 8,
+//                                 border: '1px solid var(--border)', background: 'var(--bg)',
+//                                 fontFamily: 'Inter, sans-serif', fontSize: 13.5, color: 'var(--t1)',
+//                                 cursor: loading.locations ? 'not-allowed' : 'pointer',
+//                                 opacity: loading.locations ? 0.65 : 1,
+//                               }}
+//                             >
+//                               <span style={{ color: offerForm.customLocationList ? 'var(--t1)' : 'var(--t3)' }}>
+//                                 {offerForm.customLocationList
+//                                   ? offerForm.customLocationList
+//                                   : loading.locations ? "Loading locations..." : "Search and select location..."}
+//                               </span>
+//                               <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+//                             </button>
+//                           </PopoverTrigger>
+//                           <PopoverContent style={{ width: 300, padding: 0 }}>
+//                             <Command>
+//                               <CommandInput placeholder="Search location..." />
+//                               <CommandEmpty>No location found.</CommandEmpty>
+//                               <CommandGroup style={{ maxHeight: 300, overflow: 'auto' }}>
+//                                 {locations.map(l => (
+//                                   <CommandItem
+//                                     key={l.name}
+//                                     value={l.name}
+//                                     onSelect={() => handleLocationChange(l.name)}
+//                                   >
+//                                     <Check size={14} style={{ marginRight: 8, opacity: offerForm.customLocationList === l.name ? 1 : 0 }} />
+//                                     {l.name}
+//                                   </CommandItem>
+//                                 ))}
+//                               </CommandGroup>
+//                             </Command>
+//                           </PopoverContent>
+//                         </Popover>
+//                       </div>
+//                     </div>
+
+//                     {/* Row 7: Template + Company */}
+//                     <div className="ol-grid-2">
+//                       <div className="ol-field">
+//                         <label className="ol-label"><FileText size={13} /> Job Offer Term Template</label>
+//                         <select
+//                           className="ol-input"
+//                           value={offerForm.jobOfferTemplate}
+//                           onChange={e => setOfferForm({ ...offerForm, jobOfferTemplate: e.target.value })}
+//                           disabled={loading.templates || templates.length === 0}
+//                           style={{ cursor: 'pointer' }}
+//                         >
+//                           <option value="">
+//                             {loading.templates ? "Loading templates..."
+//                               : templates.length === 0 ? "No templates available"
+//                                 : "Select template (optional)"}
+//                           </option>
+//                           {templates.map(t => (
+//                             <option key={t.name} value={t.name}>{t.offer_term_template_name || t.name}</option>
+//                           ))}
+//                         </select>
+//                         {offerForm.jobOfferTemplate && (
+//                           <div className="ol-hint">
+//                             <CheckCircle2 size={12} /> Template terms will be loaded automatically
+//                           </div>
+//                         )}
+//                       </div>
+//                       <div className="ol-field">
+//                         <label className="ol-label"><Building2 size={13} /> Company <span className="ol-req">*</span></label>
+//                         <select
+//                           className="ol-input"
+//                           value={offerForm.company}
+//                           onChange={e => setOfferForm({ ...offerForm, company: e.target.value })}
+//                           disabled={loading.companies}
+//                           style={{ cursor: 'pointer' }}
+//                         >
+//                           <option value="">
+//                             {loading.companies ? "Loading companies..."
+//                               : companies.length === 0 ? "No companies found"
+//                                 : "Select company"}
+//                           </option>
+//                           {companies.map(c => (
+//                             <option key={c.name} value={c.name}>{c.company_name || c.name}</option>
+//                           ))}
+//                         </select>
+//                       </div>
+//                     </div>
+
+//                     {/* Duplicate warning */}
+//                     {existingOffer && (
+//                       <div className="ol-alert red">
+//                         <div className="ol-alert-icon"><AlertCircle size={18} /></div>
+//                         <div>
+//                           <div className="ol-alert-title">Offer Already Exists</div>
+//                           <div className="ol-alert-sub">
+//                             A job offer has already been created for this applicant ({existingOffer}).
+//                             You cannot create duplicate offers for the same applicant.
+//                           </div>
+//                         </div>
+//                       </div>
+//                     )}
+
+//                     {/* Checking duplicate */}
+//                     {checkingDuplicate && (
+//                       <div className="ol-alert blue">
+//                         <div className="ol-spin" />
+//                         <div>
+//                           <div className="ol-alert-sub" style={{ color: 'var(--accent)' }}>Checking for existing offer...</div>
+//                         </div>
+//                       </div>
+//                     )}
+
+//                   </div>
+//                 </div>
+
+//                 {/* ── OFFER TERMS CARD ── */}
+//                 <div className="ol-card">
+//                   <div className="ol-card-head">
+//                     <div className="ol-card-head-left">
+//                       <div className="ol-card-head-icon purple"><FileText size={16} /></div>
+//                       <span className="ol-card-title">Job Offer Terms</span>
+//                       {offerTerms.length > 0 && (
+//                         <span className="ol-badge blue" style={{ marginLeft: 8 }}>
+//                           {offerTerms.length} term{offerTerms.length !== 1 ? 's' : ''}
+//                         </span>
+//                       )}
+//                     </div>
+//                   </div>
+
+//                   {offerTerms.length === 0 ? (
+//                     <div className="ol-terms-empty">
+//                       <FileText size={48} className="ol-terms-empty-icon" style={{ color: 'var(--t3)' }} />
+//                       <p className="ol-terms-empty-title">No offer terms added yet</p>
+//                     </div>
+//                   ) : (
+//                     <div style={{ overflowX: 'auto' }}>
+//                       <table className="ol-terms-table">
+//                         <thead>
+//                           <tr>
+//                             <th style={{ width: 56 }}>No.</th>
+//                             <th>Offer Term <span style={{ color: '#ef4444' }}>*</span></th>
+//                             <th>Value / Description <span style={{ color: '#ef4444' }}>*</span></th>
+//                             <th style={{ width: 60 }} />
+//                           </tr>
+//                         </thead>
+//                         <tbody>
+//                           {offerTerms.map((term, index) => (
+//                             <tr key={term.id}>
+//                               <td className="ol-terms-num">{index + 1}</td>
+//                               <td>
+//                                 <input
+//                                   className="ol-input"
+//                                   value={term.offer_term}
+//                                   onChange={e => updateOfferTerm(term.id, 'offer_term', e.target.value)}
+//                                   placeholder="e.g., Base Salary, Health Insurance"
+//                                 />
+//                               </td>
+//                               <td>
+//                                 <textarea
+//                                   className="ol-textarea"
+//                                   value={term.value_description}
+//                                   onChange={e => updateOfferTerm(term.id, 'value_description', e.target.value)}
+//                                   placeholder="e.g., $80,000 per year"
+//                                   rows={2}
+//                                 />
+//                               </td>
+//                               <td />
+//                             </tr>
+//                           ))}
+//                         </tbody>
+//                       </table>
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* ── ACTIONS ── */}
+//                 <div className="ol-actions">
+//                   <button className="ol-btn-cancel" onClick={() => router.back()}>Cancel</button>
+//                   <button
+//                     className="ol-btn-submit"
+//                     onClick={handleSave}
+//                     disabled={isSaving || !!existingOffer}
+//                   >
+//                     {isSaving ? (
+//                       <><div className="ol-btn-submit-spin" /> Creating Offer...</>
+//                     ) : existingOffer ? (
+//                       <><AlertCircle size={16} /> Offer Already Exists</>
+//                     ) : (
+//                       <><CheckCircle2 size={16} /> Create Offer</>
+//                     )}
+//                   </button>
+//                 </div>
+
+//               </div>
+//             </div>
+//           </div>
+
+//         </div>
+//       </div>
+//     </>
+//   )
+// }
+
+
+
+
+
+
+
+
+
+
+
+
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -153,6 +1468,17 @@ const css = `
     font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .14s;
   }
   .ol-back-btn:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
+
+
+  /* ══ TABS ══ */
+  .ol-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-s); }
+  .ol-tab {
+    padding: 10px 18px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+    color: var(--t3); background: none; border: none; border-bottom: 2px solid transparent;
+    cursor: pointer; transition: all .14s;
+  }
+  .ol-tab:hover { color: var(--t1); }
+  .ol-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
   /* ══ CARDS ══ */
   .ol-card {
@@ -329,6 +1655,7 @@ interface Company { name: string; company_name: string }
 interface Designation { name: string; designation_name: string }
 interface EmployeeGrade { name: string }
 interface OfferTerm { id: string; offer_term: string; value_description: string }
+interface LocationOption { name: string }
 
 export default function JobOfferPage() {
   const router = useRouter()
@@ -348,6 +1675,17 @@ export default function JobOfferPage() {
     customContactName: "",
     customJoiningDate: "",
     customSalaryAnnexure: "",
+    customCurrentCompany: "",
+    customQualification: "",
+    customTotalExperience: "",
+    customBudgetCTC: "",
+    customCurrentCTC: "",
+    customCTCOffered: "",
+    customInterviewedByVaaman: "",
+    customInterviewedByClient: "",
+    customReplacementNewPosition: "",
+    customSourceOfHiring: "",
+    customBackgroundVerification: "",
   })
 
   const [offerTerms, setOfferTerms] = useState<OfferTerm[]>([])
@@ -368,6 +1706,10 @@ export default function JobOfferPage() {
   const [openApplicant, setOpenApplicant] = useState(false)
   const [openDesignation, setOpenDesignation] = useState(false)
   const [openGrade, setOpenGrade] = useState(false)
+  const [locations, setLocations] = useState<LocationOption[]>([])
+  const [openLocation, setOpenLocation] = useState(false)
+
+  const [activeTab, setActiveTab] = useState<'offer' | 'candidate'>('offer')
 
   const getTodayDate = () => {
     const today = new Date()
@@ -377,6 +1719,7 @@ export default function JobOfferPage() {
   useEffect(() => {
     fetchJobApplicants(); fetchTemplates(); fetchCompanies()
     fetchDesignations(); fetchGrades(); fetchStatusOptions()
+    fetchLocations()
   }, [])
 
   useEffect(() => { document.title = 'Offer Letter' }, [])
@@ -458,6 +1801,21 @@ export default function JobOfferPage() {
       console.error('❌ Error fetching grades:', error)
       setGrades([])
     } finally { setLoading(prev => ({ ...prev, grades: false })) }
+  }
+
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_locations`,
+        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+      )
+      const result = await response.json()
+      setLocations(result?.message?.data || [])
+      console.log('✅ Fetched locations:', result?.message?.data?.length)
+    } catch (error: any) {
+      console.error('❌ Error fetching locations:', error)
+      setLocations([])
+    } finally { setLoading(prev => ({ ...prev, locations: false })) }
   }
 
   const fetchStatusOptions = async () => {
@@ -550,7 +1908,10 @@ export default function JobOfferPage() {
           setOfferForm(prev => ({
             ...prev,
             designation: details.designation || prev.designation,
-            company: details.company || prev.company
+            company: details.company || prev.company,
+            customCurrentCompany: details.current_company || prev.customCurrentCompany,
+            customQualification: details.qualification || prev.customQualification,
+            customTotalExperience: details.total_experience || prev.customTotalExperience
           }))
         }
       } catch (error) { console.error("Error fetching applicant details:", error) }
@@ -586,6 +1947,11 @@ export default function JobOfferPage() {
   const handleGradeChange = (value: string) => {
     setOfferForm({ ...offerForm, customGrade: value })
     setOpenGrade(false)
+  }
+
+  const handleLocationChange = (value: string) => {
+    setOfferForm({ ...offerForm, customLocationList: value })
+    setOpenLocation(false)
   }
 
   const addOfferTerm = () => {
@@ -639,6 +2005,18 @@ export default function JobOfferPage() {
         custom_contact_name: offerForm.customContactName,
         custom_joining_date: offerForm.customJoiningDate,
         custom_salary_annexure: offerForm.customSalaryAnnexure,
+        custom_location_list: offerForm.customLocationList,
+        custom_current_company: offerForm.customCurrentCompany,
+        custom_qualification: offerForm.customQualification,
+        custom_total_experience: offerForm.customTotalExperience,
+        custom_our_budget_in_ctc_only: offerForm.customBudgetCTC,
+        custom_current_ctc_of_candidate: offerForm.customCurrentCTC,
+        custom_ctc_to_be_offered: offerForm.customCTCOffered,
+        custom_interviewed_by_vaaman: offerForm.customInterviewedByVaaman,
+        custom_interviewed_by_client: offerForm.customInterviewedByClient,
+        custom_replacementnew_position: offerForm.customReplacementNewPosition,
+        custom_source_of_hiring: offerForm.customSourceOfHiring,
+        custom_background_verification_done_details: offerForm.customBackgroundVerification,
         offer_terms: offerTerms
       }
       console.log("Submitting job offer with data:", requestData)
@@ -761,6 +2139,22 @@ export default function JobOfferPage() {
                     <h1 className="ol-page-title">Create Job Offer</h1>
                     <p className="ol-page-sub">Generate and send job offers to selected candidates</p>
                   </div>
+                </div>
+
+                {/* ── TABS ── */}
+                <div className="ol-tabs">
+                  <button
+                    className={`ol-tab${activeTab === 'offer' ? ' active' : ''}`}
+                    onClick={() => setActiveTab('offer')}
+                  >
+                    Details
+                  </button>
+                  <button
+                    className={`ol-tab${activeTab === 'candidate' ? ' active' : ''}`}
+                    onClick={() => setActiveTab('candidate')}
+                  >
+                    Candidate Details
+                  </button>
                 </div>
 
                 {/* ── OFFER DETAILS CARD ── */}
@@ -1055,6 +2449,7 @@ export default function JobOfferPage() {
                     </div>
 
                     {/* Row 6: Contact Name (single col) */}
+                    {/* Row 6: Contact Name + Location List */}
                     <div className="ol-grid-2">
                       <div className="ol-field">
                         <label className="ol-label"><User size={13} /> Contact Name <span className="ol-req">*</span></label>
@@ -1064,6 +2459,53 @@ export default function JobOfferPage() {
                           onChange={e => setOfferForm({ ...offerForm, customContactName: e.target.value })}
                           placeholder="e.g., HR Manager name"
                         />
+                      </div>
+
+                      <div className="ol-field">
+                        <label className="ol-label"><Building2 size={13} /> Location List</label>
+                        <Popover open={openLocation} onOpenChange={setOpenLocation}>
+                          <PopoverTrigger asChild>
+                            <button
+                              role="combobox"
+                              aria-expanded={openLocation}
+                              disabled={loading.locations}
+                              onClick={() => setOpenLocation(o => !o)}
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                height: 42, width: '100%', padding: '0 12px', borderRadius: 8,
+                                border: '1px solid var(--border)', background: 'var(--bg)',
+                                fontFamily: 'Inter, sans-serif', fontSize: 13.5, color: 'var(--t1)',
+                                cursor: loading.locations ? 'not-allowed' : 'pointer',
+                                opacity: loading.locations ? 0.65 : 1,
+                              }}
+                            >
+                              <span style={{ color: offerForm.customLocationList ? 'var(--t1)' : 'var(--t3)' }}>
+                                {offerForm.customLocationList
+                                  ? offerForm.customLocationList
+                                  : loading.locations ? "Loading locations..." : "Search and select location..."}
+                              </span>
+                              <ChevronsUpDown size={14} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent style={{ width: 300, padding: 0 }}>
+                            <Command>
+                              <CommandInput placeholder="Search location..." />
+                              <CommandEmpty>No location found.</CommandEmpty>
+                              <CommandGroup style={{ maxHeight: 300, overflow: 'auto' }}>
+                                {locations.map(l => (
+                                  <CommandItem
+                                    key={l.name}
+                                    value={l.name}
+                                    onSelect={() => handleLocationChange(l.name)}
+                                  >
+                                    <Check size={14} style={{ marginRight: 8, opacity: offerForm.customLocationList === l.name ? 1 : 0 }} />
+                                    {l.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
 
@@ -1197,6 +2639,148 @@ export default function JobOfferPage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+                  {activeTab === 'candidate' && (
+                    <div className="ol-card">
+                      <div className="ol-card-head">
+                        <div className="ol-card-head-left">
+                          <div className="ol-card-head-icon purple"><User size={16} /></div>
+                          <span className="ol-card-title">Candidate Details</span>
+                        </div>
+                      </div>
+                      <div className="ol-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                        {/* Row 1: Current Company + Qualification */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><Building2 size={13} /> Current Company</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customCurrentCompany}
+                              onChange={e => setOfferForm({ ...offerForm, customCurrentCompany: e.target.value })}
+                              placeholder="e.g., TCS, Infosys"
+                            />
+                          </div>
+                          <div className="ol-field">
+                            <label className="ol-label"><FileText size={13} /> Qualification</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customQualification}
+                              onChange={e => setOfferForm({ ...offerForm, customQualification: e.target.value })}
+                              placeholder="e.g., B.Tech"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 2: Total Experience + Our Budget in CTC */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><Briefcase size={13} /> Total Experience</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customTotalExperience}
+                              onChange={e => setOfferForm({ ...offerForm, customTotalExperience: e.target.value })}
+                              placeholder="e.g., 5 years"
+                            />
+                          </div>
+                          <div className="ol-field">
+                            <label className="ol-label"><FileText size={13} /> Our Budget in CTC ONLY</label>
+                            <input
+                              className="ol-input"
+                              type="number"
+                              value={offerForm.customBudgetCTC}
+                              onChange={e => setOfferForm({ ...offerForm, customBudgetCTC: e.target.value })}
+                              placeholder="e.g., 800000"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 3: Current CTC + CTC to be Offered */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><FileText size={13} /> Current CTC of Candidate</label>
+                            <input
+                              className="ol-input"
+                              type="number"
+                              value={offerForm.customCurrentCTC}
+                              onChange={e => setOfferForm({ ...offerForm, customCurrentCTC: e.target.value })}
+                              placeholder="e.g., 600000"
+                            />
+                          </div>
+                          <div className="ol-field">
+                            <label className="ol-label"><FileText size={13} /> CTC to be Offered</label>
+                            <input
+                              className="ol-input"
+                              type="number"
+                              value={offerForm.customCTCOffered}
+                              onChange={e => setOfferForm({ ...offerForm, customCTCOffered: e.target.value })}
+                              placeholder="e.g., 750000"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 4: Interviewed By Vaaman + Interviewed By Client */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><User size={13} /> Interviewed By Vaaman</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customInterviewedByVaaman}
+                              onChange={e => setOfferForm({ ...offerForm, customInterviewedByVaaman: e.target.value })}
+                              placeholder="Interviewer name"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 6: Interviewed By Client + Replacement/New Position */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><User size={13} /> Interviewed By Client</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customInterviewedByClient}
+                              onChange={e => setOfferForm({ ...offerForm, customInterviewedByClient: e.target.value })}
+                              placeholder="Client interviewer name"
+                            />
+                          </div>
+                          <div className="ol-field">
+                            <label className="ol-label"><Briefcase size={13} /> Replacement/New Position</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customReplacementNewPosition}
+                              onChange={e => setOfferForm({ ...offerForm, customReplacementNewPosition: e.target.value })}
+                              placeholder="e.g., Replacement / New"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 7: Source of Hiring */}
+                        <div className="ol-grid-2">
+                          <div className="ol-field">
+                            <label className="ol-label"><Users size={13} /> Source of Hiring</label>
+                            <input
+                              className="ol-input"
+                              value={offerForm.customSourceOfHiring}
+                              onChange={e => setOfferForm({ ...offerForm, customSourceOfHiring: e.target.value })}
+                              placeholder="e.g., Naukri, Referral, LinkedIn"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Row 8: Background Verification (Small Text) */}
+                        <div className="ol-field">
+                          <label className="ol-label"><FileText size={13} /> Background Verification Done Details</label>
+                          <textarea
+                            className="ol-textarea"
+                            value={offerForm.customBackgroundVerification}
+                            onChange={e => setOfferForm({ ...offerForm, customBackgroundVerification: e.target.value })}
+                            placeholder="Enter BGV details..."
+                            rows={3}
+                          />
+                        </div>
+
+                      </div>
                     </div>
                   )}
                 </div>

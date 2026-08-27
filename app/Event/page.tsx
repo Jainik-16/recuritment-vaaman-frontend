@@ -1195,11 +1195,15 @@ function EventPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+
+
   const applicantId = searchParams.get('applicantId')
   const applicantName = searchParams.get('applicantName')
   const applicantEmail = searchParams.get('applicantEmail')
   const jobOpening = searchParams.get('jobOpening') || ""
   const clearedRoundsParam = searchParams.get('clearedRounds') || ""
+  const interviewName = searchParams.get('interviewName') || ""
+  const isReschedule = Boolean(interviewName)
   const clearedRounds = clearedRoundsParam ? clearedRoundsParam.split(",") : []
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -1248,10 +1252,39 @@ function EventPageContent() {
 
   useEffect(() => { document.title = 'Interview Scheduling' }, [])
 
+  useEffect(() => {
+    if (!interviewName) return
+    const fetchExistingInterview = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/resource/Interview/${interviewName}`, {
+          credentials: 'include', headers: { 'Content-Type': 'application/json' }
+        })
+        const data = await res.json()
+        if (data?.data) {
+          const d = data.data
+          setEventForm(prev => ({
+            ...prev,
+            interviewRound: d.interview_round || "",
+            resumeLink: d.resume_link || "",
+            meetingLink: d.custom_meeting_link || "",
+            location: d.custom_location || "",
+            interviewType: d.custom_interview_type || "",
+            status: d.status || "Pending",
+            scheduledOn: d.scheduled_on || "",
+            fromTime: d.from_time ? d.from_time.slice(0, 5) : "",
+            toTime: d.to_time ? d.to_time.slice(0, 5) : "",
+            interviewers: (d.interview_details || []).map((i: any) => i.interviewer),
+          }))
+        }
+      } catch (err) { console.error("Error fetching existing interview:", err) }
+    }
+    fetchExistingInterview()
+  }, [interviewName])
+
   const fetchInterviewLinks = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/resource/Interview Link?fields=["name","google_meet"]&limit_page_length=100`,
+        `${API_BASE_URL}/api/resource/Interview Link?fields=["name","google_meet"]&limit_page_length=0`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
       const data = await response.json()
@@ -1288,7 +1321,7 @@ function EventPageContent() {
   const fetchInterviewRounds = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/resource/Interview Round?fields=["name","round_name"]&limit_page_length=100`,
+        `${API_BASE_URL}/api/resource/Interview Round?fields=["name","round_name"]&limit_page_length=0`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
       const data = await response.json()
@@ -1306,7 +1339,7 @@ function EventPageContent() {
   const fetchInterviewers = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/resource/User?fields=["name","full_name","email"]&filters=[["enabled","=",1]]&limit_page_length=100`,
+        `${API_BASE_URL}/api/resource/User?fields=["name","full_name","email"]&filters=[["enabled","=",1]]&limit_page_length=0`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
       const data = await response.json()
@@ -1450,6 +1483,45 @@ function EventPageContent() {
       alert("Cannot schedule interview for past dates. Please select today or a future date.")
       return
     }
+
+    // 🔴 ADD THIS ENTIRE BLOCK — reschedule branch, sabse pehle check
+    if (isReschedule) {
+      setIsSaving(true)
+      try {
+        const csrfToken = await getFrappeCSRF()
+        const updatePayload = {
+          status: eventForm.status,
+          scheduled_on: eventForm.scheduledOn,
+          from_time: eventForm.fromTime,
+          to_time: eventForm.toTime,
+          custom_location: eventForm.location,
+          custom_meeting_link: eventForm.meetingLink,
+          custom_interview_type: eventForm.interviewType,
+          interview_details: eventForm.interviewers.map((interviewer) => ({
+            doctype: "Interview Detail",
+            interviewer,
+          }))
+        }
+        const response = await fetch(`${API_BASE_URL}/api/resource/Interview/${interviewName}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
+          body: JSON.stringify(updatePayload)
+        })
+        const data = await response.json()
+        if (response.ok && data.data) {
+          alert(`Interview rescheduled successfully!`)
+          router.push('/interview')
+        } else {
+          alert(`Error: ${data.message || data.exception || "Failed to reschedule"}`)
+        }
+      } catch (error: any) {
+        alert(`Error: ${error.message}`)
+      } finally {
+        setIsSaving(false)
+      }
+      return   // 🔴 yahan se function exit — neeche wala pura create-flow skip
+    }
     // if (eventForm.fromTime && eventForm.toTime) {
     //   const fromTime = new Date(`2000-01-01T${eventForm.fromTime}`)
     //   const toTime = new Date(`2000-01-01T${eventForm.toTime}`)
@@ -1519,7 +1591,7 @@ function EventPageContent() {
     try {
       // Fetch all interview rounds in order (assumes round names are ordered in the system)
       const allRoundsRes = await fetch(
-        `${API_BASE_URL}/api/resource/Interview Round?fields=["name","round_name"]&limit_page_length=100`,
+        `${API_BASE_URL}/api/resource/Interview Round?fields=["name","round_name"]&limit_page_length=0`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       )
       const allRoundsData = await allRoundsRes.json()
@@ -1534,7 +1606,7 @@ function EventPageContent() {
         const existingRoundsRes = await fetch(
           `${API_BASE_URL}/api/resource/Interview?` +
           `filters=[["job_applicant","=","${eventForm.jobApplicant}"]]` +
-          `&fields=["name","interview_round","status"]&limit_page_length=100`,
+          `&fields=["name","interview_round","status"]&limit_page_length=0`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
         )
         const existingRoundsData = await existingRoundsRes.json()
@@ -1557,46 +1629,46 @@ function EventPageContent() {
 
 
     // BLOCK 2 — NEW: prevent scheduling next round if previous cleared round has no feedback
-    // try {
-    //   const clearedRes = await fetch(
-    //     `${API_BASE_URL}/api/resource/Interview?` +
-    //     `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["status","=","Cleared"]]` +
-    //     `&fields=["name","interview_round","scheduled_on"]&order_by=scheduled_on desc&limit_page_length=1`,
-    //     {
-    //       credentials: 'include',
-    //       headers: { 'Content-Type': 'application/json' }
-    //     }
-    //   )
-    //   const clearedData = await clearedRes.json()
-    //   console.log("Last cleared interview check:", clearedData)
+    try {
+      const clearedRes = await fetch(
+        `${API_BASE_URL}/api/resource/Interview?` +
+        `filters=[["job_applicant","=","${eventForm.jobApplicant}"],["status","=","Cleared"]]` +
+        `&fields=["name","interview_round","scheduled_on"]&order_by=scheduled_on desc&limit_page_length=1`,
+        {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+      const clearedData = await clearedRes.json()
+      console.log("Last cleared interview check:", clearedData)
 
-    //   if (clearedData.data && clearedData.data.length > 0) {
-    //     const lastClearedInterview = clearedData.data[0]
+      if (clearedData.data && clearedData.data.length > 0) {
+        const lastClearedInterview = clearedData.data[0]
 
-    //     const feedbackRes = await fetch(
-    //       `${API_BASE_URL}/api/resource/Interview Feedback?` +
-    //       `filters=[["interview","=","${lastClearedInterview.name}"]]` +
-    //       `&fields=["name"]&limit_page_length=1`,
-    //       {
-    //         credentials: 'include',
-    //         headers: { 'Content-Type': 'application/json' }
-    //       }
-    //     )
-    //     const feedbackData = await feedbackRes.json()
-    //     console.log("Feedback check for last cleared interview:", feedbackData)
+        const feedbackRes = await fetch(
+          `${API_BASE_URL}/api/resource/Interview Feedback?` +
+          `filters=[["interview","=","${lastClearedInterview.name}"]]` +
+          `&fields=["name"]&limit_page_length=1`,
+          {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
+        const feedbackData = await feedbackRes.json()
+        console.log("Feedback check for last cleared interview:", feedbackData)
 
-    //     if (!feedbackData.data || feedbackData.data.length === 0) {
-    //       alert(
-    //         `Cannot schedule next round!\n\n` +
-    //         `The previous round "${lastClearedInterview.interview_round}" was cleared but feedback has not been submitted yet.\n\n` +
-    //         `Please submit feedback for interview "${lastClearedInterview.name}" before scheduling the next round.`
-    //       )
-    //       return
-    //     }
-    //   }
-    // } catch (err) {
-    //   console.error("Feedback validation failed:", err)
-    // }
+        if (!feedbackData.data || feedbackData.data.length === 0) {
+          alert(
+            `Cannot schedule next round!\n\n` +
+            `The previous round "${lastClearedInterview.interview_round}" was cleared but feedback has not been submitted yet.\n\n` +
+            `Please submit feedback for interview "${lastClearedInterview.name}" before scheduling the next round.`
+          )
+          return
+        }
+      }
+    } catch (err) {
+      console.error("Feedback validation failed:", err)
+    }
 
 
 

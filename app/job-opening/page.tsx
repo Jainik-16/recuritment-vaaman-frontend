@@ -1140,7 +1140,16 @@ export default function JobOpeningList() {
                                                     <div
                                                         key={job.name}
                                                         className={`jol-job-card${selectedJob?.name === job.name ? " selected" : ""}`}
-                                                        onClick={() => { setSelectedJob(job); setEditingField(null) }}
+                                                        onClick={() => {
+                                                            setSelectedJob(job);
+                                                            setEditingField(null);
+                                                            if (window.innerWidth <= 1100) {
+                                                                setTimeout(() => {
+                                                                    const panel = document.getElementById('jol-detail-panel');
+                                                                    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                                }, 50);
+                                                            }
+                                                        }}
                                                     >
                                                         <div className="jol-job-card-bg" />
                                                         <div className="jol-card-head">
@@ -1214,7 +1223,7 @@ export default function JobOpeningList() {
                                 </div>
 
                                 {/* ══ DETAIL PANEL ══ */}
-                                <div className="jol-detail">
+                                <div className="jol-detail" id="jol-detail-panel">
                                     {selectedJob ? (
                                         <div className="jol-detail-inner">
                                             <div className="jol-detail-head">

@@ -850,7 +850,16 @@ export default function InterviewPage() {
                         <div
                           key={index}
                           className={`ip-job-card${selectedCandidate?.id === candidate.id ? " selected" : ""}`}
-                          onClick={() => { setSelectedCandidate(candidate); setEditingInterviewId(null) }}
+                          onClick={() => {
+                            setSelectedCandidate(candidate);
+                            setEditingInterviewId(null);
+                            if (window.innerWidth <= 1100) {
+                              setTimeout(() => {
+                                const panel = document.getElementById('ip-detail-panel');
+                                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }, 50);
+                            }
+                          }}
                         >
                           <div className="ip-job-card-bg" />
 
@@ -929,8 +938,24 @@ export default function InterviewPage() {
                                   }}>Feedback</button>
                                 </>
                               )
-                              if (s === "Pending") return <button className="ip-btn-sm-blue" style={{ background: 'var(--yellow)' }} onClick={e => { e.stopPropagation(); router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}`) }}>Reschedule</button>
-                              return <button className="ip-btn-sm-blue" onClick={e => { e.stopPropagation(); router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}`) }}>Interview Schedule</button>
+                              // if (s === "Pending") return <button className="ip-btn-sm-blue" style={{ background: 'var(--yellow)' }} onClick={e => { e.stopPropagation(); router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}`) }}>Reschedule</button>
+                              if (s === "Pending") return (
+                                <button className="ip-btn-sm-blue" style={{ background: 'var(--yellow)' }} onClick={e => {
+                                  e.stopPropagation();
+                                  const li = allInterviews.filter(i => i.job_applicant === candidate.id)
+                                    .sort((a, b) => new Date(b.scheduled_on || b.creation).getTime() - new Date(a.scheduled_on || a.creation).getTime())[0];
+                                  router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}&interviewName=${encodeURIComponent(li?.name || "")}`)
+                                }}>Reschedule</button>
+                              )
+                              // return <button className="ip-btn-sm-blue" onClick={e => { e.stopPropagation(); router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}`) }}>Interview Schedule</button>
+                              return (
+                                <button className="ip-btn-sm-blue" onClick={e => {
+                                  e.stopPropagation();
+                                  const li = allInterviews.filter(i => i.job_applicant === candidate.id)
+                                    .sort((a, b) => new Date(b.scheduled_on || b.creation).getTime() - new Date(a.scheduled_on || a.creation).getTime())[0];
+                                  router.push(`/Event?applicantId=${encodeURIComponent(candidate.id)}&applicantName=${encodeURIComponent(candidate.applicant_name)}&applicantEmail=${encodeURIComponent(candidate.email_id)}&jobOpening=${encodeURIComponent(candidate.position || "")}&interviewName=${encodeURIComponent(li?.name || "")}`)
+                                }}>Interview Schedule</button>
+                              )
                             })()}
                             {candidate.resumeScore > 0 && <span className="ip-badge blue" style={{ marginLeft: 'auto' }}>{candidate.resumeScore}% Match</span>}
                           </div>
@@ -958,7 +983,7 @@ export default function InterviewPage() {
                 </div>
 
                 {/* ══ RIGHT DETAIL PANEL ══ */}
-                <div className="ip-detail">
+                <div className="ip-detail" id="ip-detail-panel">
                   {selectedCandidate ? (
                     <div className="ip-detail-inner">
                       <div className="ip-detail-head">

@@ -1344,10 +1344,10 @@ const Inp = ({ field, label, req = false, type = "text", value, onChange }: InpP
     </div>
 )
 
-interface TxtProps { field: AppFormKey; label: string; value: string; onChange: (field: AppFormKey, value: string) => void }
-const Txt = ({ field, label, value, onChange }: TxtProps) => (
+interface TxtProps { field: AppFormKey; label: string; value: string; onChange: (field: AppFormKey, value: string) => void; req?: boolean }
+const Txt = ({ field, label, value, onChange, req = false }: TxtProps) => (
     <div className="ob-field">
-        <label className="ob-label">{label}</label>
+        <label className="ob-label">{label}{req && <span className="ob-req">*</span>}</label>
         <textarea className="ob-textarea" value={value} onChange={e => onChange(field, e.target.value)} />
     </div>
 )
@@ -1370,6 +1370,8 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
     const [currentStep, setCurrentStep] = useState(1)
 
     const [consentChecked, setConsentChecked] = useState(false)
+
+    const [jobApplicantId, setJobApplicantId] = useState("")
 
     // doc upload
     const [documentForm, setDocumentForm] = useState({
@@ -1569,6 +1571,7 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
             const data = await res.json()
             if (!data.valid) { setIsValidApplicant(false); setIsLoadingExisting(false); return }
             setApplicantId(data.email)
+            setJobApplicantId(data.name)
             const status = await validateAndFetch(data.email)
             if (status === "submitted") return   // → step 4 success, no OTP
             if (status === "app_done") return    // → step 3 declaration, no OTP
@@ -1693,6 +1696,8 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
 
     const handleSaveApplicationForm = async () => {
         if (!appForm.name1.trim()) { alert("Please enter your Full Name"); return }
+        if (!appForm.email_id.trim()) { alert("Please enter your Email ID"); return }
+
         // if (!appSignatureFile) { alert("Please attach your Signature"); return }
         // setIsSavingApp(true)
         // try {
@@ -1708,6 +1713,7 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
         //         const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
         //         const d = await r.json(); if (d?.message?.file_url) sigUrl = d.message.file_url
         //     }
+        if (!appForm.permanent_address.trim()) { alert("Please enter your Permanent Address"); return }
         if (!appSignatureUrl) { alert("Please attach your Signature"); return }
         setIsSavingApp(true)
         try {
@@ -1717,6 +1723,7 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
             const payload = {
                 ...appForm,
                 applicant_email: applicantId,
+                job_applicant: jobApplicantId,
                 signature: sigUrl,
                 ...(photoUrl ? { passport_size_photo: photoUrl } : {}),
                 education_details: educationRows,
@@ -2046,11 +2053,12 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                     <Inp field="occupation" label="Occupation" value={appForm.occupation} onChange={handleAppFormChange} />
                 </div>
                 <Txt field="local_address" label="Local Address" value={appForm.local_address} onChange={handleAppFormChange} />
-                <Txt field="permanent_address" label="Permanent Address" value={appForm.permanent_address} onChange={handleAppFormChange} />
+                {/* <Txt field="permanent_address" label="Permanent Address" value={appForm.permanent_address} onChange={handleAppFormChange} /> */}
+                <Txt field="permanent_address" label="Permanent Address (Add Aadhar card address with state and pincode)" req value={appForm.permanent_address} onChange={handleAppFormChange} />
                 <div className="ob-grid-3">
                     <Inp field="contact_number" label="Contact No." value={appForm.contact_number} onChange={handleAppFormChange} />
                     <Inp field="alternate_contact_number" label="Alternate Contact No." value={appForm.alternate_contact_number} onChange={handleAppFormChange} />
-                    <Inp field="email_id" label="Email ID" type="email" value={appForm.email_id} onChange={handleAppFormChange} />
+                    <Inp field="email_id" label="Email ID" type="email" req value={appForm.email_id} onChange={handleAppFormChange} />
                 </div>
                 <div className="ob-grid-3">
                     <Inp field="birth_date" label="Birth Date" type="date" value={appForm.birth_date} onChange={handleAppFormChange} />
