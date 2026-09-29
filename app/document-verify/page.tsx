@@ -533,25 +533,25 @@ export default function DocumentVerifyPage() {
             const csrfToken = await getFrappeCSRF()
             let response
             if (existingDocumentId) {
-                response = await fetch(`${API_BASE_URL}/api/resource/Applicant Document/${existingDocumentId}`, {
-                    method: "PUT", credentials: 'include',
-                    headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
-                    body: JSON.stringify(docData),
-                })
-            } else {
-                response = await fetch(`${API_BASE_URL}/api/resource/Applicant Document`, {
+                response = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_file.update_applicant_document`, {
                     method: "POST", credentials: 'include',
                     headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
-                    body: JSON.stringify(docData),
+                    body: JSON.stringify({ name: existingDocumentId, data: JSON.stringify(docData) }),
+                })
+            } else {
+                response = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_file.create_applicant_document`, {
+                    method: "POST", credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
+                    body: JSON.stringify({ data: JSON.stringify(docData) }),
                 })
             }
             const data = await response.json()
             console.log("API Response:", data)
-            if (data && data.data) {
+            if (data?.message?.status === "success") {
                 alert(existingDocumentId ? "Document verification updated successfully!" : "Document verification created successfully!")
                 router.push('/document-verify-list')
             } else {
-                throw new Error(data.exception || data._server_messages || "Failed to save document")
+                throw new Error(data?.message?.message || "Failed to save document")
             }
         } catch (error) {
             console.error("Error saving document:", error)

@@ -405,12 +405,29 @@ export default function FeedbackPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isSiteHrUser, setIsSiteHrUser] = useState(false)
 
   const ITEMS_PER_PAGE = 10
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => { fetchFeedbackList() }, [])
   useEffect(() => { document.title = 'Feedback List' }, [])
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/method/resume.api.permissions.check_is_site_hr_user`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        const data = await res.json()
+        setIsSiteHrUser(data?.message?.is_site_hr || false)
+      } catch (e) {
+        console.error("Error checking user role:", e)
+      }
+    }
+    checkRole()
+  }, [])
 
   const fetchFeedbackList = async () => {
     setLoading(true); setError(null)
@@ -699,14 +716,13 @@ export default function FeedbackPage() {
                                   )}
                                 </div>
                                 <div className="fl-cand-actions">
-                                  {/* <button className="fl-btn-sm" onClick={e => { e.stopPropagation(); router.push("/document-verify") }}> */}
                                   <button className="fl-btn-sm" onClick={e => {
                                     e.stopPropagation();
                                     router.push(`/document-verify?applicant=${encodeURIComponent(item.job_applicant || "")}`)
                                   }}>
                                     <FileText size={12} /> Documents
                                   </button>
-                                  {item.result === "Cleared" && (
+                                  {item.result === "Cleared" && !isSiteHrUser && (
                                     <button className="fl-btn-sm accent" onClick={e => { e.stopPropagation(); router.push("/offer-letter") }}>
                                       <FileText size={12} /> Offer Letter
                                     </button>

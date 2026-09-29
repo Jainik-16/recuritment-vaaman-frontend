@@ -467,6 +467,8 @@ export default function AppointmentPage() {
   const [loadingSalaryAnnexures, setLoadingSalaryAnnexures] = useState(false)
   const [employees, setEmployees] = useState<{ name: string; employee_name: string }[]>([])
   const [loadingEmployees, setLoadingEmployees] = useState(false)
+  const [branches, setBranches] = useState<{ name: string }[]>([])       // ← ADD
+  const [loadingBranches, setLoadingBranches] = useState(false)
   const [openEmployee, setOpenEmployee] = useState(false)
   const ITEMS_PER_PAGE = 10
   const [currentPage, setCurrentPage] = useState(1)
@@ -483,6 +485,7 @@ export default function AppointmentPage() {
     appointment_letter_template: "", introduction: "", closing_notes: "",
     terms: [] as TermRow[], custom_monthly_gross_salary: "",
     custom_employee: "", custom_salary_annexure: "", custom_staffworker: "",
+    custom_branch: "",
   })
 
   const API_BASE_URL = "https://ats.vaaman.in/api/method/resume.api.appointment_letter"
@@ -495,7 +498,7 @@ export default function AppointmentPage() {
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedCandidates = filteredCandidates.slice(startIndex, endIndex)
 
-  useEffect(() => { fetchAcceptedOffers(); fetchTemplates(); fetchEmployees() }, [])
+  useEffect(() => { fetchAcceptedOffers(); fetchTemplates(); fetchEmployees(); fetchBranches(); }, [])
   useEffect(() => { document.title = 'Appointment Letter' }, [])
 
   const fetchAcceptedOffers = async () => {
@@ -554,6 +557,22 @@ export default function AppointmentPage() {
     } catch (err) { console.error("Error fetching employees:", err); setEmployees([]) }
     finally { setLoadingEmployees(false) }
   }
+
+  const fetchBranches = async () => {
+    setLoadingBranches(true)
+    try {
+      const res = await fetch(
+        `${FRAPPE_BASE_URL}/api/method/frappe.client.get_list?doctype=Branch&fields=${encodeURIComponent(JSON.stringify(["name"]))}&limit_page_length=100&order_by=name%20asc`,
+        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+      )
+      const result = await res.json()
+      setBranches(result?.message || [])
+    } catch (err) {
+      console.error("Error fetching branches:", err)
+      setBranches([])
+    } finally { setLoadingBranches(false) }
+  }
+
 
   // const fetchSalaryAnnexuresForApplicant = async (jobApplicantId: string) => {
   //   setSalaryAnnexures([])
@@ -661,6 +680,7 @@ export default function AppointmentPage() {
           closing_notes: existingLetter.closing_notes,
           terms: existingLetter.terms,
           custom_staffworker: existingLetter.custom_staffworker || "",
+          custom_branch: existingLetter.custom_branch || "",
           owner: existingLetter.owner || "",
         })
       } else {
@@ -678,6 +698,7 @@ export default function AppointmentPage() {
       company: candidate.company, appointment_date: "", appointment_letter_template: "",
       introduction: "", closing_notes: "", terms: [], custom_monthly_gross_salary: "",
       custom_employee: "", custom_salary_annexure: "", custom_staffworker: "",
+      custom_branch: "",
     })
     await fetchSalaryAnnexuresForApplicant(jobApplicantId)
   }
@@ -723,6 +744,7 @@ export default function AppointmentPage() {
     }
     if (!appointmentDetails.appointment_date) { alert("Please select an appointment date"); return false }
     if (!appointmentDetails.appointment_letter_template) { alert("Please select a template"); return false }
+    if (!appointmentDetails.custom_branch) { alert("Please select a Branch"); return false }
     return true
   }
 
@@ -758,6 +780,7 @@ export default function AppointmentPage() {
           closing_notes: jsonData.message.data.closing_notes || appointmentDetails.closing_notes,
           terms: jsonData.message.data.terms || appointmentDetails.terms,
           custom_staffworker: appointmentDetails.custom_staffworker,
+          custom_branch: jsonData.message.data.custom_branch || appointmentDetails.custom_branch,  // ← ADD
           owner: jsonData.message.data.owner || "",
         }
         setSavedAppointment(previewData)
@@ -781,7 +804,8 @@ export default function AppointmentPage() {
     <div className="al-dl-btns">
       {appt.custom_staffworker === "Worker" ? (
         <button className="al-dl-btn orange" onClick={() => {
-          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+          // window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
         }}>
           <FileText size={15} /> Download - Worker To Staff
         </button>
@@ -794,7 +818,8 @@ export default function AppointmentPage() {
       ) : (
         <>
           <button className="al-dl-btn orange" onClick={() => {
-            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+            // window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
+            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
           }}>
             <FileText size={15} /> Worker To Staff
           </button>
@@ -1205,6 +1230,23 @@ export default function AppointmentPage() {
                                     </Command>
                                   </PopoverContent>
                                 </Popover>
+                              </div>
+                              {/* Branch */}
+                              <div className="al-field">
+                                <label className="al-label"><Building2 size={12} /> Branch <span className="al-req">*</span></label>
+                                <select
+                                  className="al-select"
+                                  value={appointmentDetails.custom_branch}
+                                  onChange={e => setAppointmentDetails({ ...appointmentDetails, custom_branch: e.target.value })}
+                                  disabled={loadingBranches}
+                                >
+                                  <option value="">
+                                    {loadingBranches ? "Loading branches..." : "Select Branch"}
+                                  </option>
+                                  {branches.map(b => (
+                                    <option key={b.name} value={b.name}>{b.name}</option>
+                                  ))}
+                                </select>
                               </div>
 
                               {/* Salary Annexure */}

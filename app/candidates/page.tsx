@@ -621,6 +621,10 @@ function CandidatesInner() {
     const [jobTitleMap, setJobTitleMap] = useState<Record<string, string>>({}) // id -> title
     const [jobDesignationMap, setJobDesignationMap] = useState<Record<string, string>>({})
 
+    const [isSiteHrUser, setIsSiteHrUser] = useState(false)
+
+    const [analyzingFit, setAnalyzingFit] = useState(false)
+
 
     const [savingComment, setSavingComment] = useState(false)
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -664,7 +668,9 @@ function CandidatesInner() {
     // }
 
     const updateCandidateLocation = async (candidateId: string, newLocation: string) => {
-        if (!newLocation) return
+        // FIXED: don't early-return on empty value — otherwise picking
+        // "— Select Location —" silently reverts to the previous selection
+        // instead of clearing it.
         setUpdatingLocation(true); setLocationSaved(false)
         try {
             const csrfToken = await getFrappeCSRF()
@@ -715,12 +721,22 @@ function CandidatesInner() {
         finally { setUpdatingJoinDate(false) }
     }
 
+    // const updateCandidateJobTitle = async (candidateId: string, newJobTitle: string) => {
+    //     if (!newJobTitle) return
+    //     // Reverse lookup: title → Job Opening ID
+    //     const jobOpeningId = Object.entries(jobTitleMap).find(
+    //         ([id, title]) => title === newJobTitle && id !== title
+    //     )?.[0] || ""
+    //     setUpdatingJobTitle(true); setJobTitleSaved(false)
     const updateCandidateJobTitle = async (candidateId: string, newJobTitle: string) => {
-        if (!newJobTitle) return
-        // Reverse lookup: title → Job Opening ID
-        const jobOpeningId = Object.entries(jobTitleMap).find(
-            ([id, title]) => title === newJobTitle && id !== title
-        )?.[0] || ""
+        // FIXED: allow clearing — don't early-return on empty value, so
+        // picking "— Select Job Title —" actually clears it instead of
+        // silently reverting to the previous selection.
+        const jobOpeningId = newJobTitle
+            ? (Object.entries(jobTitleMap).find(
+                ([id, title]) => title === newJobTitle && id !== title
+            )?.[0] || "")
+            : ""
         setUpdatingJobTitle(true); setJobTitleSaved(false)
         try {
             const csrfToken = await getFrappeCSRF()
@@ -744,17 +760,31 @@ function CandidatesInner() {
             //     setJobTitleSaved(true)
             //     setTimeout(() => setJobTitleSaved(false), 2000)
             // }
+            // if (result.message?.success) {
+            //     const newDesignation = jobDesignationMap[newJobTitle] || ""
+            //     setSelectedCandidate(prev => prev ? {
+            //         ...prev,
+            //         job_title: newJobTitle,
+            //         designation: newDesignation || prev.designation
+            //     } : prev)
+            //     setCandidates(prev => prev.map(c => c.id === candidateId ? {
+            //         ...c,
+            //         job_title: newJobTitle,
+            //         designation: newDesignation || c.designation
+            //     } : c))
             if (result.message?.success) {
-                const newDesignation = jobDesignationMap[newJobTitle] || ""
+                // FIXED: when clearing (newJobTitle === ""), also clear designation
+                // instead of falling back to the old one via "|| prev.designation".
+                const newDesignation = newJobTitle ? (jobDesignationMap[newJobTitle] || "") : ""
                 setSelectedCandidate(prev => prev ? {
                     ...prev,
                     job_title: newJobTitle,
-                    designation: newDesignation || prev.designation
+                    designation: newJobTitle ? (newDesignation || prev.designation) : ""
                 } : prev)
                 setCandidates(prev => prev.map(c => c.id === candidateId ? {
                     ...c,
                     job_title: newJobTitle,
-                    designation: newDesignation || c.designation
+                    designation: newJobTitle ? (newDesignation || c.designation) : ""
                 } : c))
                 setJobTitleSaved(true)
                 setTimeout(() => setJobTitleSaved(false), 2000)
@@ -771,12 +801,92 @@ function CandidatesInner() {
                         })
                     } catch (e) { console.error("Error updating designation:", e) }
                 }
+                // NEW: job title select hote hi AI fit analysis chalao
+                // Job title select -> AI analysis chalao. Clear -> purani scoring hatao.
+                if (newJobTitle && jobOpeningId) {
+                    analyzeFitForJob(candidateId, jobOpeningId)
+                } else {
+                    clearFitAnalysis(candidateId)
+                }
             }
             else {
                 alert("Failed to update job title.")
             }
         } catch (e) { alert("Error updating job title.") }
         finally { setUpdatingJobTitle(false) }
+    }
+
+    const analyzeFitForJob = async (candidateId: string, jobOpeningId: string) => {
+        setAnalyzingFit(true)
+        try {
+            const csrfToken = await getFrappeCSRF()
+            const res = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.analyze_fit_for_job`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Frappe-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ candidate_id: candidateId, job_opening: jobOpeningId })
+            })
+            const result = await res.json()
+            const data = result.message
+
+            if (data?.success) {
+                setSelectedCandidate(prev => prev && prev.id === candidateId ? {
+                    ...prev,
+                    fit_level: data.fit_level,
+                    score: data.score,
+                    applicant_rating: data.applicant_rating,
+                    justification_by_ai: data.justification_by_ai,
+                } : prev)
+                setCandidates(prev => prev.map(c => c.id === candidateId ? {
+                    ...c,
+                    fit_level: data.fit_level,
+                    score: data.score,
+                    applicant_rating: data.applicant_rating,
+                    justification_by_ai: data.justification_by_ai,
+                } : c))
+            } else {
+                alert(data?.message || "AI analysis failed. Please try again.")
+            }
+        } catch (e) {
+            alert("Error running AI analysis.")
+        } finally {
+            setAnalyzingFit(false)
+        }
+    }
+
+    const clearFitAnalysis = async (candidateId: string) => {
+        try {
+            const csrfToken = await getFrappeCSRF()
+            const res = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.clear_fit_analysis`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Frappe-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ candidate_id: candidateId })
+            })
+            const result = await res.json()
+            if (result.message?.success) {
+                setSelectedCandidate(prev => prev && prev.id === candidateId ? {
+                    ...prev,
+                    fit_level: "",
+                    score: 0,
+                    applicant_rating: 0,
+                    justification_by_ai: "",
+                } : prev)
+                setCandidates(prev => prev.map(c => c.id === candidateId ? {
+                    ...c,
+                    fit_level: "",
+                    score: 0,
+                    applicant_rating: 0,
+                    justification_by_ai: "",
+                } : c))
+            }
+        } catch (e) { console.error("Error clearing fit analysis:", e) }
     }
 
     // const fetchCandidates = async () => {
@@ -955,17 +1065,70 @@ function CandidatesInner() {
     //     } catch (error) { return [] }
     // }
 
+    // const updateJoiningConfirmation = async (candidateId: string, statusType: 'join' | 'not_join' | 'offer_revoked') => {
+    //     setUpdatingJoiningStatus(true)
+    //     const csrfToken = await getFrappeCSRF()
+    //     try {
+    //         if (selectedCandidate?.id === candidateId) { const newStatus = statusType === 'join' ? 'completed' : statusType === 'not_join' ? 'pending' : 'rejected'; const updatedStageStatuses = selectedCandidate.stage_statuses?.map(s => s.stage_id === 'joining_confirmation' ? { ...s, status: newStatus as any } : s) || []; setSelectedCandidate({ ...selectedCandidate, stage_statuses: updatedStageStatuses }) }
+    //         const response = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.update_joining_confirmation`, { method: "POST", credentials: "include", headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken }, body: JSON.stringify({ candidate_id: candidateId, status_type: statusType }) })
+    //         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    //         const result = await response.json()
+    //         if (result.message?.success) { await fetchCandidates(); setTimeout(() => { setCandidates((latestCandidates) => { const updatedCandidate = latestCandidates.find(c => c.id === candidateId); if (updatedCandidate && selectedCandidate?.id === candidateId) setSelectedCandidate(updatedCandidate); return latestCandidates }) }, 100); alert("Joining confirmation updated successfully!") }
+    //         // else { alert(`Error: ${result.message || "Failed to update joining confirmation"}`); await fetchCandidates() }
+    //         else { alert(`Error: ${result.message?.message || result.message || "Failed to update joining confirmation"}`); await fetchCandidates() }
+    //     } catch (error: any) { alert(`Error: ${error.message || "Failed to update joining confirmation"}`); await fetchCandidates() }
+    //     finally { setUpdatingJoiningStatus(false) }
+    // }
+
     const updateJoiningConfirmation = async (candidateId: string, statusType: 'join' | 'not_join' | 'offer_revoked') => {
         setUpdatingJoiningStatus(true)
         const csrfToken = await getFrappeCSRF()
         try {
-            if (selectedCandidate?.id === candidateId) { const newStatus = statusType === 'join' ? 'completed' : statusType === 'not_join' ? 'pending' : 'rejected'; const updatedStageStatuses = selectedCandidate.stage_statuses?.map(s => s.stage_id === 'joining_confirmation' ? { ...s, status: newStatus as any } : s) || []; setSelectedCandidate({ ...selectedCandidate, stage_statuses: updatedStageStatuses }) }
-            const response = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.update_joining_confirmation`, { method: "POST", credentials: "include", headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken }, body: JSON.stringify({ candidate_id: candidateId, status_type: statusType }) })
+            if (selectedCandidate?.id === candidateId) {
+                const newStatus = statusType === 'join' ? 'completed' : statusType === 'not_join' ? 'pending' : 'rejected';
+                const updatedStageStatuses = selectedCandidate.stage_statuses?.map(s => s.stage_id === 'joining_confirmation' ? { ...s, status: newStatus as any } : s) || [];
+                setSelectedCandidate({ ...selectedCandidate, stage_statuses: updatedStageStatuses })
+            }
+            const response = await fetch(`${API_BASE_URL}/api/method/resume.api.candidate.update_joining_confirmation`, {
+                method: "POST",
+                credentials: "include",
+                headers: { 'Content-Type': 'application/json', "X-Frappe-CSRF-Token": csrfToken },
+                body: JSON.stringify({ candidate_id: candidateId, status_type: statusType })
+            })
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
             const result = await response.json()
-            if (result.message?.success) { await fetchCandidates(); setTimeout(() => { setCandidates((latestCandidates) => { const updatedCandidate = latestCandidates.find(c => c.id === candidateId); if (updatedCandidate && selectedCandidate?.id === candidateId) setSelectedCandidate(updatedCandidate); return latestCandidates }) }, 100); alert("Joining confirmation updated successfully!") }
-            else { alert(`Error: ${result.message || "Failed to update joining confirmation"}`); await fetchCandidates() }
-        } catch (error: any) { alert(`Error: ${error.message || "Failed to update joining confirmation"}`); await fetchCandidates() }
+            if (result.message?.success) {
+                await fetchCandidates()
+                setTimeout(() => {
+                    setCandidates((latestCandidates) => {
+                        const updatedCandidate = latestCandidates.find(c => c.id === candidateId)
+                        if (updatedCandidate && selectedCandidate?.id === candidateId) setSelectedCandidate(updatedCandidate)
+                        return latestCandidates
+                    })
+                }, 100)
+                alert("Joining confirmation updated successfully!")
+            } else {
+                alert(`Error: ${result.message?.message || result.message || "Failed to update joining confirmation"}`)
+                await fetchCandidates()
+                setTimeout(() => {
+                    setCandidates((latestCandidates) => {
+                        const updatedCandidate = latestCandidates.find(c => c.id === candidateId)
+                        if (updatedCandidate && selectedCandidate?.id === candidateId) setSelectedCandidate(updatedCandidate)
+                        return latestCandidates
+                    })
+                }, 100)
+            }
+        } catch (error: any) {
+            alert(`Error: ${error.message || "Failed to update joining confirmation"}`)
+            await fetchCandidates()
+            setTimeout(() => {
+                setCandidates((latestCandidates) => {
+                    const updatedCandidate = latestCandidates.find(c => c.id === candidateId)
+                    if (updatedCandidate && selectedCandidate?.id === candidateId) setSelectedCandidate(updatedCandidate)
+                    return latestCandidates
+                })
+            }, 100)
+        }
         finally { setUpdatingJoiningStatus(false) }
     }
 
@@ -1013,6 +1176,21 @@ function CandidatesInner() {
     }, [searchFromUrl])
 
     useEffect(() => { document.title = 'Candidates' }, [])
+    useEffect(() => {
+        const checkRole = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/method/resume.api.permissions.check_is_site_hr_user`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                const data = await res.json()
+                setIsSiteHrUser(data?.message?.is_site_hr || false)
+            } catch (e) {
+                console.error("Error checking user role:", e)
+            }
+        }
+        checkRole()
+    }, [])
     // useEffect(() => { if (selectedCandidate) { fetchComments(selectedCandidate.id); setNewComment(""); setLocationSaved(false) } else { setComments([]) } }, [selectedCandidate?.id])
     useEffect(() => { if (selectedCandidate) { fetchComments(selectedCandidate.id); setNewComment(""); setLocationSaved(false); setJobTitleSaved(false) } else { setComments([]) } }, [selectedCandidate?.id])
 
@@ -1450,6 +1628,11 @@ function CandidatesInner() {
                                                     </div>
                                                     {updatingJobTitle && <div className="cp-loc-saving"><div className="cp-loc-spin" /> Saving job title...</div>}
                                                     {jobTitleSaved && !updatingJobTitle && <div className="cp-loc-saved"><CheckCircle size={11} /> Job title saved</div>}
+                                                    {analyzingFit && (
+                                                        <div className="cp-loc-saving">
+                                                            <div className="cp-loc-spin" /> Running AI fit analysis... this may take a few seconds
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {selectedCandidate.designation && <div><div className="cp-detail-label"><Briefcase size={11} /> Designation</div><div className="cp-detail-val">{selectedCandidate.designation}</div></div>}
@@ -1468,7 +1651,8 @@ function CandidatesInner() {
                                                     {locationSaved && !updatingLocation && <div className="cp-loc-saved"><CheckCircle size={11} /> Location saved</div>}
                                                 </div>
                                                 {(selectedCandidate.address || selectedCandidate.custom_address) && <div><div className="cp-detail-label"><MapPinned size={11} /> Address</div><div className="cp-detail-val">{selectedCandidate.address || selectedCandidate.custom_address}</div></div>}
-                                                {selectedCandidate.applicant_rating > 0 && (
+                                                {/* {selectedCandidate.applicant_rating > 0 && ( */}
+                                                {selectedCandidate.fit_level && (
                                                     <div>
                                                         <div className="cp-detail-label"><Star size={11} /> Rating</div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
@@ -1491,7 +1675,8 @@ function CandidatesInner() {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {selectedCandidate.score > 0 && <div><div className="cp-detail-label">Score</div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{selectedCandidate.score}</div></div>}
+                                                {/* {selectedCandidate.score > 0 && <div><div className="cp-detail-label">Score</div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{selectedCandidate.score}</div></div>} */}
+                                                {selectedCandidate.fit_level && <div><div className="cp-detail-label">Score</div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{selectedCandidate.score}</div></div>}
                                                 {selectedCandidate.justification_by_ai && <div><div className="cp-detail-label">AI Justification</div><div className="cp-ai-box">{selectedCandidate.justification_by_ai}</div></div>}
                                                 <div className="cp-detail-div" />
                                                 <div>
@@ -1618,35 +1803,14 @@ function CandidatesInner() {
                                                             >
                                                                 <Send size={14} /> Send Document Link
                                                             </button>
-                                                            <button className="cp-action-btn" disabled={isOfferLetterCompleted} onClick={() => !isOfferLetterCompleted && router.push(`/offer-letter?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Offer Letter{isOfferLetterCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
-                                                            <button className="cp-action-btn" style={{ marginBottom: 4 }} disabled={isAppointmentCompleted} onClick={() => !isAppointmentCompleted && router.push(`/letter-appointment?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Appointment Letter{isAppointmentCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
-                                                            {/* <button
-                                                                className="cp-action-btn"
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        const csrfToken = await getFrappeCSRF()
-                                                                        const res = await fetch(`${API_BASE_URL}/api/method/resume.api.api.generate_document_link`, {
-                                                                            method: 'POST',
-                                                                            credentials: 'include',
-                                                                            headers: {
-                                                                                'Content-Type': 'application/json',
-                                                                                'X-Frappe-CSRF-Token': csrfToken
-                                                                            },
-                                                                            body: JSON.stringify({ applicant_name: selectedCandidate.id })
-                                                                        })
-                                                                        const result = await res.json()
-                                                                        if (result.message?.success) {
-                                                                            alert("Document link email sent successfully!")
-                                                                        } else {
-                                                                            alert("Failed to send document link email.")
-                                                                        }
-                                                                    } catch (e) {
-                                                                        alert("Error sending document link.")
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <Send size={14} /> Send Document Link
-                                                            </button> */}
+                                                            {/* <button className="cp-action-btn" disabled={isOfferLetterCompleted} onClick={() => !isOfferLetterCompleted && router.push(`/offer-letter?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Offer Letter{isOfferLetterCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
+                                                            <button className="cp-action-btn" style={{ marginBottom: 4 }} disabled={isAppointmentCompleted} onClick={() => !isAppointmentCompleted && router.push(`/letter-appointment?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Appointment Letter{isAppointmentCompleted && <span className="cp-action-completed">(Completed)</span>}</button> */}
+                                                            {!isSiteHrUser && (
+                                                                <>
+                                                                    <button className="cp-action-btn" disabled={isOfferLetterCompleted} onClick={() => !isOfferLetterCompleted && router.push(`/offer-letter?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Offer Letter{isOfferLetterCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
+                                                                    <button className="cp-action-btn" style={{ marginBottom: 4 }} disabled={isAppointmentCompleted} onClick={() => !isAppointmentCompleted && router.push(`/letter-appointment?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Appointment Letter{isAppointmentCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
+                                                                </>
+                                                            )}
                                                         </>
                                                     )
                                                 })()}

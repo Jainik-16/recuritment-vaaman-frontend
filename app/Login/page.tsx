@@ -245,6 +245,26 @@ function LoginPage() {
         document.title = 'Login'
     }, [])
 
+    // const handleVidhiLogin = () => {
+    //     const clientId = "g2e56ts9gs";
+    //     const redirectUri = encodeURIComponent(
+    //         "https://ats.vaaman.in/api/method/frappe.integrations.oauth2_logins.login_via_frappe"
+    //     );
+    //     const state = encodeURIComponent("ats-login");
+    //     const vidhiAuthUrl = `https://prayog.vaaman.in/api/method/frappe.integrations.oauth2.authorize?client_id=${clientId}&response_type=code&scope=openid%20all&redirect_uri=${redirectUri}&state=${state}`;
+    //     window.location.href = vidhiAuthUrl;
+    // };
+
+    const handlePrayogLogin = () => {
+        const clientId = "g2e56ts9gs";
+        const redirectUri = encodeURIComponent(
+            "https://ats.vaaman.in/api/method/frappe.integrations.oauth2_logins.login_via_frappe"
+        );
+        const state = encodeURIComponent("ats-login");
+        const authUrl = `https://prayog.vaaman.in/api/method/frappe.integrations.oauth2.authorize?client_id=${clientId}&response_type=code&scope=openid%20all&redirect_uri=${redirectUri}&state=${state}`;
+        window.location.href = authUrl;
+    };
+
     return (
         <>
             <style>{css}</style>
@@ -318,7 +338,39 @@ function LoginPage() {
                             )}
                         </button>
 
+                        {/* <button
+                            type="button"
+                            onClick={() => {
+                                const clientId = "eescm6dj2j";
+                                const redirectUri = encodeURIComponent(
+                                    "https://ats.vaaman.in/api/method/frappe.integrations.oauth2_logins.custom/vidhi"
+                                );
+                                window.location.href = `https://vidhi.vaaman.in/api/method/frappe.integrations.oauth2.authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20all`;
+                            }}
+                            className="lgn-btn"
+                            style={{ marginTop: '12px', background: '#3b5bdb' }}
+                        >
+                            Login with Vidhi
+                        </button> */}
+                        <button
+                            type="button"
+                            onClick={handlePrayogLogin}
+                            className="flex items-center justify-center gap-3 w-full max-w-sm px-5 py-3 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-150"
+                            style={{ marginTop: "12px" }}
+                        >
+                            {/* Frappe / Key Icon */}
+                            <svg
+                                className="w-5 h-5 text-blue-600"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                            </svg>
+                            <span>Login with Prayog</span>
+                        </button>
+
                     </form>
+
 
                     {/* Footer */}
                     <div className="lgn-footer">
@@ -326,7 +378,7 @@ function LoginPage() {
                     </div>
 
                 </div>
-            </div>
+            </div >
         </>
     )
 }

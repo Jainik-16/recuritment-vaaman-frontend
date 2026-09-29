@@ -846,7 +846,7 @@
 
 
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -1043,6 +1043,72 @@ const css = `
   }
 `;
 
+function RoleSelect({ options, onChange }) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState("");
+    const wrapRef = useRef(null);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const filtered = options.filter((o) =>
+        o.toLowerCase().includes(query.toLowerCase())
+    );
+
+    const select = (value) => {
+        setQuery(value);
+        onChange(value);
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={wrapRef}>
+            <input
+                value={query}
+                placeholder="Search role..."
+                onFocus={() => setOpen(true)}
+                onChange={(e) => {
+                    setQuery(e.target.value);
+                    onChange(e.target.value); // typed text bhi filter ban jaye
+                    setOpen(true);
+                }}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 pr-9 transition-colors"
+            />
+            {query && (
+                <button
+                    type="button"
+                    onClick={() => select("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-lg leading-none"
+                >
+                    ×
+                </button>
+            )}
+            {open && (
+                <ul className="absolute z-30 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                    {filtered.length > 0 ? (
+                        filtered.map((o) => (
+                            <li
+                                key={o}
+                                onMouseDown={() => select(o)}
+                                className="px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer"
+                            >
+                                {o}
+                            </li>
+                        ))
+                    ) : (
+                        <li className="px-4 py-2 text-sm text-slate-400">No designation found</li>
+                    )}
+                </ul>
+            )}
+        </div>
+    );
+}
+
 export default function CandidatesPage() {
     const router = useRouter();
     const [filters, setFilters] = useState({
@@ -1059,6 +1125,14 @@ export default function CandidatesPage() {
     const [loading, setLoading] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [designations, setDesignations] = useState([]);
+
+    useEffect(() => {
+        fetch("/api/method/vaaman_ats_ai.api.data_bank.data_bank.get_designations")
+            .then((r) => r.json())
+            .then((d) => setDesignations(Array.isArray(d.message) ? d.message : []))
+            .catch((e) => console.error("Failed to load designations", e));
+    }, []);
 
     const search = async () => {
         setLoading(true);
@@ -1189,10 +1263,9 @@ export default function CandidatesPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                                             <div className="flex flex-col">
                                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Role</label>
-                                                <input
-                                                    placeholder="e.g. Frontend Developer"
-                                                    onChange={(e) => setFilters({ ...filters, role: e.target.value })}
-                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none px-4 py-2.5 transition-colors"
+                                                <RoleSelect
+                                                    options={designations}
+                                                    onChange={(value) => setFilters((prev) => ({ ...prev, role: value }))}
                                                 />
                                             </div>
                                             <div className="flex flex-col">
@@ -1315,7 +1388,13 @@ export default function CandidatesPage() {
                                                     </div>
                                                     <div className="flex items-center text-slate-600 text-sm">
                                                         <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                        <span><strong className="text-slate-800">{c.custom_experience_years || 0}</strong> years experience</span>
+                                                        {/* <span><strong className="text-slate-800">{c.custom_experience_years || 0}</strong> years experience</span> */}
+                                                        <span>
+                                                            <strong className="text-slate-800">
+                                                                {Math.round(Number(c.custom_experience_years) || 0)}
+                                                            </strong>{" "}
+                                                            {Math.round(Number(c.custom_experience_years) || 0) === 1 ? "year" : "years"} experience
+                                                        </span>
                                                     </div>
                                                     <div className="flex items-center text-slate-600 text-sm">
                                                         <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>

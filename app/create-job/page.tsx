@@ -459,7 +459,7 @@ export default function CreateJobOpeningForm() {
     lower_range: "",
     upper_range: "",
     publish_salary_range: false,
-    company: "",
+    company: "Vaaman Engineers India Limited",
     employment_type: "",
     department: "",
     location: "",
@@ -624,7 +624,7 @@ export default function CreateJobOpeningForm() {
       setFormData({
         job_title: "", designation: "", description: "", currency: "INR",
         lower_range: "", upper_range: "", publish_salary_range: false,
-        company: "", employment_type: "", department: "", location: "",
+        company: "Vaaman Engineers India Limited", employment_type: "", department: "", location: "",
         publish_on_website: false,
         posted_on: new Date().toISOString().split("T")[0],
         closes_on: "", status: "Open", salary_per: "Month",

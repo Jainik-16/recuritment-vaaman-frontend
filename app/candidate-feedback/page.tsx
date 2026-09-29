@@ -361,7 +361,8 @@ function CandidateFeedbackForm() {
   // New useEffect to fetch interviews for specific candidate
   useEffect(() => {
     const fetchCandidateInterviews = async () => {
-      if (candidateIdFromUrl && interviews.length > 0) {
+      // if (candidateIdFromUrl && interviews.length > 0) {
+      if (candidateIdFromUrl && !loading.interviews) {
         // Filter interviews for this specific candidate
         const candidateInterviews = interviews.filter(
           (interview) => interview.job_applicant === candidateIdFromUrl
@@ -393,7 +394,8 @@ function CandidateFeedbackForm() {
       }
     }
     fetchCandidateInterviews()
-  }, [candidateIdFromUrl, interviews.length])
+    // }, [candidateIdFromUrl, interviews.length])
+  }, [candidateIdFromUrl, loading.interviews, interviews.length])
 
   useEffect(() => { document.title = 'Candidate Feedback' }, [])
 
@@ -441,6 +443,11 @@ function CandidateFeedbackForm() {
     } catch (error: any) { console.error("❌ Error fetching interviews:", error); setInterviews([]) }
     finally { setLoading(prev => ({ ...prev, interviews: false })) }
   }
+
+  useEffect(() => {
+    if (loading.interviews) return
+    if (interviewNameFromUrl) handleInterviewChange(interviewNameFromUrl)
+  }, [loading.interviews, interviews.length, interviewNameFromUrl])
 
   const fetchInterviewers = async () => {
     try {
@@ -608,10 +615,12 @@ function CandidateFeedbackForm() {
     finally { setCheckingDuplicate(false) }
   }
 
+
   // const handleInterviewChange = async (interviewName: string) => {
-  //   setFeedbackForm(prev => ({ ...prev, interview: interviewName }))
+  //   console.log("🔄 Interview selected:", interviewName)
   //   await checkExistingFeedback(interviewName)
   //   const selectedInterview = interviews.find(i => i.name === interviewName)
+  //   console.log("🔍 Selected interview object:", selectedInterview)
   //   if (selectedInterview) {
   //     setFeedbackForm(prev => ({
   //       ...prev,
@@ -620,15 +629,14 @@ function CandidateFeedbackForm() {
   //       interview_round: selectedInterview.interview_round || "",
   //       candidate_name: selectedInterview.applicant_name || "",
   //       interview_date: selectedInterview.scheduled_on ? selectedInterview.scheduled_on.split(' ')[0] : "",
-  //       // ADD THIS LINE - Auto-populate interviewer from interview
-  //       interviewer: selectedInterview.interviewer || ""
+  //       interviewer: (selectedInterview as any).interviewer || ""
   //     }))
   //     console.log("✅ Auto-populated fields from interview:", {
   //       job_applicant: selectedInterview.job_applicant,
   //       interview_round: selectedInterview.interview_round,
   //       candidate_name: selectedInterview.applicant_name,
   //       interview_date: selectedInterview.scheduled_on,
-  //       interviewer: selectedInterview.interviewer
+  //       interviewer: (selectedInterview as any).interviewer
   //     })
   //     if (selectedInterview.job_applicant) {
   //       try {
@@ -648,11 +656,7 @@ function CandidateFeedbackForm() {
   //             department: applicantData.department || "",
   //             location: applicantData.location || ""
   //           }))
-  //           console.log("✅ Auto-populated from Job Opening:", {
-  //             position: applicantData.designation,
-  //             department: applicantData.department,
-  //             location: applicantData.location
-  //           })
+  //           console.log("✅ Auto-populated from Job Opening:", { position: applicantData.designation, department: applicantData.department, location: applicantData.location })
   //         } else { console.warn("⚠️ No data in response:", data) }
   //       } catch (error) { console.error("❌ Error fetching job applicant details:", error) }
   //     }
@@ -660,49 +664,40 @@ function CandidateFeedbackForm() {
   // }
 
   const handleInterviewChange = async (interviewName: string) => {
-    console.log("🔄 Interview selected:", interviewName)
     await checkExistingFeedback(interviewName)
     const selectedInterview = interviews.find(i => i.name === interviewName)
-    console.log("🔍 Selected interview object:", selectedInterview)
-    if (selectedInterview) {
-      setFeedbackForm(prev => ({
-        ...prev,
-        interview: interviewName,
-        job_applicant: selectedInterview.job_applicant || "",
-        interview_round: selectedInterview.interview_round || "",
-        candidate_name: selectedInterview.applicant_name || "",
-        interview_date: selectedInterview.scheduled_on ? selectedInterview.scheduled_on.split(' ')[0] : "",
-        interviewer: (selectedInterview as any).interviewer || ""
-      }))
-      console.log("✅ Auto-populated fields from interview:", {
-        job_applicant: selectedInterview.job_applicant,
-        interview_round: selectedInterview.interview_round,
-        candidate_name: selectedInterview.applicant_name,
-        interview_date: selectedInterview.scheduled_on,
-        interviewer: (selectedInterview as any).interviewer
-      })
-      if (selectedInterview.job_applicant) {
-        try {
-          console.log("🔄 Fetching job applicant details for:", selectedInterview.job_applicant)
-          const response = await fetch(
-            `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_applicant_details?job_applicant=${selectedInterview.job_applicant}`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-          )
-          const data = await response.json()
-          console.log("📦 Full API Response:", data)
-          if (data?.message?.data) {
-            const applicantData = data.message.data
-            console.log("✅ Applicant Data:", applicantData)
-            setFeedbackForm(prev => ({
-              ...prev,
-              position_applied_for: applicantData.designation || "",
-              department: applicantData.department || "",
-              location: applicantData.location || ""
-            }))
-            console.log("✅ Auto-populated from Job Opening:", { position: applicantData.designation, department: applicantData.department, location: applicantData.location })
-          } else { console.warn("⚠️ No data in response:", data) }
-        } catch (error) { console.error("❌ Error fetching job applicant details:", error) }
-      }
+
+    setFeedbackForm(prev => ({
+      ...prev,
+      interview: interviewName,
+      job_applicant: selectedInterview?.job_applicant || candidateIdFromUrl || prev.job_applicant,
+      interview_round: selectedInterview?.interview_round || prev.interview_round,
+      candidate_name: selectedInterview?.applicant_name || candidateNameFromUrl || prev.candidate_name,
+      interview_date: selectedInterview?.scheduled_on
+        ? selectedInterview.scheduled_on.split(' ')[0]
+        : prev.interview_date,
+      interviewer: (selectedInterview as any)?.interviewer || interviewerFromUrl || prev.interviewer,
+    }))
+
+    const applicantId = selectedInterview?.job_applicant || candidateIdFromUrl
+    if (applicantId) {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/method/${API_MODULE_PATH}.get_job_applicant_details?job_applicant=${applicantId}`,
+          { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+        )
+        const data = await response.json()
+        const a = data?.message?.data
+        if (a) {
+          setFeedbackForm(prev => ({
+            ...prev,
+            position_applied_for: a.designation || prev.position_applied_for,
+            department: a.department || prev.department,
+            location: a.location || prev.location,
+            candidate_name: prev.candidate_name || a.applicant_name || "",
+          }))
+        }
+      } catch (error) { console.error("❌ Error fetching job applicant details:", error) }
     }
   }
 
@@ -1166,7 +1161,7 @@ function CandidateFeedbackForm() {
                       <label className="cf-label"><Star size={12} /> Overall Rating <span className="cf-req">*</span></label>
                       <div className="cf-select-wrap">
                         <select className="cf-select" value={feedbackForm.applicant_rating} onChange={e => setFeedbackForm({ ...feedbackForm, applicant_rating: e.target.value })} disabled={loading.applicantRatingOptions || isFormDisabled}>
-                          <option value="">{loading.applicantRatingOptions ? "Loading ratings..." : applicantRatingOptions.length === 0 ? "No ratings available" : "Select rating"}</option>
+                          <option value="">{loading.applicantRatingOptions ? "Loading ratings..." : applicantRatingOptions.length === 0 ? "No ratings available" : "Select Rating"}</option>
                           {applicantRatingOptions.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                         <ChevronRight size={13} className="cf-select-arrow" />
