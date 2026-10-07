@@ -12,6 +12,17 @@ type Item = { label: string; value: number }
 
 const COLORS = ["#009ef7", "#f783ac", "#2f88d9", "#48bb78", "#a0aec0", "#f56565", "#f6d365", "#4c4a8a", "#ed8936", "#38b2ac"]
 
+// Chart ke hisaab se alag colors (status ke naam par)
+const APPLICATION_STATUS_COLORS: Record<string, string> = {
+    "Accepted": "#f783ac",   // pink
+}
+
+const OFFER_STATUS_COLORS: Record<string, string> = {
+    "Accepted": "#009ef7",            // blue
+    "Awaiting Response": "#f783ac",   // pink
+    "Rejected": "#e53e3e",            // red
+}
+
 const api = async (method: string, params: Record<string, string> = {}) => {
     const q = new URLSearchParams(params).toString()
     const res = await fetch(
@@ -49,13 +60,25 @@ const css = `
   @media (max-width:960px) { .rd-kpis, .rd-grid { grid-template-columns:1fr; } .rd-page { padding:16px 14px; } }
 `
 
-function PieBlock({ data }: { data: Item[] }) {
+function PieBlock({ data, colorMap }: { data: Item[]; colorMap?: Record<string, string> }) {
     if (!data?.length) return <div className="rd-empty">No data</div>
     return (
         <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-                <Pie data={data} dataKey="value" nameKey="label" outerRadius={95}>
-                    {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                <Pie
+                    data={data}
+                    dataKey="value"
+                    nameKey="label"
+                    outerRadius={95}
+                    minAngle={4}      // chhote slice ko kam se kam 4° ka bana do
+                    stroke="none"     // white border hata do, warna patla slice white dikhta hai
+                >
+                    {data.map((d, i) => (
+                        <Cell
+                            key={i}
+                            fill={colorMap?.[d.label] || COLORS[i % COLORS.length]}
+                        />
+                    ))}
                 </Pie>
                 <Tooltip />
                 <Legend formatter={(v: any, e: any) => `${v} (${e?.payload?.value})`} />
@@ -202,8 +225,8 @@ export default function RecruitmentDashboardPage() {
                         <Card title="Job Applicant Pipeline (Designation wise)" full><HBarBlock data={data.pipeline} /></Card>
                         <Card title="Job Applicant Source"><PieBlock data={data.source} /></Card>
                         <Card title="Job Applicants by Country"><PieBlock data={data.country} /></Card>
-                        <Card title="Job Application Status"><PieBlock data={data.application_status} /></Card>
-                        <Card title="Job Offer Status"><PieBlock data={data.offer_status} /></Card>
+                        <Card title="Job Application Status"><PieBlock data={data.application_status} colorMap={APPLICATION_STATUS_COLORS} /></Card>
+                        <Card title="Job Offer Status"><PieBlock data={data.offer_status} colorMap={OFFER_STATUS_COLORS} /></Card>
                         <Card title="Interview Status"><PieBlock data={data.interview_status} /></Card>
                         <Card title="Job Openings Created (Month wise)"><ColumnBlock data={data.openings_monthly} /></Card>
                         <Card title="Job Applicants (Month wise)"><ColumnBlock data={data.applicants_monthly} /></Card>
