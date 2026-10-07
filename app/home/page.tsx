@@ -683,7 +683,7 @@ import {
   Database,
   Bot,
   CalendarCheck,
-  Bell,
+  Bell, BarChart3,
 } from "lucide-react"
 import Link from "next/link"
 import { API_BASE_URL } from '@/lib/api-config'
@@ -1203,6 +1203,7 @@ export default function RecruitmentDashboard() {
   }, [userMenuOpen])
 
   const workflowSteps: WorkflowStep[] = [
+    { id: "recruitment-dashboard", title: "Recruitment Dashboard", description: "Live hiring statistics & charts", icon: <BarChart3 className="h-4 w-4" />, status: "pending", route: "/recruitment-dashboard", color: "" },
     { id: "job-opening", title: "Job Opening", description: "Create or select job opening", icon: <Briefcase className="h-4 w-4" />, status: selectedJobId ? "completed" : "current", route: "/job-opening", color: "" },
     { id: "resume", title: "Resume Collection", description: "Upload and process resumes", icon: <Upload className="h-4 w-4" />, status: selectedJobId ? "current" : "pending", route: "/upload-resumes", color: "" },
     { id: "candidates", title: "Candidates", description: "View and manage candidates", icon: <Users className="h-4 w-4" />, status: "pending", route: "/candidates", color: "" },
@@ -1217,6 +1218,7 @@ export default function RecruitmentDashboard() {
     { id: "data_bank", title: "Data Bank", description: "Search Resume with multiple Filters", icon: <Database className="h-4 w-4" />, status: "pending", route: "/data_bank", color: "" },
     { id: "joining-track", title: "Candidate Joining Track", description: "Track candidate joining status & dates", icon: <CalendarCheck className="h-4 w-4" />, status: "pending", route: "/candidate-joining-track", color: "" },
     { id: "hr-connect-track", title: "HR Connect Track", description: "30/90/180 day post-joining connect tracker", icon: <Bell className="h-4 w-4" />, status: "pending", route: "/hr-connect-track", color: "" },
+    // { id: "recruitment-dashboard", title: "Recruitment Dashboard", description: "Live hiring statistics & charts", icon: <BarChart3 className="h-4 w-4" />, status: "pending", route: "/recruitment-dashboard", color: "" },
   ]
 
   // const pipeline = workflowSteps.slice(0, 4)

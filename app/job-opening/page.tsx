@@ -1,4 +1,3 @@
-
 "use client"
 import { useEffect, useState } from "react"
 import {
@@ -30,6 +29,7 @@ import {
     Edit2,
     Check,
     Globe,
+    Share2,
 } from "lucide-react"
 import { API_BASE_URL } from '@/lib/api-config'
 import { Button } from "@/components/ui/button"
@@ -452,6 +452,76 @@ const css = `
   }
   /* ─────────────────────────── */
 
+  /* ── SHARE (NEW) ── */
+  .jol-share-open-btn {
+    display: inline-flex; align-items: center; gap: 7px; margin-left: 20px;
+    padding: 7px 14px; border-radius: 8px;
+    background: var(--accent-lt); color: var(--accent);
+    border: 1px solid var(--accent-bdr);
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .14s;
+  }
+  .jol-share-open-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+  .jol-share-open-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .jol-share-modal {
+    background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto;
+  }
+  .jol-share-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 24px; border-bottom: 1px solid var(--border-s);
+  }
+  .jol-share-title { font-size: 15px; font-weight: 700; color: var(--t1); }
+  .jol-share-body { padding: 20px 24px 24px; }
+  .jol-share-grid {
+    display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 64px);
+    gap: 8px; align-items: center;
+  }
+  .jol-share-colhead { font-size: 12.5px; font-weight: 600; color: var(--t1); }
+  .jol-share-colhead.c { text-align: center; }
+  .jol-share-cell { display: flex; align-items: center; justify-content: center; }
+  .jol-share-sep { height: 1px; background: var(--border-s); margin: 16px 0; }
+  .jol-share-input-wrap { position: relative; }
+  .jol-share-input {
+    width: 100%; height: 38px; padding: 0 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg);
+    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--t1); outline: none;
+    transition: all .14s;
+  }
+  .jol-share-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,158,247,.12); }
+  .jol-share-menu {
+    position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: 6px;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,158,247,.14); max-height: 210px; overflow-y: auto;
+  }
+  .jol-share-menu-item { padding: 9px 14px; cursor: pointer; border-bottom: 1px solid var(--border-s); transition: background .12s; }
+  .jol-share-menu-item:last-child { border-bottom: none; }
+  .jol-share-menu-item:hover { background: var(--accent-lt); }
+  .jol-share-menu-email { font-size: 13px; font-weight: 700; color: var(--t1); }
+  .jol-share-menu-name  { font-size: 12px; color: var(--t3); margin-top: 1px; }
+  .jol-share-menu-empty { padding: 12px 14px; font-size: 12.5px; color: var(--t3); }
+  .jol-share-add-btn {
+    margin-top: 14px; padding: 8px 20px; border-radius: 8px; border: none;
+    background: var(--accent); color: #fff; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; transition: background .14s;
+  }
+  .jol-share-add-btn:hover { background: var(--accent-h); }
+  .jol-share-add-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .jol-share-list-title { font-size: 12.5px; font-weight: 700; color: var(--t1); margin-bottom: 10px; }
+  .jol-share-row { padding: 10px 0; border-bottom: 1px solid var(--border-s); }
+  .jol-share-row:last-child { border-bottom: none; }
+  .jol-share-user-email { font-size: 13px; font-weight: 600; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jol-share-user-name  { font-size: 11.5px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jol-share-empty { font-size: 13px; color: var(--t3); padding: 8px 0; }
+  @media (max-width: 560px) {
+    .jol-share-body { padding: 16px 14px 20px; }
+    .jol-share-head { padding: 14px; }
+    .jol-share-grid { grid-template-columns: minmax(0, 1fr) repeat(4, 42px); gap: 4px; }
+    .jol-share-colhead { font-size: 10.5px; }
+  }
+  /* ─────────────────────────── */
+
   .jol-detail-empty { padding: 48px 22px; text-align: center; }
   .jol-detail-empty-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px; background: var(--accent-lt); color: var(--accent); display: flex; align-items: center; justify-content: center; }
   .jol-detail-empty-title { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 5px; }
@@ -563,6 +633,47 @@ interface JobOpening {
     owner: string
 }
 
+// ── SHARE TYPES & HELPERS (NEW) ─────────────────────────────
+interface ShareUser {
+    name: string        // email
+    full_name: string
+}
+
+interface DocShare {
+    user: string        // email
+    full_name: string
+    read: number
+    write: number
+    share: number
+    submit: number
+}
+
+type Perms = { read: number; write: number; share: number; submit: number }
+type PermKey = "read" | "write" | "share"
+
+const EMPTY_PERMS: Perms = { read: 0, write: 0, share: 0, submit: 0 }
+
+// Current user is job opening ko share kar sakta hai? aur share list dekh sakta hai?
+interface ShareAccess { canShare: boolean; canViewList: boolean; onlyMine: boolean; loaded: boolean }
+const NO_SHARE_ACCESS: ShareAccess = { canShare: false, canViewList: false, onlyMine: false, loaded: false }
+
+// Frappe ke order mein: Read, Write, Submit, Share
+const SHARE_PERM_COLUMNS: { key: "read" | "write" | "submit" | "share"; label: string }[] = [
+    { key: "read", label: "Read" },
+    { key: "write", label: "Write" },
+    { key: "submit", label: "Submit" },
+    { key: "share", label: "Share" },
+]
+
+// Frappe jaisa behavior: Write/Share check karo to Read auto-check; Read hatao to Write/Share bhi hat jaye
+const applyPermToggle = (p: Perms, key: PermKey, checked: boolean): Perms => {
+    const next: Perms = { ...p, [key]: checked ? 1 : 0 }
+    if (checked && (key === "write" || key === "share")) next.read = 1
+    if (!checked && key === "read") { next.write = 0; next.share = 0 }
+    return next
+}
+// ────────────────────────────────────────────────────────────
+
 export default function JobOpeningList() {
     const [jobOpenings, setJobOpenings] = useState<JobOpening[]>([])
     const [filteredJobs, setFilteredJobs] = useState<JobOpening[]>([])
@@ -593,6 +704,19 @@ export default function JobOpeningList() {
 
     // ── PUBLISH ON WEBSITE STATE ────────────────────────────
     const [savingPublish, setSavingPublish] = useState(false)
+    // ────────────────────────────────────────────────────────
+
+    // ── SHARE STATE (NEW) ───────────────────────────────────
+    const [showShareModal, setShowShareModal] = useState(false)
+    const [shareUsers, setShareUsers] = useState<ShareUser[]>([])        // User doctype se aayi list
+    const [docShares, setDocShares] = useState<DocShare[]>([])           // Already shared users
+    const [shareLoading, setShareLoading] = useState(false)              // modal data load ho raha hai
+    const [shareBusy, setShareBusy] = useState(false)                    // add/update/remove chal raha hai
+    const [shareSearch, setShareSearch] = useState("")                   // input ka text
+    const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
+    const [newShareUser, setNewShareUser] = useState("")                 // select kiya hua user (email)
+    const [newPerms, setNewPerms] = useState<Perms>(EMPTY_PERMS)         // naye user ki permissions
+    const [shareAccess, setShareAccess] = useState<ShareAccess>(NO_SHARE_ACCESS) // button enable? list dikhani hai?
     // ────────────────────────────────────────────────────────
 
     const ITEMS_PER_PAGE = 10
@@ -787,6 +911,152 @@ export default function JobOpeningList() {
             setSavingPublish(false)
         }
     }
+    // ────────────────────────────────────────────────────────
+
+    // ── SHARE FUNCTIONS (NEW) ────────────────────────────────
+    // 0) Selected job opening par current user ki share access (button enable/disable + list dikhani hai ya nahi)
+    const fetchShareAccess = async (jobName: string): Promise<ShareAccess> => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/method/resume.api.job_opening.get_share_access?name=${encodeURIComponent(jobName)}`,
+                { method: "GET", credentials: "include", headers: { 'Accept': 'application/json' } }
+            )
+            const result = await response.json()
+            const m = result.message
+            if (m?.success) return { canShare: !!m.can_share, canViewList: !!m.can_view_list, onlyMine: !!m.only_mine, loaded: true }
+        } catch (err) {
+            console.error("Error fetching share access:", err)
+        }
+        return { ...NO_SHARE_ACCESS, loaded: true }
+    }
+
+    // Job opening select hote hi access check
+    useEffect(() => {
+        let cancelled = false
+        setShareAccess(NO_SHARE_ACCESS)
+        if (selectedJob) {
+            fetchShareAccess(selectedJob.name).then(a => { if (!cancelled) setShareAccess(a) })
+        }
+        return () => { cancelled = true }
+    }, [selectedJob?.name])
+
+    // 1) User doctype se users ki list (dropdown ke liye)
+    const fetchShareUsers = async () => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/method/resume.api.job_opening.get_share_users`,
+                { method: "GET", credentials: "include", headers: { 'Accept': 'application/json' } }
+            )
+            const result = await response.json()
+            if (result.message?.success) setShareUsers(result.message.data || [])
+        } catch (err) {
+            console.error("Error fetching share users:", err)
+        }
+    }
+
+    // 2) Is job opening ke already-shared users
+    const fetchDocShares = async (jobName: string) => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/api/method/resume.api.job_opening.get_doc_shares?name=${encodeURIComponent(jobName)}`,
+                { method: "GET", credentials: "include", headers: { 'Accept': 'application/json' } }
+            )
+            const result = await response.json()
+            if (result.message?.success) setDocShares(result.message.data || [])
+            else alert(result.message?.message || "Failed to load shared users")
+        } catch (err) {
+            console.error("Error fetching shares:", err)
+        }
+    }
+
+    // 3) Modal kholna — state reset + dono lists load
+    const openShareModal = async () => {
+        if (!selectedJob || !shareAccess.canShare) return
+        setShareSearch("")
+        setNewShareUser("")
+        setNewPerms(EMPTY_PERMS)
+        setShareDropdownOpen(false)
+        setDocShares([])
+        setShowShareModal(true)
+        setShareLoading(true)
+        // "Currently shared with" list sirf unko load hoti hai jinko wo dikhani hai
+        await Promise.all([
+            fetchShareUsers(),
+            shareAccess.canViewList ? fetchDocShares(selectedJob.name) : Promise.resolve(),
+        ])
+        setShareLoading(false)
+    }
+
+    const closeShareModal = () => {
+        setShowShareModal(false)
+        setShareDropdownOpen(false)
+    }
+
+    // 4) Ek user ki permissions save karna (naya add ho ya existing update).
+    //    Saari permissions 0 ho to backend share hata deta hai.
+    const saveShare = async (user: string, perms: Perms): Promise<boolean> => {
+        if (!selectedJob) return false
+        setShareBusy(true)
+        try {
+            const csrfToken = await getFrappeCSRF()
+            const formData = new URLSearchParams()
+            formData.append("name", selectedJob.name)
+            formData.append("user", user)
+            formData.append("read", String(perms.read))
+            formData.append("write", String(perms.write))
+            formData.append("share", String(perms.share))
+            formData.append("submit", "0")
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/method/resume.api.job_opening.set_doc_share`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Frappe-CSRF-Token': csrfToken,
+                    },
+                    body: formData.toString(),
+                }
+            )
+            const result = await response.json()
+            if (result.message?.success) {
+                setDocShares(result.message.data || [])
+                return true
+            }
+            alert(result.message?.message || "Failed to update sharing")
+            return false
+        } catch (err) {
+            console.error(err)
+            alert("Network error. Please try again.")
+            return false
+        } finally {
+            setShareBusy(false)
+        }
+    }
+
+    // 5) "Add" button
+    const addShare = async () => {
+        if (!newShareUser) { alert("Please select a user"); return }
+        if (!newPerms.read && !newPerms.write && !newPerms.share) {
+            alert("Please select at least one permission")
+            return
+        }
+        const ok = await saveShare(newShareUser, newPerms)
+        if (ok) {
+            setNewShareUser("")
+            setShareSearch("")
+            setNewPerms(EMPTY_PERMS)
+        }
+    }
+
+    // Dropdown ke liye filter: already-shared users nahi dikhane, search email + naam dono pe
+    const shareQuery = shareSearch.trim().toLowerCase()
+    const sharedEmails = docShares.map(s => s.user)
+    const filteredShareUsers = shareUsers.filter(u =>
+        !sharedEmails.includes(u.name) &&
+        (u.name.toLowerCase().includes(shareQuery) || (u.full_name || "").toLowerCase().includes(shareQuery))
+    )
     // ────────────────────────────────────────────────────────
 
     const fetchStatusOptions = async () => {
@@ -1443,6 +1713,27 @@ export default function JobOpeningList() {
                                             </div>
                                             {/* ─────────────────────────────────── */}
 
+                                            {/* ── SHARE (NEW) ── */}
+                                            <div className="jol-detail-field">
+                                                <div className="jol-detail-field-label" style={{ color: '#7c3aed' }}>
+                                                    <Share2 size={13} /> Share
+                                                </div>
+                                                <button
+                                                    className="jol-share-open-btn"
+                                                    onClick={openShareModal}
+                                                    disabled={!shareAccess.canShare}
+                                                    title={shareAccess.canShare ? "Share this job opening" : "You do not have permission to share this job opening"}
+                                                >
+                                                    <Share2 size={13} /> Share this job opening
+                                                </button>
+                                                {shareAccess.loaded && !shareAccess.canShare && (
+                                                    <div style={{ fontSize: 11.5, color: 'var(--t3)', marginTop: 6, paddingLeft: 20 }}>
+                                                        You do not have permission to share.
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* ─────────────────────────────────── */}
+
                                             {selectedJob.description && (
                                                 <>
                                                     <div className="jol-detail-div" />
@@ -1484,6 +1775,134 @@ export default function JobOpeningList() {
                         </div>
                     </div>
                 )}
+
+                {/* ══ SHARE MODAL (NEW) ══ */}
+                {showShareModal && selectedJob && (
+                    <div className="jol-modal-overlay">
+                        <div className="jol-share-modal" onClick={() => setShareDropdownOpen(false)}>
+                            <div className="jol-share-head">
+                                <span className="jol-share-title">Share {selectedJob.name} with</span>
+                                <button className="jol-icon-btn cls" onClick={closeShareModal} title="Close"><X size={16} /></button>
+                            </div>
+
+                            <div className="jol-share-body">
+
+                                {/* ── Add new share: "Share this document with" ── */}
+                                <div className="jol-share-grid">
+                                    <div className="jol-share-colhead">Share this document with</div>
+                                    {SHARE_PERM_COLUMNS.map(c => (
+                                        <div key={c.key} className="jol-share-colhead c">{c.label}</div>
+                                    ))}
+                                </div>
+
+                                <div className="jol-share-grid" style={{ marginTop: 10 }}>
+                                    <div className="jol-share-input-wrap" onClick={e => e.stopPropagation()}>
+                                        <input
+                                            type="text"
+                                            className="jol-share-input"
+                                            placeholder="Select user..."
+                                            value={shareSearch}
+                                            disabled={shareLoading || shareBusy}
+                                            onFocus={() => setShareDropdownOpen(true)}
+                                            onChange={e => {
+                                                setShareSearch(e.target.value)
+                                                setNewShareUser("")          // type karte hi purana selection hat jaye
+                                                setShareDropdownOpen(true)
+                                            }}
+                                        />
+                                        {shareDropdownOpen && (
+                                            <div className="jol-share-menu">
+                                                {shareLoading ? (
+                                                    <div className="jol-share-menu-empty">Loading users...</div>
+                                                ) : filteredShareUsers.length === 0 ? (
+                                                    <div className="jol-share-menu-empty">No users found</div>
+                                                ) : (
+                                                    filteredShareUsers.map(u => (
+                                                        <div
+                                                            key={u.name}
+                                                            className="jol-share-menu-item"
+                                                            onClick={() => {
+                                                                setNewShareUser(u.name)
+                                                                setShareSearch(u.name)
+                                                                setShareDropdownOpen(false)
+                                                            }}
+                                                        >
+                                                            <div className="jol-share-menu-email">{u.name}</div>
+                                                            <div className="jol-share-menu-name">{u.full_name}</div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {SHARE_PERM_COLUMNS.map(c => (
+                                        <div key={c.key} className="jol-share-cell">
+                                            <input
+                                                type="checkbox"
+                                                className="jol-publish-checkbox"
+                                                checked={!!newPerms[c.key]}
+                                                disabled={c.key === "submit" || shareBusy}
+                                                onChange={e => {
+                                                    if (c.key === "submit") return
+                                                    setNewPerms(p => applyPermToggle(p, c.key as PermKey, e.target.checked))
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button className="jol-share-add-btn" onClick={addShare} disabled={shareBusy || shareLoading}>
+                                    {shareBusy ? "Saving..." : "Add"}
+                                </button>
+
+                                {/* "Currently shared with": jise share permission hai usse dikhta hai; jise opening share hui hai usse sirf wahi jinko usne share kiya */}
+                                {shareAccess.canViewList && (<>
+                                    <div className="jol-share-sep" />
+
+                                    {/* ── Already shared users ── */}
+                                    <div className="jol-share-list-title">Currently shared with</div>
+                                    {shareAccess.onlyMine && (
+                                        <div style={{ fontSize: 11.5, color: 'var(--t3)', marginBottom: 8 }}>Sirf wahi users dikh rahe hain jinko aapne share kiya hai.</div>
+                                    )}
+
+                                    {shareLoading ? (
+                                        <div className="jol-share-empty">Loading...</div>
+                                    ) : docShares.length === 0 ? (
+                                        <div className="jol-share-empty">This job opening is not shared with anyone yet.</div>
+                                    ) : (
+                                        docShares.map(s => (
+                                            <div key={s.user} className="jol-share-row">
+                                                <div className="jol-share-grid">
+                                                    <div style={{ minWidth: 0 }}>
+                                                        <div className="jol-share-user-email">{s.user}</div>
+                                                        <div className="jol-share-user-name">{s.full_name}</div>
+                                                    </div>
+                                                    {SHARE_PERM_COLUMNS.map(c => (
+                                                        <div key={c.key} className="jol-share-cell">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="jol-publish-checkbox"
+                                                                checked={!!s[c.key]}
+                                                                disabled={c.key === "submit" || shareBusy}
+                                                                onChange={e => {
+                                                                    if (c.key === "submit") return
+                                                                    // Saari permissions uncheck = user ka share hat jaata hai (Frappe jaisa)
+                                                                    saveShare(s.user, applyPermToggle(s, c.key as PermKey, e.target.checked))
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </>)}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* ══════════════════════════ */}
             </div>
         </>
     )
