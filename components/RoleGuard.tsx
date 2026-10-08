@@ -25,8 +25,12 @@ export default function RoleGuard({
     const [allowed, setAllowed] = useState(false)
 
     useEffect(() => {
-        // Login page does not need permission checking
-        if (pathname === "/Login") {
+        // Public pages do not need permission checking
+        const isPublicRoute =
+            pathname === "/Login" ||
+            pathname.startsWith("/document-verify/")
+
+        if (isPublicRoute) {
             setAllowed(true)
             setChecking(false)
             return

@@ -846,10 +846,23 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                                     const file = e.target.files?.[0] || null
                                     if (!file) return
                                     setPassportPhoto(file)
-                                    const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
-                                    const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
-                                    const d = await r.json()
-                                    if (d?.message?.file_url) { setPassportPhotoUrl(d.message.file_url); sessionStorage.setItem("passportPhotoUrl", d.message.file_url) }
+                                    try {
+                                        const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
+                                        const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
+                                        const d = await r.json()
+                                        console.log("Photo upload response:", d)
+                                        if (d?.message?.file_url) {
+                                            setPassportPhotoUrl(d.message.file_url)
+                                            sessionStorage.setItem("passportPhotoUrl", d.message.file_url)
+                                        } else {
+                                            setPassportPhoto(null)
+                                            alert("Photo upload failed. Please try again.")
+                                        }
+                                    } catch (err) {
+                                        console.error(err)
+                                        setPassportPhoto(null)
+                                        alert("Photo upload failed. Please try again.")
+                                    }
                                 }} />
                             </label>
                         )}
@@ -1058,10 +1071,23 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                                     const file = e.target.files?.[0] || null
                                     if (!file) return
                                     setAppSignatureFile(file)
-                                    const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
-                                    const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
-                                    const d = await r.json()
-                                    if (d?.message?.file_url) { setAppSignatureUrl(d.message.file_url); sessionStorage.setItem("appSignatureUrl", d.message.file_url) }
+                                    try {
+                                        const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
+                                        const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
+                                        const d = await r.json()
+                                        console.log("App signature upload response:", d)
+                                        if (d?.message?.file_url) {
+                                            setAppSignatureUrl(d.message.file_url)
+                                            sessionStorage.setItem("appSignatureUrl", d.message.file_url)
+                                        } else {
+                                            setAppSignatureFile(null)
+                                            alert("Signature upload failed. Please try again.")
+                                        }
+                                    } catch (err) {
+                                        console.error(err)
+                                        setAppSignatureFile(null)
+                                        alert("Signature upload failed. Please try again.")
+                                    }
                                 }} />
                             </label>
                         )}
@@ -1129,10 +1155,23 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
                                     const file = e.target.files?.[0] || null
                                     if (!file) return
                                     setDeclSignatureFile(file)
-                                    const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
-                                    const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
-                                    const d = await r.json()
-                                    if (d?.message?.file_url) { setDeclSignatureUrl(d.message.file_url); sessionStorage.setItem("declSignatureUrl", d.message.file_url) }
+                                    try {
+                                        const fd = new FormData(); fd.append("file", file); fd.append("is_private", "0"); fd.append("filename", file.name)
+                                        const r = await fetch("/internal/applicant-document/upload", { method: "POST", body: fd })
+                                        const d = await r.json()
+                                        console.log("Decl signature upload response:", d)
+                                        if (d?.message?.file_url) {
+                                            setDeclSignatureUrl(d.message.file_url)
+                                            sessionStorage.setItem("declSignatureUrl", d.message.file_url)
+                                        } else {
+                                            setDeclSignatureFile(null)
+                                            alert("Signature upload failed. Please try again.")
+                                        }
+                                    } catch (err) {
+                                        console.error(err)
+                                        setDeclSignatureFile(null)
+                                        alert("Signature upload failed. Please try again.")
+                                    }
                                 }} />
                             </label>
                         )}

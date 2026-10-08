@@ -465,60 +465,86 @@ const css = `
   .jol-share-open-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   .jol-share-modal {
-    background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto;
+    background: #fff; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.25);
+    width: 100%; max-width: 560px;
+    min-height: 460px;       /* dropdown ke liye jagah */
+    overflow: visible;       /* dropdown modal se cut na ho */
   }
   .jol-share-head {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 18px 24px; border-bottom: 1px solid var(--border-s);
+    border-radius: 16px 16px 0 0;
   }
   .jol-share-title { font-size: 15px; font-weight: 700; color: var(--t1); }
-  .jol-share-body { padding: 20px 24px 24px; }
-  .jol-share-grid {
-    display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 64px);
-    gap: 8px; align-items: center;
-  }
-  .jol-share-colhead { font-size: 12.5px; font-weight: 600; color: var(--t1); }
-  .jol-share-colhead.c { text-align: center; }
-  .jol-share-cell { display: flex; align-items: center; justify-content: center; }
-  .jol-share-sep { height: 1px; background: var(--border-s); margin: 16px 0; }
+  .jol-share-body { padding: 20px 24px 24px; overflow: visible; }
+
+  .jol-share-label { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 8px; }
+
   .jol-share-input-wrap { position: relative; }
   .jol-share-input {
-    width: 100%; height: 38px; padding: 0 12px; border-radius: 8px;
+    width: 100%; height: 42px; padding: 0 14px; border-radius: 10px;
     border: 1px solid var(--border); background: var(--bg);
-    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--t1); outline: none;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--t1); outline: none;
     transition: all .14s;
   }
   .jol-share-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,158,247,.12); }
+
   .jol-share-menu {
-    position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: 6px;
-    background: #fff; border: 1px solid var(--border); border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,158,247,.14); max-height: 210px; overflow-y: auto;
+    position: absolute; z-index: 50; left: 0; right: 0; top: 100%; margin-top: 6px;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,158,247,.2);
+    max-height: 200px; overflow-y: auto; overflow-x: hidden;
   }
+  .jol-share-menu::-webkit-scrollbar { width: 6px; }
+  .jol-share-menu::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+  .jol-share-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
   .jol-share-menu-item { padding: 9px 14px; cursor: pointer; border-bottom: 1px solid var(--border-s); transition: background .12s; }
   .jol-share-menu-item:last-child { border-bottom: none; }
   .jol-share-menu-item:hover { background: var(--accent-lt); }
   .jol-share-menu-email { font-size: 13px; font-weight: 700; color: var(--t1); }
   .jol-share-menu-name  { font-size: 12px; color: var(--t3); margin-top: 1px; }
   .jol-share-menu-empty { padding: 12px 14px; font-size: 12.5px; color: var(--t3); }
+
+  /* Checkboxes ek line mein */
+  .jol-share-perms { display: flex; align-items: center; gap: 22px; margin-top: 14px; flex-wrap: wrap; }
+  .jol-share-perm { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--t1); cursor: pointer; user-select: none; }
+  .jol-share-perm.off { opacity: .5; cursor: not-allowed; }
+
   .jol-share-add-btn {
-    margin-top: 14px; padding: 8px 20px; border-radius: 8px; border: none;
+    margin-top: 16px; padding: 9px 26px; border-radius: 9px; border: none;
     background: var(--accent); color: #fff; cursor: pointer;
-    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; transition: background .14s;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; transition: background .14s;
   }
   .jol-share-add-btn:hover { background: var(--accent-h); }
   .jol-share-add-btn:disabled { opacity: .6; cursor: not-allowed; }
-  .jol-share-list-title { font-size: 12.5px; font-weight: 700; color: var(--t1); margin-bottom: 10px; }
+
+  .jol-share-sep { height: 1px; background: var(--border-s); margin: 20px 0 16px; }
+  .jol-share-list-title { font-size: 13.5px; font-weight: 700; color: var(--t1); margin-bottom: 8px; }
+
+  /* Scroll wala hissa: rounded, cut nahi hoga */
+  .jol-share-list-scroll {
+    max-height: 220px; overflow-y: auto; overflow-x: hidden;
+    border: 1px solid var(--border-s); border-radius: 12px; padding: 4px 12px;
+  }
+  .jol-share-list-scroll::-webkit-scrollbar { width: 6px; }
+  .jol-share-list-scroll::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+  .jol-share-list-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
   .jol-share-row { padding: 10px 0; border-bottom: 1px solid var(--border-s); }
   .jol-share-row:last-child { border-bottom: none; }
+  .jol-share-row-user { margin-bottom: 8px; min-width: 0; }
   .jol-share-user-email { font-size: 13px; font-weight: 600; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .jol-share-user-name  { font-size: 11.5px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .jol-share-empty { font-size: 13px; color: var(--t3); padding: 8px 0; }
+  .jol-share-user-name  { font-size: 12px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jol-share-empty { font-size: 13px; color: var(--t3); padding: 10px 0; }
+
+  /* share modal ke checkbox thode bade */
+  .jol-share-modal .jol-publish-checkbox { width: 18px; height: 18px; }
+  .jol-share-modal .jol-publish-checkbox:checked::after { width: 5px; height: 9px; }
+
   @media (max-width: 560px) {
     .jol-share-body { padding: 16px 14px 20px; }
     .jol-share-head { padding: 14px; }
-    .jol-share-grid { grid-template-columns: minmax(0, 1fr) repeat(4, 42px); gap: 4px; }
-    .jol-share-colhead { font-size: 10.5px; }
+    .jol-share-perms { gap: 14px; }
   }
   /* ─────────────────────────── */
 
@@ -529,7 +555,9 @@ const css = `
 
   .jol-modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
   .jol-modal { background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.2); padding: 24px; max-width: 380px; width: 100%; }
-  .jol-modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+
+  /* sirf share modal ke liye: upar se start, scroll ho sake */
+  .jol-share-overlay { align-items: flex-start; padding: 40px 16px; overflow-y: auto; }  .jol-modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .jol-modal-icon { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; }
   .jol-modal-title { font-size: 14px; font-weight: 700; color: var(--t1); }
   .jol-modal-sub   { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
@@ -1778,7 +1806,7 @@ export default function JobOpeningList() {
 
                 {/* ══ SHARE MODAL (NEW) ══ */}
                 {showShareModal && selectedJob && (
-                    <div className="jol-modal-overlay">
+                    <div className="jol-modal-overlay jol-share-overlay">
                         <div className="jol-share-modal" onClick={() => setShareDropdownOpen(false)}>
                             <div className="jol-share-head">
                                 <span className="jol-share-title">Share {selectedJob.name} with</span>
@@ -1787,57 +1815,53 @@ export default function JobOpeningList() {
 
                             <div className="jol-share-body">
 
-                                {/* ── Add new share: "Share this document with" ── */}
-                                <div className="jol-share-grid">
-                                    <div className="jol-share-colhead">Share this document with</div>
-                                    {SHARE_PERM_COLUMNS.map(c => (
-                                        <div key={c.key} className="jol-share-colhead c">{c.label}</div>
-                                    ))}
+                                {/* ── Add new share ── */}
+                                <div className="jol-share-label">Share this document with</div>
+
+                                <div className="jol-share-input-wrap" onClick={e => e.stopPropagation()}>
+                                    <input
+                                        type="text"
+                                        className="jol-share-input"
+                                        placeholder="Select user..."
+                                        value={shareSearch}
+                                        disabled={shareLoading || shareBusy}
+                                        onFocus={() => setShareDropdownOpen(true)}
+                                        onChange={e => {
+                                            setShareSearch(e.target.value)
+                                            setNewShareUser("")
+                                            setShareDropdownOpen(true)
+                                        }}
+                                    />
+                                    {shareDropdownOpen && (
+                                        <div className="jol-share-menu">
+                                            {shareLoading ? (
+                                                <div className="jol-share-menu-empty">Loading users...</div>
+                                            ) : filteredShareUsers.length === 0 ? (
+                                                <div className="jol-share-menu-empty">No users found</div>
+                                            ) : (
+                                                filteredShareUsers.map(u => (
+                                                    <div
+                                                        key={u.name}
+                                                        className="jol-share-menu-item"
+                                                        onClick={() => {
+                                                            setNewShareUser(u.name)
+                                                            setShareSearch(u.name)
+                                                            setShareDropdownOpen(false)
+                                                        }}
+                                                    >
+                                                        <div className="jol-share-menu-email">{u.name}</div>
+                                                        <div className="jol-share-menu-name">{u.full_name}</div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="jol-share-grid" style={{ marginTop: 10 }}>
-                                    <div className="jol-share-input-wrap" onClick={e => e.stopPropagation()}>
-                                        <input
-                                            type="text"
-                                            className="jol-share-input"
-                                            placeholder="Select user..."
-                                            value={shareSearch}
-                                            disabled={shareLoading || shareBusy}
-                                            onFocus={() => setShareDropdownOpen(true)}
-                                            onChange={e => {
-                                                setShareSearch(e.target.value)
-                                                setNewShareUser("")          // type karte hi purana selection hat jaye
-                                                setShareDropdownOpen(true)
-                                            }}
-                                        />
-                                        {shareDropdownOpen && (
-                                            <div className="jol-share-menu">
-                                                {shareLoading ? (
-                                                    <div className="jol-share-menu-empty">Loading users...</div>
-                                                ) : filteredShareUsers.length === 0 ? (
-                                                    <div className="jol-share-menu-empty">No users found</div>
-                                                ) : (
-                                                    filteredShareUsers.map(u => (
-                                                        <div
-                                                            key={u.name}
-                                                            className="jol-share-menu-item"
-                                                            onClick={() => {
-                                                                setNewShareUser(u.name)
-                                                                setShareSearch(u.name)
-                                                                setShareDropdownOpen(false)
-                                                            }}
-                                                        >
-                                                            <div className="jol-share-menu-email">{u.name}</div>
-                                                            <div className="jol-share-menu-name">{u.full_name}</div>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
+                                {/* Checkboxes: input ke neeche, ek line mein */}
+                                <div className="jol-share-perms">
                                     {SHARE_PERM_COLUMNS.map(c => (
-                                        <div key={c.key} className="jol-share-cell">
+                                        <label key={c.key} className={`jol-share-perm${c.key === "submit" ? " off" : ""}`}>
                                             <input
                                                 type="checkbox"
                                                 className="jol-publish-checkbox"
@@ -1848,7 +1872,8 @@ export default function JobOpeningList() {
                                                     setNewPerms(p => applyPermToggle(p, c.key as PermKey, e.target.checked))
                                                 }}
                                             />
-                                        </div>
+                                            {c.label}
+                                        </label>
                                     ))}
                                 </div>
 
@@ -1856,48 +1881,51 @@ export default function JobOpeningList() {
                                     {shareBusy ? "Saving..." : "Add"}
                                 </button>
 
-                                {/* "Currently shared with": jise share permission hai usse dikhta hai; jise opening share hui hai usse sirf wahi jinko usne share kiya */}
-                                {shareAccess.canViewList && (<>
-                                    <div className="jol-share-sep" />
-
-                                    {/* ── Already shared users ── */}
-                                    <div className="jol-share-list-title">Currently shared with</div>
-                                    {shareAccess.onlyMine && (
-                                        <div style={{ fontSize: 11.5, color: 'var(--t3)', marginBottom: 8 }}>Sirf wahi users dikh rahe hain jinko aapne share kiya hai.</div>
-                                    )}
-
-                                    {shareLoading ? (
-                                        <div className="jol-share-empty">Loading...</div>
-                                    ) : docShares.length === 0 ? (
-                                        <div className="jol-share-empty">This job opening is not shared with anyone yet.</div>
-                                    ) : (
-                                        docShares.map(s => (
-                                            <div key={s.user} className="jol-share-row">
-                                                <div className="jol-share-grid">
-                                                    <div style={{ minWidth: 0 }}>
-                                                        <div className="jol-share-user-email">{s.user}</div>
-                                                        <div className="jol-share-user-name">{s.full_name}</div>
-                                                    </div>
-                                                    {SHARE_PERM_COLUMNS.map(c => (
-                                                        <div key={c.key} className="jol-share-cell">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="jol-publish-checkbox"
-                                                                checked={!!s[c.key]}
-                                                                disabled={c.key === "submit" || shareBusy}
-                                                                onChange={e => {
-                                                                    if (c.key === "submit") return
-                                                                    // Saari permissions uncheck = user ka share hat jaata hai (Frappe jaisa)
-                                                                    saveShare(s.user, applyPermToggle(s, c.key as PermKey, e.target.checked))
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                {shareAccess.canViewList && (
+                                    <>
+                                        <div className="jol-share-sep" />
+                                        <div className="jol-share-list-title">Currently shared with</div>
+                                        {shareAccess.onlyMine && (
+                                            <div style={{ fontSize: 11.5, color: 'var(--t3)', marginBottom: 8 }}>
+                                                Only users you have shared with are shown.
                                             </div>
-                                        ))
-                                    )}
-                                </>)}
+                                        )}
+
+                                        <div className="jol-share-list-scroll">
+                                            {shareLoading ? (
+                                                <div className="jol-share-empty">Loading...</div>
+                                            ) : docShares.length === 0 ? (
+                                                <div className="jol-share-empty">This job opening is not shared with anyone yet.</div>
+                                            ) : (
+                                                docShares.map(s => (
+                                                    <div key={s.user} className="jol-share-row">
+                                                        <div className="jol-share-row-user">
+                                                            <div className="jol-share-user-email">{s.user}</div>
+                                                            <div className="jol-share-user-name">{s.full_name}</div>
+                                                        </div>
+                                                        <div className="jol-share-perms" style={{ marginTop: 0 }}>
+                                                            {SHARE_PERM_COLUMNS.map(c => (
+                                                                <label key={c.key} className={`jol-share-perm${c.key === "submit" ? " off" : ""}`}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="jol-publish-checkbox"
+                                                                        checked={!!s[c.key]}
+                                                                        disabled={c.key === "submit" || shareBusy}
+                                                                        onChange={e => {
+                                                                            if (c.key === "submit") return
+                                                                            saveShare(s.user, applyPermToggle(s, c.key as PermKey, e.target.checked))
+                                                                        }}
+                                                                    />
+                                                                    {c.label}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

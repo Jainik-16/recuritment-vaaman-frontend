@@ -2365,48 +2365,97 @@ const css = `
   .cp-comment-loading { font-size: 12px; color: var(--accent); padding: 4px 0; display: flex; align-items: center; gap: 6px; }
   .cp-comment-spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,158,247,.25); border-top-color: var(--accent); animation: cp-spin .7s linear infinite; flex-shrink: 0; }
 
-  /* ══ SHARE (NEW) ══ */
+    /* ══ SHARE (NEW) ══ */
   .cp-modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .cp-share-modal { background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.2); width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto; }
-  .cp-share-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px; border-bottom: 1px solid var(--border-s); }
+
+  /* share modal: upar se start, dropdown cut na ho, chhoti screen par scroll */
+  .cp-share-overlay { align-items: flex-start; padding: 40px 16px; overflow-y: auto; }
+
+  .cp-share-modal {
+    background: #fff; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.25);
+    width: 100%; max-width: 560px;
+    min-height: 460px;
+    overflow: visible;
+  }
+  .cp-share-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 24px; border-bottom: 1px solid var(--border-s);
+    border-radius: 16px 16px 0 0;
+  }
   .cp-share-title { font-size: 15px; font-weight: 700; color: var(--t1); }
   .cp-share-close { width: 32px; height: 32px; border-radius: 8px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--t3); transition: all .14s; }
   .cp-share-close:hover { background: var(--border-s); color: var(--t1); }
-  .cp-share-body { padding: 20px 24px 24px; }
-  .cp-share-grid { display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 64px); gap: 8px; align-items: center; }
-  .cp-share-colhead { font-size: 12.5px; font-weight: 600; color: var(--t1); }
-  .cp-share-colhead.c { text-align: center; }
-  .cp-share-cell { display: flex; align-items: center; justify-content: center; }
-  .cp-share-sep { height: 1px; background: var(--border-s); margin: 16px 0; }
+  .cp-share-body { padding: 20px 24px 24px; overflow: visible; }
+
+  .cp-share-label { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 8px; }
+
   .cp-share-input-wrap { position: relative; }
-  .cp-share-input { width: 100%; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-family: 'Inter', sans-serif; font-size: 13px; color: var(--t1); outline: none; transition: all .14s; }
+  .cp-share-input {
+    width: 100%; height: 42px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg);
+    font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--t1); outline: none;
+    transition: all .14s;
+  }
   .cp-share-input:focus { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,158,247,.12); }
-  .cp-share-menu { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: 6px; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,158,247,.14); max-height: 210px; overflow-y: auto; }
+
+  .cp-share-menu {
+    position: absolute; z-index: 50; left: 0; right: 0; top: 100%; margin-top: 6px;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,158,247,.2);
+    max-height: 200px; overflow-y: auto; overflow-x: hidden;
+  }
+  .cp-share-menu::-webkit-scrollbar { width: 6px; }
+  .cp-share-menu::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+  .cp-share-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
   .cp-share-menu-item { padding: 9px 14px; cursor: pointer; border-bottom: 1px solid var(--border-s); transition: background .12s; }
   .cp-share-menu-item:last-child { border-bottom: none; }
   .cp-share-menu-item:hover { background: var(--accent-lt); }
   .cp-share-menu-email { font-size: 13px; font-weight: 700; color: var(--t1); }
   .cp-share-menu-name { font-size: 12px; color: var(--t3); margin-top: 1px; }
   .cp-share-menu-empty { padding: 12px 14px; font-size: 12.5px; color: var(--t3); }
-  .cp-share-add-btn { margin-top: 14px; padding: 8px 20px; border-radius: 8px; border: none; background: var(--accent); color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; transition: background .14s; }
+
+  /* Checkboxes ek line mein */
+  .cp-share-perms { display: flex; align-items: center; gap: 22px; margin-top: 14px; flex-wrap: wrap; }
+  .cp-share-perm { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--t1); cursor: pointer; user-select: none; }
+  .cp-share-perm.off { opacity: .5; cursor: not-allowed; }
+
+  .cp-share-add-btn {
+    margin-top: 16px; padding: 9px 26px; border-radius: 9px; border: none;
+    background: var(--accent); color: #fff; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; transition: background .14s;
+  }
   .cp-share-add-btn:hover { background: var(--accent-h); }
   .cp-share-add-btn:disabled { opacity: .6; cursor: not-allowed; }
-  .cp-share-list-title { font-size: 12.5px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
-  .cp-share-hint { font-size: 11.5px; color: var(--t3); margin-bottom: 10px; }
+
+  .cp-share-sep { height: 1px; background: var(--border-s); margin: 20px 0 16px; }
+  .cp-share-list-title { font-size: 13.5px; font-weight: 700; color: var(--t1); margin-bottom: 8px; }
+  .cp-share-hint { font-size: 11.5px; color: var(--t3); margin-bottom: 8px; }
+
+  /* Scroll wala hissa: rounded */
+  .cp-share-list-scroll {
+    max-height: 220px; overflow-y: auto; overflow-x: hidden;
+    border: 1px solid var(--border-s); border-radius: 12px; padding: 4px 12px;
+  }
+  .cp-share-list-scroll::-webkit-scrollbar { width: 6px; }
+  .cp-share-list-scroll::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+  .cp-share-list-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
   .cp-share-row { padding: 10px 0; border-bottom: 1px solid var(--border-s); }
   .cp-share-row:last-child { border-bottom: none; }
+  .cp-share-row-user { margin-bottom: 8px; min-width: 0; }
   .cp-share-user-email { font-size: 13px; font-weight: 600; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cp-share-user-name { font-size: 11.5px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cp-share-empty { font-size: 13px; color: var(--t3); padding: 8px 0; }
-  .cp-share-checkbox { width: 17px; height: 17px; border-radius: 4px; border: 2px solid var(--border); background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; position: relative; }
+  .cp-share-user-name { font-size: 12px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cp-share-empty { font-size: 13px; color: var(--t3); padding: 10px 0; }
+
+  .cp-share-checkbox { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border); background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; position: relative; }
   .cp-share-checkbox:checked { background: var(--accent); border-color: var(--accent); }
-  .cp-share-checkbox:checked::after { content: ''; position: absolute; width: 4px; height: 8px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px, -1px); }
+  .cp-share-checkbox:checked::after { content: ''; position: absolute; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px, -1px); }
   .cp-share-checkbox:disabled { opacity: .5; cursor: not-allowed; }
+
   @media (max-width: 560px) {
     .cp-share-body { padding: 16px 14px 20px; }
     .cp-share-head { padding: 14px; }
-    .cp-share-grid { grid-template-columns: minmax(0, 1fr) repeat(4, 42px); gap: 4px; }
-    .cp-share-colhead { font-size: 10.5px; }
+    .cp-share-perms { gap: 14px; }
   }
 
   /* detail empty */
@@ -3906,7 +3955,7 @@ function CandidatesInner() {
                                                                 <Share2 size={14} /> Share Candidate
                                                             </button>
                                                             {shareAccess.loaded && !shareAccess.canShare && (
-                                                                <div style={{ fontSize: 11.5, color: 'var(--t3)', marginTop: -2 }}>You do not have permission to share this candidate.</div>
+                                                                <div style={{ fontSize: 11.5, color: 'var(--t3)', marginTop: -2 }}>You do not have permission to share.</div>
                                                             )}
                                                             {/* <button className="cp-action-btn" disabled={isOfferLetterCompleted} onClick={() => !isOfferLetterCompleted && router.push(`/offer-letter?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Offer Letter{isOfferLetterCompleted && <span className="cp-action-completed">(Completed)</span>}</button>
                                                             <button className="cp-action-btn" style={{ marginBottom: 4 }} disabled={isAppointmentCompleted} onClick={() => !isAppointmentCompleted && router.push(`/letter-appointment?candidateId=${selectedCandidate.id}`)}><Send size={14} /> Send Appointment Letter{isAppointmentCompleted && <span className="cp-action-completed">(Completed)</span>}</button> */}
@@ -3936,7 +3985,7 @@ function CandidatesInner() {
 
                 {/* ══ SHARE MODAL (NEW) ══ */}
                 {showShareModal && selectedCandidate && (
-                    <div className="cp-modal-overlay">
+                    <div className="cp-modal-overlay cp-share-overlay">
                         <div className="cp-share-modal" onClick={() => setShareDropdownOpen(false)}>
                             <div className="cp-share-head">
                                 <span className="cp-share-title">Share {selectedCandidate.id} with</span>
@@ -3945,57 +3994,52 @@ function CandidatesInner() {
 
                             <div className="cp-share-body">
 
-                                {/* ── Naya share: "Share this document with" ── */}
-                                <div className="cp-share-grid">
-                                    <div className="cp-share-colhead">Share this document with</div>
-                                    {SHARE_PERM_COLUMNS.map(c => (
-                                        <div key={c.key} className="cp-share-colhead c">{c.label}</div>
-                                    ))}
+                                {/* ── Naya share ── */}
+                                <div className="cp-share-label">Share this document with</div>
+
+                                <div className="cp-share-input-wrap" onClick={e => e.stopPropagation()}>
+                                    <input
+                                        type="text"
+                                        className="cp-share-input"
+                                        placeholder="Select user..."
+                                        value={shareSearch}
+                                        disabled={shareLoading || shareBusy}
+                                        onFocus={() => setShareDropdownOpen(true)}
+                                        onChange={e => {
+                                            setShareSearch(e.target.value)
+                                            setNewShareUser("")
+                                            setShareDropdownOpen(true)
+                                        }}
+                                    />
+                                    {shareDropdownOpen && (
+                                        <div className="cp-share-menu">
+                                            {shareLoading ? (
+                                                <div className="cp-share-menu-empty">Loading users...</div>
+                                            ) : filteredShareUsers.length === 0 ? (
+                                                <div className="cp-share-menu-empty">No users found</div>
+                                            ) : (
+                                                filteredShareUsers.map(u => (
+                                                    <div
+                                                        key={u.name}
+                                                        className="cp-share-menu-item"
+                                                        onClick={() => {
+                                                            setNewShareUser(u.name)
+                                                            setShareSearch(u.name)
+                                                            setShareDropdownOpen(false)
+                                                        }}
+                                                    >
+                                                        <div className="cp-share-menu-email">{u.name}</div>
+                                                        <div className="cp-share-menu-name">{u.full_name}</div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="cp-share-grid" style={{ marginTop: 10 }}>
-                                    <div className="cp-share-input-wrap" onClick={e => e.stopPropagation()}>
-                                        <input
-                                            type="text"
-                                            className="cp-share-input"
-                                            placeholder="Select user..."
-                                            value={shareSearch}
-                                            disabled={shareLoading || shareBusy}
-                                            onFocus={() => setShareDropdownOpen(true)}
-                                            onChange={e => {
-                                                setShareSearch(e.target.value)
-                                                setNewShareUser("")          // type karte hi purana selection hat jaye
-                                                setShareDropdownOpen(true)
-                                            }}
-                                        />
-                                        {shareDropdownOpen && (
-                                            <div className="cp-share-menu">
-                                                {shareLoading ? (
-                                                    <div className="cp-share-menu-empty">Loading users...</div>
-                                                ) : filteredShareUsers.length === 0 ? (
-                                                    <div className="cp-share-menu-empty">No users found</div>
-                                                ) : (
-                                                    filteredShareUsers.map(u => (
-                                                        <div
-                                                            key={u.name}
-                                                            className="cp-share-menu-item"
-                                                            onClick={() => {
-                                                                setNewShareUser(u.name)
-                                                                setShareSearch(u.name)
-                                                                setShareDropdownOpen(false)
-                                                            }}
-                                                        >
-                                                            <div className="cp-share-menu-email">{u.name}</div>
-                                                            <div className="cp-share-menu-name">{u.full_name}</div>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
+                                <div className="cp-share-perms">
                                     {SHARE_PERM_COLUMNS.map(c => (
-                                        <div key={c.key} className="cp-share-cell">
+                                        <label key={c.key} className={`cp-share-perm${c.key === "submit" ? " off" : ""}`}>
                                             <input
                                                 type="checkbox"
                                                 className="cp-share-checkbox"
@@ -4006,7 +4050,8 @@ function CandidatesInner() {
                                                     setNewPerms(p => applyPermToggle(p, c.key as PermKey, e.target.checked))
                                                 }}
                                             />
-                                        </div>
+                                            {c.label}
+                                        </label>
                                     ))}
                                 </div>
 
@@ -4017,39 +4062,44 @@ function CandidatesInner() {
                                 {shareAccess.canViewList && (
                                     <>
                                         <div className="cp-share-sep" />
-
                                         <div className="cp-share-list-title">Currently shared with</div>
+                                        {shareAccess.onlyMine && (
+                                            <div className="cp-share-hint">Only users you have shared with are shown.</div>
+                                        )}
 
-                                        {shareLoading ? (
-                                            <div className="cp-share-empty">Loading...</div>
-                                        ) : docShares.length === 0 ? (
-                                            <div className="cp-share-empty">This candidate is not shared with anyone yet.</div>
-                                        ) : (
-                                            docShares.map(s => (
-                                                <div key={s.user} className="cp-share-row">
-                                                    <div className="cp-share-grid">
-                                                        <div style={{ minWidth: 0 }}>
+                                        <div className="cp-share-list-scroll">
+                                            {shareLoading ? (
+                                                <div className="cp-share-empty">Loading...</div>
+                                            ) : docShares.length === 0 ? (
+                                                <div className="cp-share-empty">This candidate is not shared with anyone yet.</div>
+                                            ) : (
+                                                docShares.map(s => (
+                                                    <div key={s.user} className="cp-share-row">
+                                                        <div className="cp-share-row-user">
                                                             <div className="cp-share-user-email">{s.user}</div>
                                                             <div className="cp-share-user-name">{s.full_name}</div>
                                                         </div>
-                                                        {SHARE_PERM_COLUMNS.map(c => (
-                                                            <div key={c.key} className="cp-share-cell">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="cp-share-checkbox"
-                                                                    checked={!!s[c.key]}
-                                                                    disabled={c.key === "submit" || shareBusy}
-                                                                    onChange={e => {
-                                                                        if (c.key === "submit") return
-                                                                        saveShare(s.user, applyPermToggle(s, c.key as PermKey, e.target.checked))
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        ))}
+                                                        <div className="cp-share-perms" style={{ marginTop: 0 }}>
+                                                            {SHARE_PERM_COLUMNS.map(c => (
+                                                                <label key={c.key} className={`cp-share-perm${c.key === "submit" ? " off" : ""}`}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="cp-share-checkbox"
+                                                                        checked={!!s[c.key]}
+                                                                        disabled={c.key === "submit" || shareBusy}
+                                                                        onChange={e => {
+                                                                            if (c.key === "submit") return
+                                                                            saveShare(s.user, applyPermToggle(s, c.key as PermKey, e.target.checked))
+                                                                        }}
+                                                                    />
+                                                                    {c.label}
+                                                                </label>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))
-                                        )}
+                                                ))
+                                            )}
+                                        </div>
                                     </>
                                 )}
                             </div>
