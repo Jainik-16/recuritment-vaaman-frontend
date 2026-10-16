@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Lock, User, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { FRAPPE_BASE_URL } from "@/lib/api-config"
+import { FRAPPE_BASE_URL, API_BASE_URL } from "@/lib/api-config"
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -256,12 +256,17 @@ function LoginPage() {
     // };
 
     const handlePrayogLogin = () => {
-        const clientId = "g2e56ts9gs";
+        const clientId = process.env.NEXT_PUBLIC_PRAYOG_CLIENT_ID;
         const redirectUri = encodeURIComponent(
-            "https://ats.vaaman.in/api/method/frappe.integrations.oauth2_logins.login_via_frappe"
+            `${API_BASE_URL}/api/method/frappe.integrations.oauth2_logins.login_via_frappe`
         );
-        const state = encodeURIComponent("ats-login");
-        const authUrl = `https://prayog.vaaman.in/api/method/frappe.integrations.oauth2.authorize?client_id=${clientId}&response_type=code&scope=openid%20all&redirect_uri=${redirectUri}&state=${state}`;
+        const stateObj = {
+            site: process.env.NEXT_PUBLIC_LOGIN_REDIRECTED_URL,
+            token: Math.random().toString(36).substring(2) + Date.now().toString(36),
+            redirect_to: "/home"
+        };
+        const state = encodeURIComponent(btoa(JSON.stringify(stateObj)));
+        const authUrl = `${process.env.NEXT_PUBLIC_PRAYOG_BASE_URL}/api/method/frappe.integrations.oauth2.authorize?client_id=${clientId}&response_type=code&scope=openid%20all&redirect_uri=${redirectUri}&state=${state}`;
         window.location.href = authUrl;
     };
 
