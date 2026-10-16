@@ -1053,12 +1053,6 @@
 
 
 
-
-
-
-
-
-
 "use client"
 import { useEffect, useState } from "react"
 import type React from "react"
@@ -1535,6 +1529,13 @@ interface JobOpening {
   department?: string
 }
 
+interface BatchFileStatus {
+  file_doc_name: string
+  file_name: string
+  status: string
+  error_message?: string
+}
+
 export default function ResumeUploader() {
   const [jobs, setJobs] = useState<JobOpening[]>([])
   const [selectedJobId, setSelectedJobId] = useState("")
@@ -1548,6 +1549,9 @@ export default function ResumeUploader() {
   const { toast } = useToast()
   const router = useRouter()
   const [isDataBank, setIsDataBank] = useState(false)
+  const [batchId, setBatchId] = useState("")
+  const [batchFiles, setBatchFiles] = useState<BatchFileStatus[]>([])
+  const [batchStatus, setBatchStatus] = useState("")
 
   // ── ALL ORIGINAL LOGIC UNCHANGED ──────────────────────────
   useEffect(() => {
@@ -1651,17 +1655,44 @@ export default function ResumeUploader() {
     }
   }
 
+  const pollBatchStatus = async (currentBatchId: string) => {
+    while (true) {
+      const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.get_upload_batch_status?batch_id=${encodeURIComponent(currentBatchId)}`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Accept": "application/json" },
+      })
+      if (!res.ok) throw new Error(`Batch status HTTP error! status: ${res.status}`)
+      const result = await res.json()
+      const status = result.message
+      if (!status) throw new Error("Invalid batch status response")
+
+      setBatchFiles(status.files || [])
+      setBatchStatus(status.status || "Processing")
+      setUploadProgress(status.progress || 0)
+      setProcessedFiles(
+        (status.files || [])
+          .filter((file: BatchFileStatus) => file.status === "Created")
+          .map((file: BatchFileStatus) => file.file_name)
+      )
+
+      if (["Completed", "Partial", "Failed"].includes(status.status)) return status
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    }
+  }
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
     if (files.length === 0) { toast({ variant: "destructive", title: "No Files Selected", description: "Please select at least one PDF resume file to upload.", duration: 4000 }); return }
     if (!selectedJobId && !isDataBank) { toast({ variant: "destructive", title: "No Job Selected", description: "Please select a job opening before uploading resumes.", duration: 4000 }); return }
 
-    setIsLoading(true); setUploadProgress(0); setProcessedFiles([])
+    setIsLoading(true); setUploadProgress(0); setProcessedFiles([]); setBatchFiles([]); setBatchStatus("")
     toast({ title: "🚀 Starting Upload Process", description: `Processing ${files.length} resume(s) with AI analysis...`, duration: 3000 })
 
     try {
       const successfulUploads: string[] = []
       const failedUploads: string[] = []
+      let finalBatchStatus: { files?: BatchFileStatus[]; progress?: number; status?: string } = {}
 
       // for (let i = 0; i < files.length; i++) {
       //   const file = files[i]
@@ -1670,10 +1701,7 @@ export default function ResumeUploader() {
       //     formData.append("files", file)
       //     // formData.append("job_opening", selectedJobId)
       //     // ✅ conditionally send job
-      //     if (!isDataBank) {
-      //       formData.append("job_opening", selectedJobId)
-      //     }
-
+      //     if (!isDataBank) { formData.append("job_opening", selectedJobId) }
       //     // ✅ send databank flag
       //     formData.append("is_data_bank", isDataBank ? "1" : "0")
       //     const csrfToken = await getFrappeCSRF()
@@ -1698,68 +1726,84 @@ export default function ResumeUploader() {
         // Send ALL files in a single request → one Resume Import Log per batch
         const formData = new FormData()
         files.forEach(file => formData.append("files", file))
-        if (!isDataBank) {
-          formData.append("job_opening", selectedJobId)
-        }
+        if (!isDataBank) { formData.append("job_opening", selectedJobId) }
         formData.append("is_data_bank", isDataBank ? "1" : "0")
-
         const csrfToken = await getFrappeCSRF()
         const res = await fetch(`${API_BASE_URL}/api/method/resume.api.upload_and_process.upload_and_process`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            "X-Frappe-CSRF-Token": csrfToken,
-            "Expect": "",
-          },
+          method: 'POST', credentials: 'include',
+          headers: { "X-Frappe-CSRF-Token": csrfToken, "Expect": "" },
           body: formData,
         })
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-        await res.json()
-
-        // Mark all as successful for UI
-        files.forEach(file => {
-          successfulUploads.push(file.name)
-          setProcessedFiles(prev => [...prev, file.name])
+        const uploadResult = await res.json()
+        const currentBatchId = uploadResult.message?.batch_id
+        if (!currentBatchId) throw new Error("Batch ID was not returned by the server")
+        setBatchId(currentBatchId)
+        finalBatchStatus = await pollBatchStatus(currentBatchId)
+        ;(finalBatchStatus.files || []).forEach((file: BatchFileStatus) => {
+          if (file.status === "Created") successfulUploads.push(file.file_name)
+          else if (["Failed", "Parse Error", "Missing Data", "Duplicate"].includes(file.status)) failedUploads.push(file.file_name)
         })
-        setUploadProgress(100)
-
+        setUploadProgress(finalBatchStatus.progress || 0)
       } catch (batchError) {
         console.error(`Batch upload failed:`, batchError)
         files.forEach(file => failedUploads.push(file.name))
       }
 
+      // Show exactly one final result toast for the batch.
+      // A batch with some Created and some Failed files is a Partial Success.
       if (successfulUploads.length === files.length) {
-        toast({ title: "🎉 All Resumes Processed Successfully!", description: `${successfulUploads.length} resume(s) uploaded and analyzed. Candidates are now in your pipeline.`, duration: 6000, className: "bg-green-50 border-green-200" })
-        setTimeout(() => { router.push("/candidates") }, 2000)
-      } else if (successfulUploads.length > 0) {
-        toast({ title: "⚠️ Partial Upload Success", description: `${successfulUploads.length} of ${files.length} resumes processed successfully.`, duration: 5000, className: "bg-yellow-50 border-yellow-200" })
-      }
-
-      if (failedUploads.length > 0) {
+        // ALL SUCCESSFUL
         toast({
-          variant: "destructive", title: "Some Uploads Failed",
-          description: `${failedUploads.length} file(s) failed to upload: ${failedUploads.slice(0, 2).join(", ")}${failedUploads.length > 2 ? "..." : ""}`,
+          title: "🎉 All Resumes Processed Successfully!",
+          description: `${successfulUploads.length} resume(s) uploaded and analyzed. Candidates are now in your pipeline.`,
+          duration: 6000,
+          className: "bg-green-50 border-green-200",
+        })
+
+      } else if (successfulUploads.length > 0 && failedUploads.length > 0) {
+        // PARTIAL SUCCESS: some resumes created, some failed
+        toast({
+          title: "⚠️ Partial Success",
+          description: `${successfulUploads.length} resume(s) processed successfully and ${failedUploads.length} resume(s) failed.`,
           duration: 8000,
-          action: (<Button variant="outline" size="sm" onClick={() => { toast({ title: "Retry Failed Uploads", description: "Please check the files and try uploading them again.", duration: 3000 }) }}>Retry</Button>),
+          className: "bg-yellow-50 border-yellow-200",
+        })
+
+      } else if (successfulUploads.length > 0 && failedUploads.length === 0) {
+        // SAFETY CASE: successful files exist and there are no known failures
+        toast({
+          title: "🎉 Resume Processing Completed",
+          description: `${successfulUploads.length} resume(s) processed successfully.`,
+          duration: 6000,
+          className: "bg-green-50 border-green-200",
+        })
+
+      } else if (failedUploads.length > 0 && successfulUploads.length === 0) {
+        // ALL FAILED
+        toast({
+          variant: "destructive",
+          title: "❌ Resume Processing Failed",
+          description: `${failedUploads.length} resume(s) failed to process.`,
+          duration: 8000,
         })
       }
-
       if (successfulUploads.length > 0) {
         setFiles(prev => prev.filter(file => !successfulUploads.includes(file.name)))
-        if (successfulUploads.length === files.length) {
-          setSelectedJobId(""); setSelectedJob(null)
-          setTimeout(() => { toast({ title: "What's Next?", description: "You can now review candidates and schedule interviews.", duration: 4000 }) }, 2000)
-        }
+        setSelectedJobId("")
+        setSelectedJob(null)
+
+        // Once the batch has finished and at least one candidate was created,
+        // navigate to Candidates even when the batch is Partial.
+        setTimeout(() => {
+          router.push("/candidates")
+        }, 2000)
       }
     } catch (err) {
       console.error("Upload failed", err)
-      toast({
-        variant: "destructive", title: "❌ Upload Process Failed",
-        description: "An unexpected error occurred during the upload process.", duration: 6000,
-        action: (<Button variant="outline" size="sm" onClick={() => handleUpload(e)}>Retry All</Button>),
-      })
+      toast({ variant: "destructive", title: "❌ Upload Process Failed", description: "An unexpected error occurred during the upload process.", duration: 6000, action: (<Button variant="outline" size="sm" onClick={() => handleUpload(e)}>Retry All</Button>), })
     } finally {
-      setIsLoading(false); setUploadProgress(0)
+      setIsLoading(false)
     }
   }
   // ─────────────────────────────────────────────────────────
@@ -2046,7 +2090,32 @@ export default function ResumeUploader() {
                       </div>
 
                       {/* File List */}
-                      {files.length > 0 && (
+                      {batchFiles.length > 0 ? (
+                        <div>
+                          <div className="ru-file-list-head">
+                            <span className="ru-file-list-label">Upload Status ({batchFiles.length})</span>
+                            <span style={{ fontSize: 11.5, color: 'var(--t3)' }}>{batchStatus || "Processing"}</span>
+                          </div>
+                          <div className="ru-file-scroll">
+                            {batchFiles.map((file, index) => {
+                              const isCreated = file.status === "Created"
+                              return (
+                                <div key={file.file_doc_name || `${file.file_name}-${index}`} className="ru-file-item">
+                                  <div className="ru-file-item-left">
+                                    <div className="ru-file-icon" style={isCreated ? { background: 'var(--green-lt)', color: 'var(--green)' } : undefined}>
+                                      {isCreated ? <CheckCircle size={15} /> : <FileText size={15} />}
+                                    </div>
+                                    <div>
+                                      <div className="ru-file-name">{file.file_name}</div>
+                                      <div className="ru-file-size">{file.status}{file.error_message ? ` — ${file.error_message}` : ""}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : files.length > 0 ? (
                         <div>
                           <div className="ru-file-list-head">
                             <span className="ru-file-list-label">Selected Files ({files.length})</span>
@@ -2071,7 +2140,7 @@ export default function ResumeUploader() {
                             ))}
                           </div>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Submit */}
                       <button

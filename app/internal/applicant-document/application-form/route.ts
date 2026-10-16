@@ -6,7 +6,7 @@
 //     'Content-Type': 'application/json',
 // });
 
-// const BASE_URL = 'https://ats.vaaman.in';
+// const BASE_URL = API_BASE_URL;
 
 // export async function POST(request: Request) {
 //     try {
@@ -105,6 +105,7 @@
 
 
 
+import { API_BASE_URL } from '@/lib/api-config';
 import { NextResponse } from 'next/server';
 
 const getAuthHeaders = () => ({
@@ -112,7 +113,7 @@ const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
 });
 
-const BASE_URL = 'https://ats.vaaman.in';
+const BASE_URL = API_BASE_URL;
 
 async function resolveJobApplicantOwner(jobApplicantName: string | null): Promise<string | null> {
     if (!jobApplicantName) return null;

@@ -9,9 +9,10 @@ import {
     ChevronUp, ChevronDown, TrendingUp,
 } from "lucide-react"
 import { getFrappeCSRF } from "@/lib/csrf"
+import { API_BASE_URL } from "@/lib/api-config"
 
 const API_MODULE_PATH = "resume.api.salary_annexure"
-const API_BASE_URL = "https://ats.vaaman.in"
+// const API_BASE_URL = "https://ats.vaaman.in"
 const PAGE_SIZE = 10
 
 const css = `
@@ -903,4 +904,3 @@ export default function SalaryAnnexureListPage() {
         </>
     )
 }
-

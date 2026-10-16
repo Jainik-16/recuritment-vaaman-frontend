@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-const BASE_URL = 'https://ats.vaaman.in';
+import { API_BASE_URL } from '@/lib/api-config';
+
+const BASE_URL = API_BASE_URL;
 const getAuthHeaders = () => ({
     'Authorization': `token ${process.env.FRAPPE_API_KEY}:${process.env.FRAPPE_API_SECRET}`,
     'Content-Type': 'application/json',

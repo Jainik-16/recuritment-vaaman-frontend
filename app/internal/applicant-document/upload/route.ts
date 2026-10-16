@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-const BASE_URL = 'https://ats.vaaman.in';
+import { API_BASE_URL } from '@/lib/api-config';
+
+const BASE_URL = API_BASE_URL;
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();

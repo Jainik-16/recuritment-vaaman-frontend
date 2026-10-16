@@ -1510,9 +1510,10 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react"
 import { getFrappeCSRF } from "@/lib/csrf"
 import * as XLSX from "xlsx"
+import { API_BASE_URL } from "@/lib/api-config"
 
 const API_MODULE_PATH = "resume.api.salary_annexure"
-const API_BASE_URL = "https://ats.vaaman.in"
+// const API_BASE_URL = "https://ats.vaaman.in"
 
 // ─── Salary component name → form field mapping ───────────────────────────
 // Maps Excel row labels (uppercase) → salary_component identifiers used in UI

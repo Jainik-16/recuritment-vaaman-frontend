@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { getFrappeCSRF } from "@/lib/csrf"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { API_BASE_URL , FRAPPE_BASE_URL } from "@/lib/api-config"
 
 interface AcceptedCandidate {
   name: string; applicant_name: string; applicant_email: string; job_applicant: string;
@@ -488,8 +489,8 @@ export default function AppointmentPage() {
     custom_branch: "",
   })
 
-  const API_BASE_URL = "https://ats.vaaman.in/api/method/resume.api.appointment_letter"
-  const FRAPPE_BASE_URL = "https://ats.vaaman.in"
+  // const API_BASE_URL = "https://ats.vaaman.in/api/method/resume.api.appointment_letter"
+  // const FRAPPE_BASE_URL = "https://ats.vaaman.in"
   const filteredCandidates = acceptedCandidates.filter(c =>
     c.applicant_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -805,13 +806,13 @@ export default function AppointmentPage() {
       {appt.custom_staffworker === "Worker" ? (
         <button className="al-dl-btn orange" onClick={() => {
           // window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
-          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
+          window.open(`${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
         }}>
           <FileText size={15} /> Download - Worker To Staff
         </button>
       ) : appt.custom_staffworker === "Staff" ? (
         <button className="al-dl-btn blue" onClick={() => {
-          window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
+          window.open(`${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
         }}>
           <FileText size={15} /> Download - Letter To Staff
         </button>
@@ -819,12 +820,12 @@ export default function AppointmentPage() {
         <>
           <button className="al-dl-btn orange" onClick={() => {
             // window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20Worker%20To%20Staff&no_letterhead=0`, '_blank')
-            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
+            window.open(`${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=New%20Appointment%20Letter%20Worker&no_letterhead=0`, '_blank')
           }}>
             <FileText size={15} /> Worker To Staff
           </button>
           <button className="al-dl-btn blue" onClick={() => {
-            window.open(`https://ats.vaaman.in/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
+            window.open(`${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Appointment%20Letter&name=${encodeURIComponent(appt.appointmentId)}&format=Appointment%20Letter%20To%20Staff&no_letterhead=0`, '_blank')
           }}>
             <FileText size={15} /> Letter To Staff
           </button>

@@ -17,9 +17,10 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getFrappeCSRF } from "@/lib/csrf"
+import { API_BASE_URL } from "@/lib/api-config"
 
 const API_MODULE_PATH = "resume.api.offer_letter"
-const API_BASE_URL = "https://ats.vaaman.in"
+// const API_BASE_URL = "https://ats.vaaman.in"
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');

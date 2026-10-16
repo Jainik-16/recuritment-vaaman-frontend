@@ -1,6 +1,7 @@
+import { API_BASE_URL } from "@/lib/api-config";
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://ats.vaaman.in";
+const BASE_URL = API_BASE_URL
 
 export async function GET(req: Request) {
 
