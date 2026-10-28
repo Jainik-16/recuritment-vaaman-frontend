@@ -416,6 +416,39 @@ const css = `
     border-top-color: #fff; border-radius: 50%; animation: sl-spin 1s linear infinite;
   }
 
+  /* ══ CHANGES BUTTON + MODAL ══ */
+  .sl-changes-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 6px; padding: 4px 10px; border-radius: 6px;
+    background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd;
+    font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: all .14s; white-space: nowrap;
+  }
+  .sl-changes-btn:hover { background: #e0f2fe; border-color: #0284c7; }
+  .sl-modal.wide { max-width: 760px; padding: 32px; }
+  .sl-changes-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; margin-bottom: 18px;
+  }
+  .sl-changes-title { font-size: 19px; font-weight: 800; color: var(--t1); letter-spacing: -0.3px; margin-bottom: 4px; }
+  .sl-changes-meta {
+    font-size: 13px; color: var(--t3); margin-bottom: 16px;
+    padding: 10px 14px; border-radius: 9px; background: var(--bg); border: 1px solid var(--border-s);
+  }
+  .sl-changes-list {
+    display: flex; flex-direction: column; gap: 10px;
+    max-height: 62vh; overflow-y: auto; padding-right: 6px;
+  }
+  .sl-changes-list::-webkit-scrollbar { width: 5px; }
+  .sl-changes-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .sl-change-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    background: #f0f9ff; border: 1px solid #bae6fd;
+    font-size: 13.5px; font-weight: 600; color: #0284c7; line-height: 1.5;
+    word-break: break-word;
+  }
+
   /* responsive */
   @media (max-width: 900px) { .sl-stats { grid-template-columns: repeat(3,1fr); } }
   @media (max-width: 768px) {
@@ -447,6 +480,8 @@ const css = `
     .sl-email { font-size: 10.5px; }
     .sl-amt { font-size: 12px; }
     .sl-id { font-size: 11px; }
+    .sl-modal.wide { padding: 20px; }
+    .sl-change-item { font-size: 12.5px; padding: 10px 12px; }
   }
 
 @media (max-width: 480px) {
@@ -467,6 +502,9 @@ interface SalaryAnnexure {
     docstatus: number
     creation: string
     owner?: string
+    modified?: string
+    modified_by?: string
+    last_change_summary?: string
 }
 type SortKey = "name" | "applicant_name" | "total_monthly" | "total_annual" | "creation"
 type SortDir = "asc" | "desc"
@@ -476,6 +514,7 @@ const fmt = (n: number) => (n || 0).toLocaleString("en-IN", { minimumFractionDig
 const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"
 const statusClass = (s: number) => s === 0 ? "draft" : s === 1 ? "submitted" : "cancelled"
 const statusLabel = (s: number) => s === 0 ? "Draft" : s === 1 ? "Submitted" : "Cancelled"
+const parseChanges = (summary?: string) => (summary || "").split(";").map(s => s.trim()).filter(Boolean)
 
 /* ════════════════════════════════════════ */
 export default function SalaryAnnexureListPage() {
@@ -485,6 +524,7 @@ export default function SalaryAnnexureListPage() {
     const [refreshing, setRefreshing] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [deleteTarget, setDeleteTarget] = useState<SalaryAnnexure | null>(null)
+    const [changesTarget, setChangesTarget] = useState<SalaryAnnexure | null>(null)
     const [rows, setRows] = useState<SalaryAnnexure[]>([])
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
@@ -719,6 +759,7 @@ export default function SalaryAnnexureListPage() {
                                                         <div className="sl-th-inner">Created <SortIco col="creation" /></div>
                                                     </th>
                                                     <th>Created By</th>
+                                                    <th style={{ minWidth: 160 }}>Last Edited</th>
                                                     <th style={{ width: 60 }} />
                                                 </tr>
                                             </thead>
@@ -818,6 +859,36 @@ export default function SalaryAnnexureListPage() {
                                                             )}
                                                         </td>
                                                         <td>
+                                                            {row.modified_by ? (
+                                                                <div>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                                        <div style={{
+                                                                            width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                                                                            background: 'linear-gradient(135deg, #10b981, #059669)',
+                                                                            color: '#fff', display: 'flex', alignItems: 'center',
+                                                                            justifyContent: 'center', fontSize: 10.5, fontWeight: 700
+                                                                        }}>
+                                                                            {row.modified_by.split('@')[0].charAt(0).toUpperCase()}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t1)' }}>{row.modified_by.split('@')[0]}</div>
+                                                                            <div style={{ fontSize: 10.5, color: 'var(--t3)' }}>{fmtDate(row.modified || '')}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    {parseChanges(row.last_change_summary).length > 0 && (
+                                                                        <button
+                                                                            className="sl-changes-btn"
+                                                                            onClick={() => setChangesTarget(row)}
+                                                                        >
+                                                                            <MessageSquare size={13} /> View changes ({parseChanges(row.last_change_summary).length})
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span style={{ fontSize: 12, color: 'var(--t3)' }}>—</span>
+                                                            )}
+                                                        </td>
+                                                        <td>
                                                             {/* only delete — no view button */}
                                                             <button
                                                                 className="sl-act-btn del"
@@ -897,6 +968,43 @@ export default function SalaryAnnexureListPage() {
                                     ? <><div className="sl-del-spin" /> Deleting…</>
                                     : <><Trash2 size={14} /> Delete</>}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══ CHANGES MODAL ══ */}
+            {changesTarget && (
+                <div className="sl-backdrop" onClick={() => setChangesTarget(null)}>
+                    <div className="sl-modal wide" onClick={e => e.stopPropagation()}>
+                        <div className="sl-changes-head">
+                            <div>
+                                <div className="sl-changes-title">Edit History</div>
+                                <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>
+                                    {changesTarget.name}
+                                    {changesTarget.applicant_name ? ` · ${changesTarget.applicant_name}` : ""}
+                                </div>
+                            </div>
+                            <button className="sl-act-btn" onClick={() => setChangesTarget(null)}><X /></button>
+                        </div>
+
+                        <div className="sl-changes-meta">
+                            Edited by <strong style={{ color: 'var(--t1)' }}>{changesTarget.modified_by?.split('@')[0]}</strong>
+                            {" "}on <strong style={{ color: 'var(--t1)' }}>{fmtDate(changesTarget.modified || '')}</strong>
+                            {" "}· <strong style={{ color: 'var(--t1)' }}>{parseChanges(changesTarget.last_change_summary).length}</strong> changes
+                        </div>
+
+                        <div className="sl-changes-list">
+                            {parseChanges(changesTarget.last_change_summary).map((item, i) => (
+                                <div key={i} className="sl-change-item">
+                                    <MessageSquare size={15} style={{ flexShrink: 0, marginTop: 3, color: '#0284c7' }} />
+                                    <span>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="sl-modal-acts" style={{ marginTop: 20 }}>
+                            <button className="sl-modal-cancel" onClick={() => setChangesTarget(null)}>Close</button>
                         </div>
                     </div>
                 </div>
