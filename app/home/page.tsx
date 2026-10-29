@@ -1090,17 +1090,60 @@ export default function RecruitmentDashboard() {
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
-  const handleLogout = async () => {
-    const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
-    const csrfToken = await getFrappeCSRF()
-    const response = await fetch(LOGOUT_URL, {
-      method: 'POST', credentials: "include",
-      headers: { "X-Frappe-CSRF-Token": csrfToken }
-    })
-    if (response.ok) router.push("/Login")
-    else console.error("Logout failed", await response.text())
+  // const handleLogout = async () => {
+  //   const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
+  //   const csrfToken = await getFrappeCSRF()
+  //   const response = await fetch(LOGOUT_URL, {
+  //     method: 'POST', credentials: "include",
+  //     headers: { "X-Frappe-CSRF-Token": csrfToken }
+  //   })
+  //   if (response.ok) router.push("/Login")
+  //   else console.error("Logout failed", await response.text())
+  // }
+
+  // const handleLogout = async () => {
+  //   setIsLoggingOut(true)
+  //   try {
+  //     // 1. Pehle ATS server ka local session clear karein
+  //     const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
+  //     const csrfToken = await getFrappeCSRF()
+  //     await fetch(LOGOUT_URL, {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: { "X-Frappe-CSRF-Token": csrfToken },
+  //     })
+  //   } catch (err) {
+  //     console.error("Logout failed:", err)
+  //   }
+
+  //   localStorage.removeItem("isLoggedIn")
+
+  //   // 2. Ab backend method par redirect karein jo Prayog tokens revoke karega aur /Login par bhejega
+  //   const loginRedirect = encodeURIComponent(`${window.location.origin}/Login`)
+  //   window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout?redirect_to=${loginRedirect}`
+  // }
+const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      // 1. Pehle ATS server ka local session clear karein
+      const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
+      const csrfToken = await getFrappeCSRF()
+      await fetch(LOGOUT_URL, {
+        method: "POST",
+        credentials: "include",
+        headers: { "X-Frappe-CSRF-Token": csrfToken },
+      })
+    } catch (err) {
+      console.error("ATS Logout failed:", err)
+    }
+
+    localStorage.removeItem("isLoggedIn")
+
+    // 2. Seedha backend ke sso_logout par bhejें jo Prayog aur ATS dono ka session saaf kar dega
+    window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout`
   }
 
   // useEffect(() => { document.title = 'Dashboard' }, [])
