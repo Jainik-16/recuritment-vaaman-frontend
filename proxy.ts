@@ -21,8 +21,8 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/internal") ||
     pathname === "/favicon.ico" ||
-      isPublicRoute ||
-      pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js)$/)
+    isPublicRoute ||
+    pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|css|js)$/)
   ) {
     return NextResponse.next();
   }
