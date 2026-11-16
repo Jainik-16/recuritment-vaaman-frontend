@@ -505,7 +505,8 @@ export default function CreateJobOpeningForm() {
       try {
         const [companiesRes, departmentsRes, employmentTypesRes, designationsRes, locationsRes, docTypeRes, currenciesRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/resource/Company?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
-          fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          // fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
+          fetch(`${API_BASE_URL}/api/resource/Department?fields=["name"]&filters=[["Department","is_group","=",0]]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Employment Type?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Designation?fields=["name"]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),
           fetch(`${API_BASE_URL}/api/resource/Cost Center?fields=["name"]&filters=[["Cost Center","is_group","=",0]]&limit_page_length=0`, { method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }),

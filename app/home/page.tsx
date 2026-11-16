@@ -1125,8 +1125,32 @@ export default function RecruitmentDashboard() {
   //   const loginRedirect = encodeURIComponent(`${window.location.origin}/Login`)
   //   window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout?redirect_to=${loginRedirect}`
   // }
-const handleLogout = async () => {
+// const handleLogout = async () => {
+//     setIsLoggingOut(true)
+//     try {
+//       // 1. Pehle ATS server ka local session clear karein
+//       const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
+//       const csrfToken = await getFrappeCSRF()
+//       await fetch(LOGOUT_URL, {
+//         method: "POST",
+//         credentials: "include",
+//         headers: { "X-Frappe-CSRF-Token": csrfToken },
+//       })
+//     } catch (err) {
+//       console.error("ATS Logout failed:", err)
+//     }
+
+//     localStorage.removeItem("isLoggedIn")
+
+//     // 2. Seedha backend ke sso_logout par bhejें jo Prayog aur ATS dono ka session saaf kar dega
+//     // window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout`
+//   }
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return          // ✅ ADDED: double click rokne ke liye
     setIsLoggingOut(true)
+    setUserMenuOpen(false)            // ✅ ADDED: popover band karne ke liye
+
     try {
       // 1. Pehle ATS server ka local session clear karein
       const LOGOUT_URL = `${API_BASE_URL}/api/method/logout`
@@ -1143,9 +1167,13 @@ const handleLogout = async () => {
     localStorage.removeItem("isLoggedIn")
 
     // 2. Seedha backend ke sso_logout par bhejें jo Prayog aur ATS dono ka session saaf kar dega
-    window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout`
-  }
+    // window.location.href = `${API_BASE_URL}/api/method/vaaman_ats_ai.api.auth.sso_logout`
 
+    // ✅ ADDED: logout ke baad seedha Login page par redirect
+    window.location.replace("/Login")
+  }
+  
+  
   // useEffect(() => { document.title = 'Dashboard' }, [])
   useEffect(() => {
     document.title = "Dashboard"
@@ -1179,7 +1207,8 @@ const handleLogout = async () => {
         }
 
         setUserRoles(data.roles || [])
-        setIsSiteHRRole(Boolean(data.is_site_hr_role))
+        // setIsSiteHRRole(Boolean(data.is_site_hr_role))
+        setIsSiteHRRole(Boolean(data.is_site_hr_only))
 
       } catch (error) {
         console.error("Role fetch error:", error)

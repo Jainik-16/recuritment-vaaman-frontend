@@ -123,6 +123,16 @@ const css = `
   .lgn-input-wrap:focus-within svg { color: var(--accent); }
   .lgn-input::placeholder { color: var(--t3); }
 
+    .lgn-forgot {
+    align-self: flex-end;
+    background: none; border: none; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px; font-weight: 600;
+    color: var(--accent);
+    padding: 0; margin-top: 2px;
+  }
+  .lgn-forgot:hover { color: var(--accent-h); text-decoration: underline; }
+
   /* ══ ERROR ══ */
   .lgn-error {
     background: var(--red-lt);
@@ -310,6 +320,22 @@ function LoginPage() {
                         </div>
 
                         {/* Password */}
+                        {/* <div className="lgn-field">
+                            <label htmlFor="password" className="lgn-label">Password</label>
+                            <div className="lgn-input-wrap">
+                                <input
+                                    id="password"
+                                    type="password"
+                                    className="lgn-input"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <Lock />
+                            </div>
+                        </div> */}
+                        {/* Password */}
                         <div className="lgn-field">
                             <label htmlFor="password" className="lgn-label">Password</label>
                             <div className="lgn-input-wrap">
@@ -324,6 +350,20 @@ function LoginPage() {
                                 />
                                 <Lock />
                             </div>
+
+                            <button
+                                type="button"
+                                className="lgn-forgot"
+                                onClick={() =>
+                                    router.push(
+                                        email.trim()
+                                            ? `/forgot-password?email=${encodeURIComponent(email.trim())}`
+                                            : "/forgot-password"
+                                    )
+                                }
+                            >
+                                Forgot Password?
+                            </button>
                         </div>
 
                         {/* Error */}

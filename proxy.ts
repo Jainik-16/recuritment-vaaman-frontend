@@ -6,12 +6,13 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // STRICT PUBLIC CHECK: 
-  // - Allows exactly "/Login"
+  // - Allows exactly "/Login and "/forgot-password""
   // - Allows "/document-verify/anything" (because of the trailing slash)
   // - BLOCKS "/document-verify" (no trailing slash)
   // - BLOCKS "/document-verify-list"
   const isPublicRoute =
     pathname === "/Login" ||
+    pathname === "/forgot-password" ||
     pathname.startsWith("/document-verify/");
 
   // Skip for static, API, and public paths

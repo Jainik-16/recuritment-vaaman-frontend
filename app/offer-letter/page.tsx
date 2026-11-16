@@ -604,7 +604,7 @@ export default function JobOfferPage() {
 
       try {
         const annexureRes = await fetch(
-          `${API_BASE_URL}/api/method/frappe.client.get_list?doctype=Salary%20Annexure&filters=${encodeURIComponent(JSON.stringify({ custom_job_applicant: value }))}&fields=${encodeURIComponent(JSON.stringify(["name"]))}&order_by=creation%20desc&limit_page_length=10`,
+          `${API_BASE_URL}/api/method/frappe.client.get_list?doctype=Salary%20Annexure&filters=${encodeURIComponent(JSON.stringify({ custom_job_applicant: value, custom_print_format_template: ["is", "not set"] }))}&fields=${encodeURIComponent(JSON.stringify(["name"]))}&order_by=creation%20desc&limit_page_length=10`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
         )
         const annexureResult = await annexureRes.json()
