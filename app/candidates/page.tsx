@@ -799,6 +799,28 @@ function CandidatesInner() {
     });
     const ITEMS_PER_PAGE = 10
     const [currentPage, setCurrentPage] = useState(1)
+    const [designationsList, setDesignationsList] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchAllDesignations = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/resource/Designation?fields=["name"]&limit_page_length=0`, {
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const desigs = (data?.data || []).map((d: any) => d.name);
+                    setDesignationsList(desigs);
+                }
+            } catch (e) {
+                console.error("Error fetching designations:", e);
+            }
+        };
+        fetchAllDesignations();
+        fetchJobTitles();
+        fetchLocations();
+    }, []);
 
 
     useEffect(() => {
@@ -1634,13 +1656,16 @@ function CandidatesInner() {
                                     </select>
                                     <ChevronRight size={14} className="cp-select-arrow" />
                                 </div>
-                                <div className="cp-select-wrap">
-                                    <select className="cp-select" value={filterDesignation} onChange={e => { setFilterDesignation(e.target.value); setCurrentPage(1); }}>
-                                        <option value="all">All Designations</option>
-                                        {uniqueDesignations.map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                    <ChevronRight size={14} className="cp-select-arrow" />
-                                </div>
+                                <select
+                                    className="cp-select"
+                                    value={filterDesignation}
+                                    onChange={(e) => { setFilterDesignation(e.target.value); setCurrentPage(1); }}
+                                >
+                                    <option value="all">All Designations</option>
+                                    {designationsList.map(desig => (
+                                        <option key={desig} value={desig}>{desig}</option>
+                                    ))}
+                                </select>
                                 <div className="cp-select-wrap">
                                     <select className="cp-select" value={filterStage} onChange={e => { setFilterStage(e.target.value); setSelectedCandidate(null); setCurrentPage(1); }}>
                                         <option value="all">All Stages</option>
