@@ -863,12 +863,29 @@ export default function DocumentVerifyListPage() {
                                                         </button>
                                                         <button
                                                             className="dvl-pdf-btn"
-                                                            onClick={e => {
+                                                            onClick={async e => {
                                                                 e.stopPropagation()
-                                                                const name = selectedDoc.applicant_details?.applicant_name
-                                                                if (!name) { alert("No name found for this applicant."); return }
-                                                                const url = `${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Application%20Declaration&name=${encodeURIComponent(name)}&format=Declaration%20Form&no_letterhead=0`
-                                                                window.open(url, '_blank')
+                                                                const email = selectedDoc.applicant_details?.email_id
+                                                                if (!email) { alert("No email found for this applicant."); return }
+
+                                                                const win = window.open('', '_blank')
+
+                                                                const filters = encodeURIComponent(JSON.stringify([["custom_applicant_email", "=", email]]))
+                                                                const res = await fetch(
+                                                                    `${API_BASE_URL}/api/resource/Application Declaration?filters=${filters}&fields=["name"]&limit_page_length=1`,
+                                                                    { credentials: 'include' }
+                                                                )
+                                                                const json = await res.json()
+                                                                const declName = json.data?.[0]?.name
+
+                                                                if (!declName) {
+                                                                    win?.close()
+                                                                    alert("Declaration not found for this applicant.")
+                                                                    return
+                                                                }
+
+                                                                const url = `${API_BASE_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=Application%20Declaration&name=${encodeURIComponent(declName)}&format=Declaration%20Form&no_letterhead=0`
+                                                                if (win) win.location.href = url
                                                             }}
                                                         >
                                                             <FileText size={12} /> Declaration

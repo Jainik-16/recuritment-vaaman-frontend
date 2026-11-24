@@ -253,7 +253,8 @@ export default function PublicDocumentVerifyPage({ params }: { params: Promise<{
     })
     const [isSavingDecl, setIsSavingDecl] = useState(false)
 
-    useEffect(() => { document.title = 'Onboarding Portal' }, [])
+    // useEffect(() => { document.title = 'Onboarding Portal' }, [])
+    useEffect(() => { document.title = 'Upload Document' }, [])
 
     useEffect(() => { sessionStorage.setItem("educationRows_draft", JSON.stringify(educationRows)) }, [educationRows])
     useEffect(() => { sessionStorage.setItem("employmentRows_draft", JSON.stringify(employmentRows)) }, [employmentRows])
